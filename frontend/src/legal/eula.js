@@ -6,6 +6,4 @@ This game is intended for kids and families. Harassment, hate, and inappropriate
 
 You confirm that you are at least 18 years old, or that a parent or guardian has given you permission to create this account.
 
-This is a starter agreement for a free fan-style game. A lawyer should review it before any commercial launch.
-
 The operator may update these terms. Continued use after an update means you accept the new terms.`;
