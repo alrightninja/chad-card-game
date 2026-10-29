@@ -1,0 +1,4 @@
+# Drop soundtrack files here:
+#   menu.mp3   — main menu / collection / shop
+#   battle.mp3 — match screen
+# The app will play them when present and stay silent if they are missing.
