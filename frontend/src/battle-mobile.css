@@ -4,75 +4,90 @@
 
 @media (max-width: 720px), (max-width: 980px) and (max-height: 520px) {
   .shell-battle {
-    --active-s: 0.34;
-    --bench-s: 0.2;
-    --hand-s: 0.24;
+    --active-s: 0.26;
+    --bench-s: 0.16;
+    --hand-s: 0.18;
     --active-w: calc(200px * var(--active-s));
     --bench-w: calc(200px * var(--bench-s));
     --hand-w: calc(200px * var(--hand-s));
-    padding: 0.12rem 0.35rem calc(0.2rem + env(safe-area-inset-bottom, 0px));
+    height: 100svh;
     max-width: none;
+    padding: 0.08rem 0.28rem calc(0.12rem + env(safe-area-inset-bottom, 0px));
   }
 
   .shell-battle .topbar.compact {
-    margin-bottom: 0.2rem;
-    padding-bottom: 0.2rem;
-    gap: 0.35rem;
-    font-size: 0.78rem;
+    margin-bottom: 0.12rem;
+    padding-bottom: 0.12rem;
+    gap: 0.25rem;
+    font-size: 0.72rem;
   }
 
-  .shell-battle .topbar.compact .muted {
+  .shell-battle .topbar.compact .muted,
+  .shell-battle .brand {
     display: none;
   }
 
   .shell-battle .topbar .row {
-    gap: 0.35rem;
+    gap: 0.25rem;
+  }
+
+  .shell-battle .topbar .btn {
+    padding: 0.2rem 0.45rem;
+    font-size: 0.72rem;
   }
 
   .shell-battle .hintbar {
-    flex-wrap: wrap;
-    align-items: flex-start;
-    padding: 0.3rem 0.45rem;
-    gap: 0.35rem;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 0.18rem 0.35rem;
+    gap: 0.3rem;
   }
 
   .shell-battle .hint-text {
     display: none;
   }
 
-  .shell-battle .hintbar .row {
-    flex-wrap: wrap;
-    width: 100%;
-    justify-content: flex-end;
-    gap: 0.3rem;
-  }
-
-  .shell-battle .hintbar .btn {
-    padding: 0.28rem 0.55rem;
-    font-size: 0.78rem;
-  }
-
-  .shell-battle .coach-compact {
-    max-height: 3.2rem;
-    font-size: 0.7rem;
-  }
-
-  .shell-battle .combat-log {
-    max-height: 4.5rem;
+  .shell-battle .hintbar > div:first-child {
+    flex: 0 0 auto;
     font-size: 0.72rem;
   }
 
+  .shell-battle .hintbar .row {
+    flex-wrap: nowrap;
+    width: auto;
+    margin-left: auto;
+    justify-content: flex-end;
+    gap: 0.2rem;
+  }
+
+  .shell-battle .hintbar .btn {
+    padding: 0.18rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .shell-battle .coach-compact {
+    max-height: 2.4rem;
+    font-size: 0.64rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .shell-battle .combat-log {
+    max-height: 3.2rem;
+    font-size: 0.64rem;
+    padding: 0.2rem 0.4rem;
+  }
+
   .shell-battle .battle-banner {
-    font-size: 0.78rem;
-    padding: 0.35rem 0.5rem;
-    margin-bottom: 0.2rem;
+    font-size: 0.7rem;
+    padding: 0.22rem 0.4rem;
+    margin-bottom: 0.12rem;
   }
 
   .shell-battle .table {
     grid-template-columns: 1fr;
     gap: 0;
-    padding: 0.28rem 0.28rem 0.2rem;
-    border-radius: 10px;
+    padding: 0.16rem 0.16rem 0.1rem;
+    border-radius: 8px;
   }
 
   .shell-battle .rail {
@@ -81,47 +96,54 @@
 
   .shell-battle .table-main {
     grid-template-rows: auto auto minmax(0, 1fr) auto;
-    gap: 0.22rem;
+    gap: 0.12rem;
     width: 100%;
+    align-content: stretch;
   }
 
   .shell-battle .hand-backs .card-back {
-    width: 16px;
-    margin-right: -8px;
+    width: 12px;
+    margin-right: -7px;
+  }
+
+  .shell-battle .table-main > .bench-row {
+    --bench-s: 0.14;
+    --bench-w: calc(200px * 0.14);
+    min-height: calc(320px * 0.14);
+    gap: 0.18rem;
   }
 
   .shell-battle .bench-row {
     min-height: calc(320px * var(--bench-s));
-    gap: 0.28rem;
+    gap: 0.18rem;
   }
 
   .shell-battle .field {
     width: 100%;
-    align-self: stretch;
-    justify-content: space-evenly;
-    padding: 0.28rem 0.3rem;
-    border-radius: 10px;
+    align-self: center;
+    justify-content: center;
+    padding: 0.18rem 0.2rem;
+    border-radius: 8px;
   }
 
   .shell-battle .field-vs {
-    margin: 0.06rem 0;
-    font-size: 0.58rem;
+    margin: 0.04rem 0;
+    font-size: 0.5rem;
   }
 
   .shell-battle .field-row {
-    gap: 0.35rem;
+    gap: 0.22rem;
   }
 
   .shell-battle .you-dock {
     grid-template-columns: 1fr;
-    gap: 0.2rem;
+    gap: 0.1rem;
     width: 100%;
     align-items: stretch;
   }
 
   .shell-battle .you-dock .zone-title {
-    margin-bottom: 0.06rem;
-    font-size: 0.58rem;
+    display: none;
   }
 
   .shell-battle .hand-row {
@@ -129,8 +151,12 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     min-height: calc(320px * var(--hand-s));
-    padding: 2px 2px 6px;
-    gap: 0.2rem;
+    padding: 1px 2px 4px;
+    gap: 0.14rem;
+  }
+
+  .shell-battle .hand-row .slot:has(.slot-empty) {
+    display: none;
   }
 
   .shell-battle .inspect-panel {
@@ -143,9 +169,10 @@
 
 @media (max-width: 980px) and (max-height: 520px) {
   .shell-battle {
-    --active-s: 0.26;
-    --bench-s: 0.16;
-    --hand-s: 0.18;
+    --active-s: 0.2;
+    --bench-s: 0.12;
+    --hand-s: 0.14;
+    height: 100svh;
   }
 
   .shell-battle .topbar.compact {
@@ -153,10 +180,16 @@
   }
 
   .shell-battle .hintbar {
-    padding: 0.2rem 0.35rem;
+    padding: 0.12rem 0.28rem;
   }
 
   .shell-battle .hand-backs {
     display: none;
+  }
+
+  .shell-battle .table-main > .bench-row {
+    --bench-s: 0.11;
+    --bench-w: calc(200px * 0.11);
+    min-height: calc(320px * 0.11);
   }
 }
