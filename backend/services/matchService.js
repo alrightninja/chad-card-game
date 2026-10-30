@@ -6,8 +6,11 @@ const { applyAction } = require("../engine/applyAction");
 const {
   serializeState,
   hydrateState,
-  publicMatchState
+  publicMatchState,
+  compactFinishedState
 } = require("../engine/serializeState");
+
+const FINISHED_KEEP_MS = 60 * 60 * 1000;
 const {
   shuffle,
   deckToUnits,
@@ -87,6 +90,9 @@ async function awardAndFinish(match) {
   match.status = "finished";
   match.rewards = { reps: playerReps };
   match.moveDeadlineAt = null;
+  match.set("state", compactFinishedState(hydrateState(match.state)));
+  match.markModified("state");
+  match.purgeAt = new Date(Date.now() + FINISHED_KEEP_MS);
   await match.save();
 
   const player = await User.findById(match.playerId);

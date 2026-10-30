@@ -16,7 +16,27 @@ function stampSide(side) {
   });
 }
 
-const MAX_LOG = 80;
+const MAX_LOG = 40;
+const FINISHED_LOG = 12;
+
+function slimSide(side) {
+  if (!side) return side;
+  return {
+    ...side,
+    deck: [],
+    discard: []
+  };
+}
+
+function compactFinishedState(state) {
+  const copy = serializeState(state);
+  delete copy.secretLog;
+  delete copy.lastBattle;
+  copy.log = Array.isArray(copy.log) ? copy.log.slice(-FINISHED_LOG) : [];
+  copy.player = slimSide(copy.player);
+  copy.opponent = slimSide(copy.opponent);
+  return copy;
+}
 
 function serializeState(state) {
   const copy = JSON.parse(JSON.stringify(state));
@@ -110,4 +130,9 @@ function publicMatchState(state, perspective = "player") {
   };
 }
 
-module.exports = { serializeState, hydrateState, publicMatchState };
+module.exports = {
+  serializeState,
+  hydrateState,
+  publicMatchState,
+  compactFinishedState
+};

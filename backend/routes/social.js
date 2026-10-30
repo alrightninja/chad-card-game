@@ -7,6 +7,7 @@ const { publicUser } = require("../lib/publicUser");
 const { sanitizeMessage } = require("../utils/moderation");
 const matchService = require("../services/matchService");
 const { notifyUser } = require("../sockets/matchSocket");
+const { trimMessageThread } = require("../lib/retention");
 
 const router = express.Router();
 
@@ -154,6 +155,7 @@ router.post("/messages", requireAuth, async (req, res) => {
       to: userId,
       body: clean
     });
+    trimMessageThread(req.user._id, userId).catch(() => {});
     const payload = {
       id: message._id,
       from: message.from,
@@ -234,8 +236,7 @@ router.post("/challenges/:id/respond", requireAuth, async (req, res) => {
     }
 
     if (!accept) {
-      challenge.status = "declined";
-      await challenge.save();
+      await Challenge.deleteOne({ _id: challenge._id });
       notifyUser(challenge.fromUserId, "challenge_update", { kind: "declined", id: challenge._id });
       return res.json({ message: "Challenge declined" });
     }
@@ -255,10 +256,7 @@ router.post("/challenges/:id/respond", requireAuth, async (req, res) => {
       hoursPerMove: challenge.hoursPerMove
     });
 
-    challenge.status = "accepted";
-    challenge.toDeckName = deckName;
-    challenge.matchId = match._id;
-    await challenge.save();
+    await Challenge.deleteOne({ _id: challenge._id });
 
     const clientMatch = matchService.toClient(match, req.user._id);
     notifyUser(challenge.fromUserId, "challenge_update", {

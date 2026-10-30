@@ -42,10 +42,13 @@ const MatchSchema = new mongoose.Schema(
     state: { type: mongoose.Schema.Types.Mixed, required: true },
     rewards: {
       reps: { type: Number, default: 0 }
-    }
+    },
+    purgeAt: { type: Date, default: null }
   },
   { timestamps: true }
 );
+
+MatchSchema.index({ purgeAt: 1 }, { expireAfterSeconds: 0 });
 
 MatchSchema.index({ playerId: 1, status: 1 });
 MatchSchema.index({ opponentUserId: 1, status: 1 });

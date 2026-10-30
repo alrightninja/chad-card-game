@@ -20,6 +20,7 @@ const socialRoutes = require("./routes/social");
 const adminRoutes = require("./routes/admin");
 const { assertCleanUsername } = require("./utils/moderation");
 const { safeMe } = require("./lib/publicUser");
+const retention = require("./lib/retention");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -693,4 +694,5 @@ ioHolder.io = io;
 
 httpServer.listen(PORT, "0.0.0.0", () => {
   console.log(`Gigachad TCG API listening on 0.0.0.0:${PORT}`);
+  retention.start();
 });
