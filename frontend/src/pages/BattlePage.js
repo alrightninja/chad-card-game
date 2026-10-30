@@ -7,6 +7,7 @@ import { WS_URL } from "../api/config";
 import { useAudio } from "../audio/AudioProvider";
 import { useAuth } from "../context/AuthContext";
 import CardView from "../components/CardView";
+import "../battle-mobile.css";
 
 const ACTIVE_SLOTS = 3;
 const BENCH_SLOTS = 3;
