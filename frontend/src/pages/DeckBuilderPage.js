@@ -3,6 +3,29 @@ import { LayoutGroup } from "framer-motion";
 import { api } from "../api/client";
 import { useAudio } from "../audio/AudioProvider";
 import CardView from "../components/CardView";
+import SetFilterBar, { useSetFilter } from "../components/SetFilterBar";
+
+function PoolGrid({ cards, copiesInDeck, add }) {
+  if (!cards.length) {
+    return <p className="muted">No cards in this pack yet.</p>;
+  }
+  return (
+    <div className="card-grid">
+      {cards.map((card) => (
+        <div key={card.cardId}>
+          <CardView
+            layoutKey={`pool-${card.cardId}`}
+            card={card}
+            onClick={() => add(card)}
+          />
+          <div className="muted" style={{ fontSize: "0.8rem" }}>
+            {copiesInDeck(card.cardId)} / {card.quantity} in deck
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function DeckBuilderPage() {
   const audio = useAudio();
@@ -36,6 +59,8 @@ export default function DeckBuilderPage() {
     });
     return map;
   }, [collection]);
+
+  const { layout, setLayout, setId, setSetId, filtered, groups } = useSetFilter(collection);
 
   function copiesInDeck(cardId) {
     return list.filter((id) => id === cardId).length;
@@ -133,20 +158,26 @@ export default function DeckBuilderPage() {
         </div>
 
         <h2>Collection — click to add</h2>
-        <div className="card-grid">
-          {collection.map((card) => (
-            <div key={card.cardId}>
-              <CardView
-                layoutKey={`pool-${card.cardId}`}
-                card={card}
-                onClick={() => add(card)}
-              />
-              <div className="muted" style={{ fontSize: "0.8rem" }}>
-                {copiesInDeck(card.cardId)} / {card.quantity} in deck
-              </div>
-            </div>
-          ))}
-        </div>
+        <SetFilterBar
+          cards={collection}
+          layout={layout}
+          setLayout={setLayout}
+          setId={setId}
+          setSetId={setSetId}
+        />
+        {layout === "grouped" ? (
+          groups.map((group) => (
+            <section key={group.id} className="set-section">
+              <h2 className="set-heading">
+                {group.name}
+                <span className="muted"> · {group.cards.length}</span>
+              </h2>
+              <PoolGrid cards={group.cards} copiesInDeck={copiesInDeck} add={add} />
+            </section>
+          ))
+        ) : (
+          <PoolGrid cards={filtered} copiesInDeck={copiesInDeck} add={add} />
+        )}
       </div>
     </LayoutGroup>
   );

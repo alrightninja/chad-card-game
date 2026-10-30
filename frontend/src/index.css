@@ -196,6 +196,40 @@ button, input, select, textarea {
   gap: 1rem;
 }
 
+.set-filter {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.set-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.set-filter-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  min-width: 2.6rem;
+}
+
+.set-filter .btn {
+  font-size: 0.82rem;
+  padding: 0.32rem 0.7rem;
+}
+
+.set-section {
+  margin-bottom: 1.4rem;
+}
+
+.set-heading {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+}
+
 .pack-shelf {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
