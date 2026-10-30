@@ -19,7 +19,7 @@ Turn-based multiplayer TCG. Current engine (`RULEBOOK.md` v4.2):
 - Main Phase (play/swap/Guard) then Battle; **no plays after you attack**
 - Lead (full Power) + Assists (half); Assists are Tired next turn; Guard forces the target
 - Survivors lose **20%** power (decay)
-- Trait wheel **+5 / −5**: Mind → Muscle → Mystic → Machina → Mayhem → Mind
+- Trait wheel **Lead only, +12 / −12** (defender +8 Armor on a bad matchup): Mind → Muscle → Mystic → Machina → Mayhem → Mind
 - Lose if you have nothing in Active, Bench, and hand
 
 ---

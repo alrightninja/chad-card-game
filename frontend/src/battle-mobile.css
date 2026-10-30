@@ -83,6 +83,12 @@
     margin-bottom: 0.12rem;
   }
 
+  .shell-battle .type-hint {
+    font-size: 0.68rem;
+    padding: 0.22rem 0.4rem;
+    margin-bottom: 0.12rem;
+  }
+
   .shell-battle .table {
     grid-template-columns: 1fr;
     gap: 0;

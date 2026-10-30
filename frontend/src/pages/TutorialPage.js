@@ -18,7 +18,7 @@ const STEPS = [
   },
   {
     title: "How to attack",
-    body: "1. Click YOUR Active unit first — that is the Lead and uses full Power.\n2. Optionally click more of your Active units — they Assist and add half their Power, then become Tired (they cannot attack next turn).\n3. Click one enemy Active unit. The fight happens immediately.\n\nIf the enemy has a Guard (blue badge), you must attack that unit.\n\nHigher total wins. The loser is knocked out. Survivors lose 20% Power (Decay).\n\nTrait advantage is +5 Power, disadvantage −5:\nMind beats Muscle → Muscle beats Mystic → Mystic beats Machina → Machina beats Mayhem → Mayhem beats Mind.\n\nYou get one battle per turn (unless a card says it may attack twice)."
+    body: "1. Click YOUR Active unit first — that is the Lead and uses full Power plus its type.\n2. Optionally click more of your Active units — they Assist and add half their Power (no type bonus), then become Tired (they cannot attack next turn).\n3. Click one enemy Active unit. The fight happens immediately.\n\nIf the enemy has a Guard (blue badge), you must attack that unit.\n\nHigher total wins. The loser is knocked out. Survivors lose 20% Power (Decay).\n\nOnly the Lead’s type counts. Advantage is +12 Power. Disadvantage is −12, and that defender also gains +8 Armor for the fight.\nMind beats Muscle → Muscle beats Mystic → Mystic beats Machina → Machina beats Mayhem → Mayhem beats Mind.\n\nEach type has a colored glow so you can read the wheel at a glance. Active cards also show a short ability name.\n\nYou get one battle per turn (unless a card says it may attack twice)."
   },
   {
     title: "Guard",

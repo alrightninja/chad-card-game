@@ -1,4 +1,4 @@
-# Gigachad TCG — Living Rulebook (v4.2)
+# Gigachad TCG — Living Rulebook (v4.3)
 
 This is the rules the **engine actually runs**. If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
 
@@ -33,11 +33,15 @@ Every card is a **Unit**. Printed on each card:
 
 ## 3. Traits
 
-**Wheel (advantage is +5 Power, disadvantage −5), only during battle:**
+**Wheel, only the Lead’s type vs the defender (Assists ignore type):**
 
 Mind → Muscle → Mystic → Machina → Mayhem → Mind
 
-Same trait or two steps apart is neutral (0). Reverse Weakness flips the bonus.
+- Advantage: Lead **+12** Power
+- Disadvantage: Lead **−12** Power, and the defender gains **+8 Armor** for that fight
+- Same trait or two steps apart: even (0)
+
+Reverse Weakness flips the bonus. Each type has a colored glow on the card (Muscle red, Mind blue, Mystic teal, Machina gold, Mayhem purple).
 
 ---
 
@@ -112,9 +116,9 @@ If you skip Battle, nothing fights.
 1. Attack abilities fire (Stun, Spike, Chaos Swing, and so on).
 2. If a Cancel Battle effect is waiting, the fight fizzles.
 3. Unblockable attacks skip the defender and hit remaining health instead.
-4. **Lead:** Power + temp + trait bonus (±5).
-5. **Each Assist:** add **half** of that unit’s Power + temp + trait, rounded down.
-6. Defender: Power + temp + trait vs the Lead + Armor.
+4. **Lead:** Power + temp + trait bonus (**±12**, Lead only).
+5. **Each Assist:** add **half** of that unit’s Power + temp, rounded down. Assists do **not** add type.
+6. Defender: Power + temp + printed Armor, plus **+8 Armor** if their type beats the Lead.
 7. **Attack total > defender** — defender is KO’d. Attackers survive and suffer Decay.
 8. **Attack total < defender** — all attackers are KO’d. Defender survives and suffer Decay.
 9. **Tie** — both sides survive; both suffer Decay.
@@ -162,17 +166,24 @@ You lose when Active, Bench, and hand are all empty, or your health hits 0.
 
 ---
 
-## 11. What changed in v4.2
+## 11. What changed in v4.3
+
+- Trait bonus is **+12 / −12**, and **only the Lead’s type** is counted
+- A defender that beats the Lead’s type gains **+8 Armor** for that fight
+- Combat ability numbers (Power Up/Down, Spike, Heal, and similar) were raised so they can flip a close fight
+- Battle UI: colored type glow, type bar, ability chip on Active, and a type line when you pick a Lead
+
+## 12. What changed in v4.2
 
 - Team attacks are **Lead (full Power) + Assists (half Power)**
 - Assists become **Tired** next turn
 - **Guard** forces the opponent’s attack target
 
-## 12. What changed in v4.1
+## 13. What changed in v4.1
 
 - Bench is **3** (was 5), so backup slots are a real choice
 
-## 13. What changed in v4.0
+## 14. What changed in v4.0
 
 - Trait bonus **+5 / −5** (was ±20)
 - Second player’s start-of-turn draw is the first-player compensation

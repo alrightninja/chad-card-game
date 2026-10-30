@@ -7,7 +7,8 @@ const MAX_BENCH = 3;
 const DECK_SIZE = 40;
 const DECAY_RATE = 0.2;
 const ASSIST_RATE = 0.5;
-const TRAIT_BONUS = 5;
+const TRAIT_BONUS = 12;
+const TRAIT_ARMOR = 8;
 const TRAIT_WHEEL = ["Mind", "Muscle", "Mystic", "Machina", "Mayhem"];
 
 const TRAIT_ADVANTAGE = {
@@ -27,6 +28,7 @@ module.exports = {
   DECAY_RATE,
   ASSIST_RATE,
   TRAIT_BONUS,
+  TRAIT_ARMOR,
   TRAIT_WHEEL,
   TRAIT_ADVANTAGE
 };

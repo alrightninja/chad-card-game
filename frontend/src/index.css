@@ -390,11 +390,15 @@ label { font-size: 0.9rem; display: grid; gap: 0.35rem; }
 
 .tcg-type {
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  text-align: center;
   color: #2f2b27;
-  padding: 0.28rem 0.15rem 0.08rem;
+  background: rgba(28, 26, 23, 0.08);
+  border-radius: 4px;
+  padding: 0.2rem 0.2rem;
+  margin: 0.08rem 0.08rem 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -485,11 +489,40 @@ button.tcg {
 
 .tcg.selected { outline: 3px solid var(--accent); outline-offset: -1px; }
 
-.trait-Muscle { border-color: #9b2c2c; }
-.trait-Mind { border-color: #2c4c9b; }
-.trait-Mayhem { border-color: #6b2c9b; }
-.trait-Mystic { border-color: #2c7a6b; }
-.trait-Machina { border-color: #8a6a20; }
+.trait-Muscle { border-color: #c43c3c; box-shadow: 0 0 0 3px #e24b4b, 0 0 16px 3px rgba(226, 75, 75, 0.55); }
+.trait-Mind { border-color: #3a62d4; box-shadow: 0 0 0 3px #4d7cff, 0 0 16px 3px rgba(77, 124, 255, 0.5); }
+.trait-Mayhem { border-color: #8a3cc4; box-shadow: 0 0 0 3px #b44dff, 0 0 16px 3px rgba(180, 77, 255, 0.5); }
+.trait-Mystic { border-color: #2c9b7a; box-shadow: 0 0 0 3px #3dcc9a, 0 0 16px 3px rgba(61, 204, 154, 0.5); }
+.trait-Machina { border-color: #c9a227; box-shadow: 0 0 0 3px #e4c14a, 0 0 16px 3px rgba(228, 193, 74, 0.5); }
+
+.card-fit:has(.trait-Muscle) { filter: drop-shadow(0 0 7px #e24b4b); }
+.card-fit:has(.trait-Mind) { filter: drop-shadow(0 0 7px #4d7cff); }
+.card-fit:has(.trait-Mayhem) { filter: drop-shadow(0 0 7px #b44dff); }
+.card-fit:has(.trait-Mystic) { filter: drop-shadow(0 0 7px #3dcc9a); }
+.card-fit:has(.trait-Machina) { filter: drop-shadow(0 0 7px #e4c14a); }
+
+.tcg.trait-Muscle .tcg-type { background: #c43c3c; color: #fff; }
+.tcg.trait-Mind .tcg-type { background: #3a62d4; color: #fff; }
+.tcg.trait-Mayhem .tcg-type { background: #8a3cc4; color: #fff; }
+.tcg.trait-Mystic .tcg-type { background: #2c9b7a; color: #fff; }
+.tcg.trait-Machina .tcg-type { background: #c9a227; color: #1c1a17; }
+
+.tcg-ability-chip {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fffdf8;
+  background: #1c1a17;
+  border-radius: 4px;
+  padding: 0.12rem 0.2rem;
+  margin: 0.08rem 0.1rem 0;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .board {
   display: grid;
@@ -935,6 +968,17 @@ button.tcg {
 .battle-banner.ko { background: #7a1010; }
 .battle-banner.wipe { background: #2c4c9b; }
 .battle-banner.tie { background: #5a3a00; }
+
+.type-hint {
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
+  background: #1c1a17;
+  color: #fffdf8;
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  margin: 0 0 0.25rem;
+}
 
 @keyframes banner-in {
   from { opacity: 0; transform: translateY(-8px); }

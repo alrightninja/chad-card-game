@@ -54,7 +54,7 @@ export default function HomePage() {
             <VerifiedBadge verified={user?.verified} />
           </h1>
           <p className="muted">
-            3 Active, 3 Bench. Lead attacks at full Power; assists add half and get Tired. Guard forces the fight.
+            3 Active, 3 Bench. The Lead’s type is +12 / −12 (and +8 Armor if they have the edge). Assists add half Power. Guard forces the fight.
           </p>
           <div className="home-actions">
             <Link className="btn" to="/play">Play</Link>

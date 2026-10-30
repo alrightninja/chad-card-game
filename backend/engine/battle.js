@@ -1,6 +1,6 @@
 // battle.js
 const { triggerDefeatAbilities } = require("./abilities");
-const { DECAY_RATE, ASSIST_RATE, TRAIT_BONUS, TRAIT_ADVANTAGE } = require("./rules");
+const { DECAY_RATE, ASSIST_RATE, TRAIT_BONUS, TRAIT_ARMOR, TRAIT_ADVANTAGE } = require("./rules");
 
 /**
  * Simple 50/50 coin flip helper.
@@ -15,7 +15,7 @@ function resolveCoinFlip() {
  * 5‑Trait Loop:
  * Mind → Muscle → Mystic → Machina → Mayhem → Mind
  *
- * Returns +TRAIT_BONUS / -TRAIT_BONUS / 0.
+ * Returns +TRAIT_BONUS / -TRAIT_BONUS / 0 for the Lead only.
  */
 function getTraitBonus(attacker, defender) {
   if (!attacker.trait || !defender.trait) return 0;
@@ -42,17 +42,26 @@ function getTraitBonus(attacker, defender) {
  * - trait bonus
  * - armor (on defender)
  */
-function computeBattlePower(unit, opponent, isDefender = false) {
+function computeBattlePower(unit, opponent, isDefender = false, opts = {}) {
+  const applyTrait = opts.applyTrait !== false;
   const base = unit.power || 0;
   const temp = unit.tempPower || 0;
-  const traitBonus = getTraitBonus(unit, opponent);
-  const armor = isDefender ? (unit.armor || 0) : 0;
+  const printedArmor = isDefender ? (unit.armor || 0) : 0;
+  let traitBonus = 0;
+  let traitArmor = 0;
+  if (isDefender) {
+    if (getTraitBonus(opponent, unit) < 0) traitArmor = TRAIT_ARMOR;
+  } else if (applyTrait) {
+    traitBonus = getTraitBonus(unit, opponent);
+  }
+  const armor = printedArmor + traitArmor;
   const raw = base + temp + traitBonus + armor;
 
   return {
     base,
     temp,
     traitBonus,
+    traitArmor,
     armor,
     total: Math.max(0, raw)
   };
@@ -67,7 +76,7 @@ function computeTeamBattlePower(attackers, defender) {
   }
 
   const lead = attackers[0];
-  const leadStats = computeBattlePower(lead, defender, false);
+  const leadStats = computeBattlePower(lead, defender, false, { applyTrait: true });
   const breakdown = [
     `LEAD ${lead.name}: ${leadStats.base} base + ${leadStats.temp} temp + ${leadStats.traitBonus} trait = ${leadStats.total}`
   ];
@@ -75,12 +84,12 @@ function computeTeamBattlePower(attackers, defender) {
   let total = leadStats.total;
 
   attackers.slice(1).forEach((attacker) => {
-    const stats = computeBattlePower(attacker, defender, false);
+    const stats = computeBattlePower(attacker, defender, false, { applyTrait: false });
     const added = Math.floor(stats.total * ASSIST_RATE);
     total += added;
     assists.push({ name: attacker.name, full: stats.total, added });
     breakdown.push(
-      `ASSIST ${attacker.name}: ${stats.total} Power → +${added} (half)`
+      `ASSIST ${attacker.name}: ${stats.total} Power → +${added} (half, no trait)`
     );
   });
 
@@ -153,7 +162,9 @@ function resolveBattle(state, attackersParam, defender) {
   teamStats.breakdown.forEach((line) => state.log.push(line));
 
   state.log.push(
-    `${defender.name}: ${defStats.base} base + ${defStats.temp} temp + ${defStats.traitBonus} trait + ${defStats.armor} armor = ${defStats.total}`
+    `${defender.name}: ${defStats.base} base + ${defStats.temp} temp + ${defStats.armor} armor` +
+      (defStats.traitArmor ? ` (includes +${defStats.traitArmor} type Armor)` : "") +
+      ` = ${defStats.total}`
   );
 
   const atkTotal = teamStats.total;
@@ -174,7 +185,9 @@ function resolveBattle(state, attackersParam, defender) {
     atkTotal,
     defTotal,
     defenderName: defender.name,
-    result
+    result,
+    traitBonus: getTraitBonus(attackers[0], defender),
+    traitArmor: defStats.traitArmor
   };
 
   if (atkTotal > defTotal) {

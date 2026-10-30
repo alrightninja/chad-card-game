@@ -7,6 +7,7 @@ import { WS_URL } from "../api/config";
 import { useAudio } from "../audio/AudioProvider";
 import { useAuth } from "../context/AuthContext";
 import CardView from "../components/CardView";
+import { matchupPhrase } from "../lib/traits";
 import "../battle-mobile.css";
 
 const ACTIVE_SLOTS = 3;
@@ -74,6 +75,9 @@ function bannerText(battle) {
     parts.push(`ASSIST ${a.name} +${a.added}`);
   });
   parts.push(`= ${battle.atkTotal} vs ${battle.defTotal}`);
+  if (battle.traitBonus > 0) parts.push(`TYPE +${battle.traitBonus}`);
+  if (battle.traitBonus < 0) parts.push(`TYPE ${battle.traitBonus}`);
+  if (battle.traitArmor) parts.push(`+${battle.traitArmor} type Armor`);
   if (battle.result === "ko") parts.push(`— ${battle.defenderName} is KO'd`);
   else if (battle.result === "wipe") parts.push("— attackers are KO'd");
   else if (battle.result === "tie") parts.push("— tie, both Decay");
@@ -521,10 +525,18 @@ export default function BattlePage() {
     if (selectedBench != null) return "Click an empty Active slot to move up, or an Active unit to swap.";
     if (attackers.length) {
       return attackers.length === 1
-        ? "That unit is the Lead (full Power). Click more Active units to Assist (half Power, they get Tired), then click the enemy."
-        : "Lead + Assists ready. Click the enemy Active (must be their Guard if they have one).";
+        ? "That unit is the Lead (full Power + its type). Click more Active units to Assist (half Power, no type), then click the enemy."
+        : "Lead + Assists ready. Click the enemy Active (must be their Guard if they have one). Watch the type line.";
     }
-    return "Main Phase: play, swap, or Guard. Then click your Lead to attack. Double-click a card to inspect.";
+    return "Main Phase: play, swap, or Guard. Then click your Lead to attack. Type glow shows the wheel. Double-click to inspect abilities.";
+  }
+
+  function matchupHint() {
+    const lead = you?.active?.[attackers[0]];
+    if (!lead) return "Pick an enemy Active unit.";
+    const foes = (foe?.active || []).filter(Boolean);
+    if (!foes.length) return `${lead.name} is Lead.`;
+    return `${lead.name}: ${foes.map((u) => matchupPhrase(lead, u)).join(" · ")}`;
   }
 
   function onYourActive(i, card) {
@@ -678,6 +690,9 @@ export default function BattlePage() {
         </div>
         {error ? <div className="error">{error}</div> : null}
         {banner ? <div className={`battle-banner ${banner.kind}`}>{banner.text}</div> : null}
+        {match.status === "active" && attackers.length ? (
+          <div className="type-hint">{matchupHint()}</div>
+        ) : null}
         {logOpen && logLines.length ? (
           <div className="combat-log" aria-label="Battle log">
             {logLines.slice(-12).map((line, i) => (
@@ -692,7 +707,7 @@ export default function BattlePage() {
               <li>Main Phase: play to Active (3) or Bench (3), swap, or press Guard then click an Active unit.</li>
               <li>Attack: first click is the Lead (full Power). Extra clicks Assist (half Power) but those units are Tired next turn.</li>
               <li>If they have a Guard (blue), you must attack that unit. After the fight you cannot play more cards.</li>
-              <li>Trait wheel is +5 / −5: Mind → Muscle → Mystic → Machina → Mayhem → Mind.</li>
+              <li>Only the Lead’s type counts: +12 if it beats the defender, −12 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type.</li>
               <li>You go first and skip a draw. Hand limit 7. You lose if Active, Bench, and hand are all empty.</li>
             </ol>
           </div>

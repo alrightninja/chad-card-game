@@ -99,6 +99,9 @@ export default function CardView({
         ) : null}
       </div>
       <div className="tcg-type">{card.trait}</div>
+      {compact && sizeClass === "active" && card.abilityKeyword ? (
+        <div className="tcg-ability-chip">{card.abilityKeyword}</div>
+      ) : null}
       {showAbility && !compact ? (
         <FitText className="tcg-ability" minPx={8}>{card.abilityText || ""}</FitText>
       ) : null}

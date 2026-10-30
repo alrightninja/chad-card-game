@@ -39,6 +39,18 @@ function run() {
   const soloVsWall = computeTeamBattlePower([lead], wall);
   if (soloVsWall.total !== 30) throw new Error("Solo lead should be 30");
 
+  const { TRAIT_BONUS } = require("./rules");
+  const muscleWall = unit("MuscleWall", 30, "Muscle");
+  const adv = computeTeamBattlePower([lead], muscleWall);
+  if (adv.total !== 30 + TRAIT_BONUS) {
+    throw new Error(`Lead type advantage should add ${TRAIT_BONUS}, got ${adv.total}`);
+  }
+  const assistMind = unit("HelpMind", 30, "Muscle");
+  const withAssist = computeTeamBattlePower([lead, assistMind], muscleWall);
+  if (withAssist.total !== 30 + TRAIT_BONUS + 15) {
+    throw new Error(`Assists should ignore trait, got ${withAssist.total}`);
+  }
+
   const ids = getAll().slice(0, 40).map((c) => c.cardId);
   const state = createInitialGameState(shuffle(deckToUnits(ids)), shuffle(deckToUnits(ids)));
 
