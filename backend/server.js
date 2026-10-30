@@ -269,6 +269,13 @@ app.get("/api/collection", requireAuth, async (req, res) => {
   }
 });
 
+const MAX_DECKS = 5;
+
+function deckNameTaken(user, name, except) {
+  const n = String(name || "").trim();
+  return user.decks.some((d) => d.name === n && d.name !== except);
+}
+
 app.get("/api/decks", requireAuth, async (req, res) => {
   try {
     const allDecks = req.user.decks.map((deck) => ({
@@ -285,10 +292,17 @@ app.get("/api/decks", requireAuth, async (req, res) => {
 app.post("/api/decks/create", requireAuth, async (req, res) => {
   try {
     const user = req.user;
-    const { name, cards } = req.body;
+    const { cards } = req.body;
+    const name = String(req.body.name || "").trim();
 
     if (!name || !cards) {
       return res.status(400).json({ error: "Deck name and cards are required" });
+    }
+    if (user.decks.length >= MAX_DECKS) {
+      return res.status(400).json({ error: `You can keep up to ${MAX_DECKS} decks` });
+    }
+    if (deckNameTaken(user, name)) {
+      return res.status(400).json({ error: "That deck name is already in use" });
     }
     if (!Array.isArray(cards)) {
       return res.status(400).json({ error: "Cards must be an array" });
@@ -341,7 +355,16 @@ app.post("/api/decks/update", requireAuth, async (req, res) => {
     const deck = user.decks.find((d) => d.name === oldName);
     if (!deck) return res.status(404).json({ error: "Deck not found" });
 
-    if (newName) deck.name = newName;
+    if (newName) {
+      const trimmed = String(newName).trim();
+      if (!trimmed) {
+        return res.status(400).json({ error: "Deck name is required" });
+      }
+      if (deckNameTaken(user, trimmed, oldName)) {
+        return res.status(400).json({ error: "That deck name is already in use" });
+      }
+      deck.name = trimmed;
+    }
 
     if (cards) {
       if (!Array.isArray(cards)) {
