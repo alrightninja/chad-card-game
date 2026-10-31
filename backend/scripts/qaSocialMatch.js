@@ -29,6 +29,7 @@ async function loginOrRegister(account) {
       method: "POST",
       body: {
         ...account,
+        emailConfirm: account.email,
         password: PASS,
         termsAccepted: true,
         guardianPermission: true

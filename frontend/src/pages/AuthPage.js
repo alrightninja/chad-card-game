@@ -8,6 +8,7 @@ export default function AuthPage() {
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     email: "",
+    emailConfirm: "",
     username: "",
     password: "",
     termsAccepted: false,
@@ -25,8 +26,12 @@ export default function AuthPage() {
       if (mode === "login") {
         await login(form.email, form.password);
       } else {
+        if (form.email.trim().toLowerCase() !== form.emailConfirm.trim().toLowerCase()) {
+          throw new Error("Email addresses do not match. Check the spelling.");
+        }
         await register({
           email: form.email,
+          emailConfirm: form.emailConfirm,
           username: form.username,
           password: form.password,
           termsAccepted: form.termsAccepted,
@@ -55,6 +60,18 @@ export default function AuthPage() {
           Email
           <input value={form.email} onChange={(e) => update("email", e.target.value)} type="email" required />
         </label>
+        {mode === "register" ? (
+          <label>
+            Confirm email
+            <input
+              value={form.emailConfirm}
+              onChange={(e) => update("emailConfirm", e.target.value)}
+              type="email"
+              required
+              autoComplete="email"
+            />
+          </label>
+        ) : null}
         {mode === "register" ? (
           <label>
             Username

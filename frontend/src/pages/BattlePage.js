@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LayoutGroup } from "framer-motion";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { api, getToken } from "../api/client";
 import { WS_URL } from "../api/config";
@@ -58,6 +58,15 @@ function deadlineLabel(iso) {
     return `${d}d ${h % 24}h left`;
   }
   return h ? `${h}h ${m}m left` : `${m}m left`;
+}
+
+function liveClockLabel(iso) {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (Number.isNaN(ms) || ms <= 0) return "0:00";
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
 function sfxForAction(type) {
@@ -152,6 +161,7 @@ function dropFromPoint(x, y) {
 
 export default function BattlePage() {
   const { matchId } = useParams();
+  const navigate = useNavigate();
   const audio = useAudio();
   const { refresh } = useAuth();
   const [match, setMatch] = useState(null);
@@ -169,6 +179,7 @@ export default function BattlePage() {
   const [guardMode, setGuardMode] = useState(false);
   const [banner, setBanner] = useState(null);
   const [ghost, setGhost] = useState(null);
+  const [now, setNow] = useState(Date.now());
   const lastLog = useRef([]);
   const busy = useRef(false);
   const pendingUpdate = useRef(null);
@@ -176,6 +187,7 @@ export default function BattlePage() {
   const dragRef = useRef(null);
   const skipClick = useRef(false);
   const pendingClick = useRef(null);
+  const tickDeadline = useRef(null);
   const matchRef = useRef(null);
   matchRef.current = match;
   const enteringSet = useMemo(() => new Set(entering), [entering]);
@@ -193,11 +205,16 @@ export default function BattlePage() {
 
   useEffect(() => {
     function onKey(e) {
-      if (e.key === "Escape") setInspect(null);
+      if (e.key !== "Escape") return;
+      if (matchRef.current?.status === "finished") {
+        navigate("/");
+        return;
+      }
+      setInspect(null);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [navigate]);
 
   function applyMatch(next, { animateArrivals = false } = {}) {
     if (!next) return;
@@ -231,6 +248,34 @@ export default function BattlePage() {
     }
     setMatch(next);
   }
+
+  useEffect(() => {
+    if (match?.status !== "active" || !match.moveDeadlineAt) return undefined;
+    const id = window.setInterval(() => setNow(Date.now()), 500);
+    return () => window.clearInterval(id);
+  }, [match?.status, match?.moveDeadlineAt]);
+
+  useEffect(() => {
+    if (!match || match.status !== "active" || !match.moveDeadlineAt) return;
+    if (new Date(match.moveDeadlineAt).getTime() > Date.now()) return;
+    if (tickDeadline.current === match.moveDeadlineAt) return;
+    tickDeadline.current = match.moveDeadlineAt;
+    api(`/api/matches/${matchId}?sync=1`)
+      .then((data) => {
+        const next = data.match;
+        if (next?.status === "active" && next.moveDeadlineAt === match.moveDeadlineAt) {
+          tickDeadline.current = null;
+        }
+        applyMatch(next);
+      })
+      .catch(() => {
+        tickDeadline.current = null;
+      });
+  }, [now, match, matchId]);
+
+  useEffect(() => {
+    if (match?.status === "finished") refresh();
+  }, [match?.status, refresh]);
 
   useEffect(() => {
     let socket;
@@ -653,8 +698,10 @@ export default function BattlePage() {
             ) : null}
           </div>
           <div className="row">
-            {match.mode === "correspondence" && match.status === "active" && match.moveDeadlineAt ? (
-              <span className="muted">{deadlineLabel(match.moveDeadlineAt)}</span>
+            {match.status === "active" && match.moveDeadlineAt ? (
+              <span className={`turn-clock ${match.mode === "live" && new Date(match.moveDeadlineAt).getTime() - now < 30000 ? "warn" : ""}`}>
+                {match.mode === "live" ? liveClockLabel(match.moveDeadlineAt) : deadlineLabel(match.moveDeadlineAt)}
+              </span>
             ) : null}
             {match.tutorial && coachOpen ? (
               <button className="btn secondary" type="button" onClick={() => setCoachOpen(false)}>Hide tip</button>
@@ -871,6 +918,34 @@ export default function BattlePage() {
         {ghost ? (
           <div className="drag-ghost" style={{ left: ghost.x, top: ghost.y }}>
             <CardView card={ghost.card} size={ghost.from === "active" ? "active" : "hand"} animate={false} showAbility={false} />
+          </div>
+        ) : null}
+        {match.status === "finished" ? (
+          <div className="inspect-scrim" onClick={() => navigate("/")} role="presentation">
+            <div
+              className="inspect-panel result-panel"
+              role="dialog"
+              aria-label="Match result"
+            >
+              <h2>
+                {match.winner === match.yourSeat
+                  ? "You won"
+                  : match.winner === "draw"
+                    ? "Draw"
+                    : "You lost"}
+              </h2>
+              <p>
+                {match.winner === "draw"
+                  ? "The match ended in a draw."
+                  : match.winner === match.yourSeat
+                    ? `You beat ${match.opponentName || match.versus}.`
+                    : `${match.opponentName || match.versus} wins.`}
+              </p>
+              <p className="result-reps">+{match.rewards?.reps ?? 0} reps</p>
+              <button className="btn" type="button" onClick={() => navigate("/")}>
+                Continue
+              </button>
+            </div>
           </div>
         ) : null}
         {inspect ? (

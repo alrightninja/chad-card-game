@@ -27,7 +27,7 @@ export default function Layout() {
           </nav>
         ) : (
           <nav className="nav">
-            <NavLink to="/play">Leave battle</NavLink>
+            <Link className="btn secondary leave-battle" to="/">Leave</Link>
           </nav>
         )}
         <div className="row">

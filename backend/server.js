@@ -20,6 +20,7 @@ const socialRoutes = require("./routes/social");
 const adminRoutes = require("./routes/admin");
 const { assertCleanUsername } = require("./utils/moderation");
 const { safeMe } = require("./lib/publicUser");
+const { normalizeEmail, emailsMatch, emailQuery } = require("./lib/email");
 const retention = require("./lib/retention");
 
 const app = express();
@@ -104,10 +105,13 @@ app.get("/api/trait/:trait", (req, res) => {
 
 app.post("/api/register", async (req, res) => {
   try {
-    const { email, username, password, termsAccepted, guardianPermission } = req.body;
+    const { email, emailConfirm, username, password, termsAccepted, guardianPermission } = req.body;
 
     if (!email || !username || !password) {
       return res.status(400).json({ error: "Missing required fields" });
+    }
+    if (!emailsMatch(email, emailConfirm)) {
+      return res.status(400).json({ error: "Email addresses do not match" });
     }
     if (!termsAccepted) {
       return res.status(400).json({ error: "You must accept the terms to create an account" });
@@ -120,7 +124,8 @@ app.post("/api/register", async (req, res) => {
 
     assertCleanUsername(username);
 
-    if (await User.findOne({ email })) {
+    const emailNorm = normalizeEmail(email);
+    if (await User.findOne(emailQuery(emailNorm))) {
       return res.status(400).json({ error: "Email already in use" });
     }
     if (await User.findOne({ username })) {
@@ -130,7 +135,7 @@ app.post("/api/register", async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      email,
+      email: emailNorm,
       username,
       passwordHash,
       currency: { reps: 0 },
@@ -167,7 +172,7 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ error: "Missing email or password" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne(emailQuery(email));
     if (!user) return res.status(400).json({ error: "Invalid email or password" });
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
@@ -464,6 +469,9 @@ app.get("/api/matches/active", requireAuth, async (req, res) => {
 app.get("/api/matches/:id", requireAuth, async (req, res) => {
   try {
     const match = await matchService.getMatchForUser(req.user._id, req.params.id);
+    if (req.query.sync && ioHolder.io) {
+      await broadcastMatch(ioHolder.io, req.params.id);
+    }
     res.json({ match: matchService.toClient(match, req.user._id) });
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message || "Server error" });

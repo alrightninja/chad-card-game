@@ -11,6 +11,7 @@ const {
 } = require("../engine/serializeState");
 
 const FINISHED_KEEP_MS = 60 * 60 * 1000;
+const LIVE_TURN_MS = 3 * 60 * 1000;
 const {
   shuffle,
   deckToUnits,
@@ -56,6 +57,23 @@ function nextDeadline(match) {
   return new Date(Date.now() + match.hoursPerMove * 60 * 60 * 1000);
 }
 
+function isHumanTurn(match, turnPlayer) {
+  if (turnPlayer === "player") return true;
+  return match.opponentType === "user";
+}
+
+function liveDeadlineFor(match, state, winner) {
+  if (match.mode !== "live" || winner || !state) return null;
+  if (!isHumanTurn(match, state.turnPlayer)) return null;
+  return new Date(Date.now() + LIVE_TURN_MS);
+}
+
+function repsForSeat(match, seat) {
+  const r = match.rewards || {};
+  if (seat === "opponent") return r.opponent != null ? r.opponent : r.reps || 0;
+  return r.player != null ? r.player : r.reps || 0;
+}
+
 function toClient(match, userId) {
   const state = hydrateState(match.state);
   const seat = userId ? seatForUser(match, userId) : "player";
@@ -73,7 +91,12 @@ function toClient(match, userId) {
     moveDeadlineAt: match.moveDeadlineAt,
     versus: match.opponentType === "ai" ? "AI" : "Friend",
     yourSeat: perspective,
-    rewards: match.rewards,
+    youName: perspective === "opponent" ? match.opponentUsername : match.playerUsername,
+    opponentName:
+      perspective === "opponent"
+        ? match.playerUsername
+        : match.opponentUsername || (match.opponentType === "ai" ? "AI" : "Opponent"),
+    rewards: { reps: repsForSeat(match, perspective) },
     tutorial: !!match.tutorial,
     state: publicMatchState(state, perspective)
   };
@@ -88,7 +111,7 @@ async function awardAndFinish(match) {
     match.winner === "opponent" ? WIN_REPS : match.winner === "draw" ? DRAW_REPS : LOSS_REPS;
 
   match.status = "finished";
-  match.rewards = { reps: playerReps };
+  match.rewards = { reps: playerReps, player: playerReps, opponent: opponentReps };
   match.moveDeadlineAt = null;
   match.set("state", compactFinishedState(hydrateState(match.state)));
   match.markModified("state");
@@ -110,10 +133,53 @@ async function awardAndFinish(match) {
   }
 }
 
+async function settleLiveTurnTimeout(match) {
+  const state = hydrateState(match.state);
+  const late = state.turnPlayer === "opponent" ? "opponent" : "player";
+  const strikes = {
+    player: match.timeoutStrikes?.player || 0,
+    opponent: match.timeoutStrikes?.opponent || 0
+  };
+  strikes[late] = (strikes[late] || 0) + 1;
+  match.timeoutStrikes = strikes;
+  match.markModified("timeoutStrikes");
+  state.log = state.log || [];
+
+  if (strikes[late] >= 2) {
+    match.winner = late === "player" ? "opponent" : "player";
+    state.winner = match.winner;
+    state.log.push("Time ran out twice in a row. Automatic forfeit.");
+    match.version += 1;
+    match.set("state", serializeState(state));
+    match.markModified("state");
+    await awardAndFinish(match);
+    return match;
+  }
+
+  state.log.push("Turn timer expired. The turn passes.");
+  const autoAi = match.opponentType === "ai";
+  applyAction(state, { type: "endTurn" }, { autoAi, actor: late });
+  match.winner = state.winner || null;
+  match.version += 1;
+  match.set("state", serializeState(state));
+  match.markModified("state");
+  if (state.winner) {
+    await awardAndFinish(match);
+    return match;
+  }
+  match.moveDeadlineAt = liveDeadlineFor(match, state, null);
+  await match.save();
+  return match;
+}
+
 async function settleIfTimedOut(match) {
-  if (!match || match.status !== "active") return match;
-  if (match.mode !== "correspondence" || !match.moveDeadlineAt) return match;
+  if (!match || match.status !== "active" || !match.moveDeadlineAt) return match;
   if (new Date() < new Date(match.moveDeadlineAt)) return match;
+
+  if (match.mode === "live") {
+    return settleLiveTurnTimeout(match);
+  }
+  if (match.mode !== "correspondence") return match;
 
   const state = hydrateState(match.state);
   const late = state.turnPlayer === "opponent" ? "opponent" : "player";
@@ -152,7 +218,10 @@ async function startPveMatch(user, deckName, options = {}) {
     tutorial: !!options.tutorial,
     status: "active",
     state: serializeState(state),
-    version: 1
+    version: 1,
+    playerUsername: user.username,
+    opponentUsername: "AI",
+    moveDeadlineAt: liveDeadlineFor({ mode: "live", opponentType: "ai" }, state, null)
   });
 
   return toClient(match, user._id);
@@ -183,7 +252,12 @@ async function startPvpMatch({
     opponentDeckName,
     mode,
     hoursPerMove: mode === "correspondence" ? hoursPerMove : null,
-    moveDeadlineAt: mode === "correspondence" ? nextDeadline({ mode, hoursPerMove }) : null,
+    moveDeadlineAt:
+      mode === "correspondence"
+        ? nextDeadline({ mode, hoursPerMove })
+        : liveDeadlineFor({ mode, opponentType: "user" }, state, null),
+    playerUsername: playerUser.username,
+    opponentUsername: opponentUser.username,
     status: "active",
     state: serializeState(state),
     version: 1
@@ -275,6 +349,7 @@ async function applyMatchAction(user, matchId, action) {
   }
 
   const state = hydrateState(match.state);
+  const turnBefore = state.turnPlayer;
   const autoAi = match.opponentType === "ai";
   const replay = [];
   const perspective = actor;
@@ -303,7 +378,24 @@ async function applyMatchAction(user, matchId, action) {
   const serialized = serializeState(state);
   const winner = state.winner || null;
   match.winner = winner;
-  match.moveDeadlineAt = winner ? null : nextDeadline(match);
+  if (state.turnPlayer !== turnBefore) {
+    const strikes = {
+      player: match.timeoutStrikes?.player || 0,
+      opponent: match.timeoutStrikes?.opponent || 0
+    };
+    strikes[turnBefore] = 0;
+    match.timeoutStrikes = strikes;
+    match.markModified("timeoutStrikes");
+  }
+  if (winner) {
+    match.moveDeadlineAt = null;
+  } else if (match.mode === "live") {
+    if (state.turnPlayer !== turnBefore) {
+      match.moveDeadlineAt = liveDeadlineFor(match, state, null);
+    }
+  } else {
+    match.moveDeadlineAt = nextDeadline(match);
+  }
   match.version += 1;
   match.set("state", serialized);
   match.markModified("state");
@@ -333,5 +425,6 @@ module.exports = {
   forfeitMatch,
   seatForUser,
   WIN_REPS,
-  LOSS_REPS
+  LOSS_REPS,
+  LIVE_TURN_MS
 };

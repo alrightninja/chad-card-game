@@ -41,7 +41,15 @@ const MatchSchema = new mongoose.Schema(
     version: { type: Number, default: 1 },
     state: { type: mongoose.Schema.Types.Mixed, required: true },
     rewards: {
-      reps: { type: Number, default: 0 }
+      reps: { type: Number, default: 0 },
+      player: { type: Number, default: 0 },
+      opponent: { type: Number, default: 0 }
+    },
+    playerUsername: { type: String, default: null },
+    opponentUsername: { type: String, default: null },
+    timeoutStrikes: {
+      player: { type: Number, default: 0 },
+      opponent: { type: Number, default: 0 }
     },
     purgeAt: { type: Date, default: null }
   },

@@ -158,6 +158,8 @@ Keywords the engine implements include Power Up/Down, Draw, Spike, Stun, Peek, S
 
 Live friend matches update both players over the match socket. Challenge a friend from the Friends page (you must already be friends).
 
+**Live turn timer:** each player has **3 minutes** to finish their turn. If time runs out, the turn passes. If the same player times out **twice in a row**, they forfeit. The clock resets after you complete a turn.
+
 ---
 
 ## 10. Winning

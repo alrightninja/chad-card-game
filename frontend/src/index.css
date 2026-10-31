@@ -87,6 +87,13 @@ button, input, select, textarea {
 
 .nav a.active { color: var(--accent); font-weight: 600; }
 
+.leave-battle {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .muted { color: var(--muted); }
 .error { color: #9b1c1c; }
 
@@ -1027,6 +1034,32 @@ button.tcg {
 
 .inspect-copy p {
   margin: 0.35rem 0;
+}
+
+.result-panel {
+  width: min(420px, 92vw);
+  text-align: center;
+  padding: 1.4rem 1.3rem 1.2rem;
+}
+
+.result-panel h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1.6rem;
+}
+
+.result-panel .result-reps {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0.75rem 0 1rem;
+}
+
+.turn-clock {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.turn-clock.warn {
+  color: #9b1c1c;
 }
 
 .inspect-flavor {
