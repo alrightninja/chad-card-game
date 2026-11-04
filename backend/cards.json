@@ -1711,7 +1711,7 @@
   },
   {
     "cardId": "jerry_bag_o_donuts_114",
-    "set": 4,
+    "set": 2,
     "name": "Jerry Bag-o-Donuts",
     "trait": "Muscle",
     "power": 34,
@@ -3301,7 +3301,7 @@
   },
   {
     "cardId": "hand_me_down_howard_220",
-    "set": 4,
+    "set": 2,
     "name": "Hand-Me-Down Howard",
     "trait": "Machina",
     "power": 24,
@@ -3316,7 +3316,7 @@
   },
   {
     "cardId": "john_wickthrop_221",
-    "set": 4,
+    "set": 3,
     "name": "John Wickthrop",
     "trait": "Mayhem",
     "power": 48,

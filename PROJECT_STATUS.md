@@ -163,23 +163,23 @@ Packs are defined in `backend/server.js`. Shop `GET /api/shop/packs` only return
 | Pack | Set | Shop | Release |
 | --- | --- | --- | --- |
 | **Ordo Chadorum** `ordo_chadorum` | 1 (30 cards) | Live | now |
-| **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (22 cards, includes Cyber Chad) | Hidden until date | **16 Nov 2026, midnight Eastern** (`2026-11-16T05:00:00.000Z`) |
-| **To the Hilt** `to_the_hilt` | 3 (44 cards) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
-| **Chaos** `chaos` | 4 (130 cards) | Hidden until date | **1 Feb 2027, midnight Eastern** (`2027-02-01T05:00:00.000Z`) |
+| **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (24 cards, includes Cyber Chad) | Hidden until date | **16 Nov 2026, midnight Eastern** (`2026-11-16T05:00:00.000Z`) |
+| **To the Hilt** `to_the_hilt` | 3 (45 cards) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
+| **Chaos** `chaos` | 4 (127 cards) | Hidden until date | **1 Feb 2027, midnight Eastern** (`2027-02-01T05:00:00.000Z`) |
 
 Old shop id `starter_pump` still maps to Ordo Chadorum on buy.
 
 **Set 1 (Ordo):** Aviator Chad, Baller Chad, Chad Numero Uno, Chad of Pizzazz, Chadministrative Pastor, Dictator Chad, Donut Chad, E Dog, E Money, E Unit, Fashion Chad, Father Chad, Fresh Chad, Hungry Hippo Chad, J Snizzle, Joey Mac, Manager Chad, Ninja Chad, Pastor Chadenbach, Pastor Chadrigo (Jorge art), Pastor Studson, Samurai Chad, Samwise Chadenbach, Sir Kensworth, Sleeper Chad, Stereotypical Chadette, Supreme Leader Chadenbach, The Chadministrator (L 60, strongest), Thimple Chad, Yapper Chad.
 
-**Set 2 (Ultra Nightmare):** Apple, Blitzkrueger, Bobby J, Brodito, Chad Kroeger, Chad Vader, Cheyennomaly, Cyber Chad (R 44), Filius Automobilius, Ice Knight, J Walker (U 31), Janitor Chad, Jerome, Joc Boc, K-Pop, Leahnidas, Leif Erikson, Meemow (L 50), Micycle, Saint Chad of Mercia, Sassy Chad, Skibidi Chad.
+**Set 2 (Ultra Nightmare):** Apple, Blitzkrueger, Bobby J, Brodito, Chad Kroeger, Chad Vader, Cheyennomaly, Cyber Chad (R 44), Filius Automobilius, Hand-Me-Down Howard, Ice Knight, J Walker (U 31), Janitor Chad, Jerome, Jerry Bag-o-Donuts, Joc Boc, K-Pop, Leahnidas, Leif Erikson, Meemow (L 50), Micycle, Saint Chad of Mercia, Sassy Chad, Skibidi Chad.
 
-**Set 3 (To the Hilt):** Anime Chad, Archon Strivemax, Astro Samurai, Bat Jeong-Eun, Bear-Sized Goose, Beowulf, Bigback Tony, Bradford Pitt, Branos, Brawn Weasley, Brick Thunderbulk, Brodir Doomgrip, Brofessor Rumbledore, Chad, Chad Danforth, Chad Knight, Chad Lee, Chad Marine, Chad Pitt, Chadiator, Chadly Squatter, Chadvald the Shredded, Coach Rumble, Cowboy Chad, Dwayne, Filch McNoreps, Flexecutioner, Gigachad, Goose-Sized Bear, Grilled Cheese Sandwich, Groaning Girdle, Hermione Gainger, Jack Steele, Marlene, Mr. Sniffles, Mrs. NoRizz, Orange Dragon Dude, Peregrine Vale, Professor Gainsworth, Robot Overlord, Sharawrrk, Super Case-Oh, Taco, Tom Diddle.
+**Set 3 (To the Hilt):** Anime Chad, Archon Strivemax, Astro Samurai, Bat Jeong-Eun, Bear-Sized Goose, Beowulf, Bigback Tony, Bradford Pitt, Branos, Brawn Weasley, Brick Thunderbulk, Brodir Doomgrip, Brofessor Rumbledore, Chad, Chad Danforth, Chad Knight, Chad Lee, Chad Marine, Chad Pitt, Chadiator, Chadly Squatter, Chadvald the Shredded, Coach Rumble, Cowboy Chad, Dwayne, Filch McNoreps, Flexecutioner, Gigachad, Goose-Sized Bear, Grilled Cheese Sandwich, Groaning Girdle, Hermione Gainger, Jack Steele, John Wickthrop, Marlene, Mr. Sniffles, Mrs. NoRizz, Orange Dragon Dude, Peregrine Vale, Professor Gainsworth, Robot Overlord, Sharawrrk, Super Case-Oh, Taco, Tom Diddle.
 
 **Set 4 (Chaos):** everything else (~130). No legendaries in this leftover pool.
 
 Rarities used by packs: **C / U / R / L**. Odd rarities `J`/`M` were remapped (J Snizzle → C, Sir Kensworth & Meemow → L) so they can drop.
 
-New accounts get a random **20-card starter deck** (4C×3 + 2U×3 + 2R×1) from commons/uncommons/rares in **sets already on sale at signup**, plus some reps. Existing users received one Cyber Chad via startup migration `cyber_chad_grant_v1`. Packs are how you get more copies.
+New accounts get a random **20-card starter deck** (4C×3 + 2U×3 + 2R×1) from commons/uncommons/rares in **sets already on sale at signup**, plus some reps. Existing users received one Cyber Chad via startup migration `cyber_chad_grant_v1`. `alrightninja_kensworth_wickthrop_v1` grants alrightninja one Sir Kensworth and one John Wickthrop. Packs are how you get more copies.
 
 ---
 

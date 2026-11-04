@@ -3,6 +3,9 @@ const Migration = require("../models/Migration");
 
 const CYBER_CHAD_ID = "cyber_chad_226";
 const MIGRATION_ID = "cyber_chad_grant_v1";
+const PERSONAL_GRANT_ID = "alrightninja_kensworth_wickthrop_v1";
+const PERSONAL_GRANT_USER = "alrightninja";
+const PERSONAL_GRANT_CARDS = ["sir_kensworth_185", "john_wickthrop_221"];
 const CRK_PREFIX = /^Crk/;
 
 async function applyGrantOnce(store) {
@@ -44,6 +47,28 @@ async function applyGrantOnce(store) {
   return result;
 }
 
+async function applyPersonalCardsOnce(store) {
+  const claimed = await store.claim(PERSONAL_GRANT_ID);
+  if (!claimed) {
+    return { ran: false, reason: "already-applied" };
+  }
+
+  const granted = [];
+  for (const cardId of PERSONAL_GRANT_CARDS) {
+    const ok = await store.pushCardByUsername(PERSONAL_GRANT_USER, cardId);
+    if (ok) granted.push(cardId);
+  }
+
+  const result = {
+    ran: true,
+    username: PERSONAL_GRANT_USER,
+    cardIds: PERSONAL_GRANT_CARDS,
+    granted
+  };
+  await store.saveResult(PERSONAL_GRANT_ID, result);
+  return result;
+}
+
 function mongoStore() {
   return {
     async claim(id) {
@@ -62,6 +87,10 @@ function mongoStore() {
     async pushCard(userId, cardId) {
       await User.updateOne({ _id: userId }, { $push: { collection: cardId } });
     },
+    async pushCardByUsername(username, cardId) {
+      const res = await User.updateOne({ username }, { $push: { collection: cardId } });
+      return res.matchedCount > 0;
+    },
     async addReps(userId, amount) {
       await User.updateOne({ _id: userId }, { $inc: { "currency.reps": amount } });
     },
@@ -75,7 +104,8 @@ function mongoStore() {
 }
 
 async function runStartupMigrations() {
-  const result = await applyGrantOnce(mongoStore());
+  const store = mongoStore();
+  const result = await applyGrantOnce(store);
   if (result.ran) {
     console.log(
       `Migration ${MIGRATION_ID}: granted ${result.cardId} to ${result.cardsGranted} users; reps -> ${result.repsUsers.join(", ") || "none"}`
@@ -86,13 +116,23 @@ async function runStartupMigrations() {
       );
     }
   }
-  return result;
+  const personal = await applyPersonalCardsOnce(store);
+  if (personal.ran) {
+    console.log(
+      `Migration ${PERSONAL_GRANT_ID}: granted ${personal.granted.join(", ") || "nothing"} to ${personal.username}`
+    );
+  }
+  return { cyberChad: result, personal };
 }
 
 module.exports = {
   CYBER_CHAD_ID,
   MIGRATION_ID,
+  PERSONAL_GRANT_ID,
+  PERSONAL_GRANT_USER,
+  PERSONAL_GRANT_CARDS,
   CRK_PREFIX,
   applyGrantOnce,
+  applyPersonalCardsOnce,
   runStartupMigrations
 };

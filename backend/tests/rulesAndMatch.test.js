@@ -19,7 +19,14 @@ const {
   finishReps,
   LIVE_TURN_MS
 } = require("../lib/matchLogic");
-const { applyGrantOnce, CYBER_CHAD_ID, MIGRATION_ID } = require("../lib/startupMigrations");
+const {
+  applyGrantOnce,
+  applyPersonalCardsOnce,
+  CYBER_CHAD_ID,
+  MIGRATION_ID,
+  PERSONAL_GRANT_ID,
+  PERSONAL_GRANT_CARDS
+} = require("../lib/startupMigrations");
 
 function units(n) {
   return shuffle(deckToUnits(getAll().slice(0, n).map((c) => c.cardId)));
@@ -174,4 +181,36 @@ test("migration 2-3 cannot run twice", async () => {
   assert.equal(reps["1"], 2500);
   assert.equal(reps["2"], 510);
   assert.equal(first.crkGranted, true);
+});
+
+test("Jerry, Howard, and Wickthrop sit in the requested packs", () => {
+  assert.equal(getById("jerry_bag_o_donuts_114").set, 2);
+  assert.equal(getById("hand_me_down_howard_220").set, 2);
+  assert.equal(getById("john_wickthrop_221").set, 3);
+});
+
+test("personal kensworth/wickthrop grant cannot run twice", async () => {
+  const cards = {};
+  let claimed = false;
+  const store = {
+    async claim(id) {
+      assert.equal(id, PERSONAL_GRANT_ID);
+      if (claimed) return false;
+      claimed = true;
+      return true;
+    },
+    async pushCardByUsername(username, cardId) {
+      assert.equal(username, "alrightninja");
+      cards[username] = cards[username] || [];
+      cards[username].push(cardId);
+      return true;
+    },
+    async saveResult() {}
+  };
+
+  const first = await applyPersonalCardsOnce(store);
+  const second = await applyPersonalCardsOnce(store);
+  assert.equal(first.ran, true);
+  assert.equal(second.ran, false);
+  assert.deepEqual(cards.alrightninja, PERSONAL_GRANT_CARDS);
 });
