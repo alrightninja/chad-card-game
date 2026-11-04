@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 const STEPS = [
   {
     title: "What you are trying to do",
-    body: "Knock out the other player’s units. You win when they have nothing left in Active, on the Bench, or in their hand.\n\nDecks are 40 cards. Every card is a unit with Power and a Trait: Muscle, Mind, Mayhem, Mystic, or Machina."
+    body: "Knock out the other player’s units. You win when they have nothing left in Active or on the Bench (a hand is not enough).\n\nDecks are 20 cards. Every card is a unit with Power and a Trait: Muscle, Mind, Mayhem, Mystic, or Machina."
   },
   {
     title: "The board",
@@ -26,7 +26,7 @@ const STEPS = [
   },
   {
     title: "Bench, swaps, and ending your turn",
-    body: "Still in Main Phase: click a Bench unit, then an empty Active slot to promote, or an Active unit to swap. Drag works too.\n\nWhen an Active unit is KO’d, a Bench unit is promoted automatically if you have one.\n\nEnd turn when you are done. If your hand is over 7, extras discard automatically.\n\nYou lose if you have no Active, no Bench, and no hand."
+    body: "Still in Main Phase: click a Bench unit, then an empty Active slot to promote, or an Active unit to swap. Drag works too.\n\nWhen an Active unit is KO’d, a Bench unit is promoted automatically if you have one.\n\nEnd turn when you are done. If your hand is over 7, extras discard automatically.\n\nYou lose if you have no Active and no Bench."
   }
 ];
 

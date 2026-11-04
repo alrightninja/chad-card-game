@@ -1,4 +1,5 @@
 const catalog = require("../cards.json");
+const { DECK_SIZE } = require("./rules");
 
 const byId = new Map(catalog.map((card) => [card.cardId, card]));
 const byName = new Map(catalog.map((card) => [card.name.toLowerCase(), card]));
@@ -83,7 +84,7 @@ function deckToUnits(cardIds) {
   });
 }
 
-function randomAiDeckIds(size = 40) {
+function randomAiDeckIds(size = DECK_SIZE) {
   const ids = catalog.map((c) => c.cardId);
   return shuffle(ids).slice(0, size);
 }

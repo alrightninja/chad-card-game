@@ -74,7 +74,10 @@ function runFullMatch() {
 
     if (state.turnPlayer === "player") {
       // Player attacks with all active units
-      const attackers = state.player.active.map((_, i) => i);
+      const attackers = state.player.active
+        .map((unit, i) => ({ unit, i }))
+        .filter(({ unit }) => unit && !unit.stunned && !(unit.tiredTurns > 0))
+        .map(({ i }) => i);
       if (attackers.length > 0 && state.opponent.active.length > 0) {
         attack(state, attackers);
       }

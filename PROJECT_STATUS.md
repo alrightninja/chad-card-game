@@ -1,6 +1,6 @@
 # Gigachad TCG — project status
 
-Last updated: 29 October 2026 (rules v4.2).  
+Last updated: 3 November 2026 (rules v4.4).  
 Workspace: `C:\Users\coleb\OneDrive\Documents\Projects\Apps\chad-card-game`
 
 Use this file if a chat runs out of context. The game is **playable locally** vs AI. It is **not deployed**. Do **not** commit `.env`.
@@ -11,16 +11,16 @@ Use this file if a chat runs out of context. The game is **playable locally** vs
 
 ## What this is
 
-Turn-based multiplayer TCG. Current engine (`RULEBOOK.md` v4.2):
+Turn-based multiplayer TCG. Current engine (`RULEBOOK.md` v4.4):
 
-- 40-card decks, 5-card opening hand, **hand limit 7**
+- 20-card decks, 5-card opening hand, **hand limit 7**
 - Active **3** / Bench **3** (hand is not 5 slots)
 - First player skips the turn-1 draw; second player draws on their first Start Phase
 - Main Phase (play/swap/Guard) then Battle; **no plays after you attack**
 - Lead (full Power) + Assists (half); Assists are Tired next turn; Guard forces the target
 - Survivors lose **20%** power (decay)
 - Trait wheel **Lead only, +12 / −12** (defender +8 Armor on a bad matchup): Mind → Muscle → Mystic → Machina → Mayhem → Mind
-- Lose if you have nothing in Active, Bench, and hand
+- Lose if Active and Bench are empty (hand does not save you after opening)
 
 ---
 
@@ -117,7 +117,7 @@ Database: Atlas cluster, app DB typically `gigachad`.
 | --- | --- |
 | email, username, passwordHash | unique email/username |
 | collection | `[cardId]` strings (duplicates = extra copies) |
-| decks[] | `{ name, cards: [cardId] }` — legal deck is **exactly 40**, max **3** copies |
+| decks[] | `{ name, cards: [cardId] }` — legal deck is **exactly 20**, max **3** copies. Older 40-card lists stay stored until the player saves a legal 20 (`needsRebuild`). Collection copies are never deleted. |
 | friends, friendRequests, sentRequests | ObjectId refs |
 | currency.reps | pack currency |
 | tutorialCompleted, verified, verifiedAt | |
@@ -164,14 +164,14 @@ Packs are defined in `backend/server.js`. Shop `GET /api/shop/packs` only return
 | --- | --- | --- | --- |
 | **Ordo Chadorum** `ordo_chadorum` | 1 (30 cards) | Live | now |
 | **To the Hilt** `to_the_hilt` | 3 (44 cards) | Hidden until date | **1 Nov 2026, midnight Eastern** (`2026-11-01T04:00:00.000Z`) |
-| **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (21 cards) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
+| **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (22 cards, includes Cyber Chad) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
 | **Chaos** `chaos` | 4 (130 cards) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
 
 Old shop id `starter_pump` still maps to Ordo Chadorum on buy.
 
 **Set 1 (Ordo):** Aviator Chad, Baller Chad, Chad Numero Uno, Chad of Pizzazz, Chadministrative Pastor, Dictator Chad, Donut Chad, E Dog, E Money, E Unit, Fashion Chad, Father Chad, Fresh Chad, Hungry Hippo Chad, J Snizzle, Joey Mac, Manager Chad, Ninja Chad, Pastor Chadenbach, Pastor Chadrigo (Jorge art), Pastor Studson, Samurai Chad, Samwise Chadenbach, Sir Kensworth, Sleeper Chad, Stereotypical Chadette, Supreme Leader Chadenbach, The Chadministrator (L 60, strongest), Thimple Chad, Yapper Chad.
 
-**Set 2 (Ultra Nightmare):** Apple, Blitzkrueger, Bobby J, Brodito, Chad Kroeger, Chad Vader, Cheyennomaly, Filius Automobilius, Ice Knight, J Walker, Janitor Chad, Jerome, Joc Boc, K-Pop, Leahnidas, Leif Erikson, Meemow (L 50), Micycle, Saint Chad of Mercia, Sassy Chad, Skibidi Chad.
+**Set 2 (Ultra Nightmare):** Apple, Blitzkrueger, Bobby J, Brodito, Chad Kroeger, Chad Vader, Cheyennomaly, Cyber Chad (R 44), Filius Automobilius, Ice Knight, J Walker (U 31), Janitor Chad, Jerome, Joc Boc, K-Pop, Leahnidas, Leif Erikson, Meemow (L 50), Micycle, Saint Chad of Mercia, Sassy Chad, Skibidi Chad.
 
 **Set 3 (To the Hilt):** Anime Chad, Archon Strivemax, Astro Samurai, Bat Jeong-Eun, Bear-Sized Goose, Beowulf, Bigback Tony, Bradford Pitt, Branos, Brawn Weasley, Brick Thunderbulk, Brodir Doomgrip, Brofessor Rumbledore, Chad, Chad Danforth, Chad Knight, Chad Lee, Chad Marine, Chad Pitt, Chadiator, Chadly Squatter, Chadvald the Shredded, Coach Rumble, Cowboy Chad, Dwayne, Filch McNoreps, Flexecutioner, Gigachad, Goose-Sized Bear, Grilled Cheese Sandwich, Groaning Girdle, Hermione Gainger, Jack Steele, Marlene, Mr. Sniffles, Mrs. NoRizz, Orange Dragon Dude, Peregrine Vale, Professor Gainsworth, Robot Overlord, Sharawrrk, Super Case-Oh, Taco, Tom Diddle.
 
@@ -179,7 +179,7 @@ Old shop id `starter_pump` still maps to Ordo Chadorum on buy.
 
 Rarities used by packs: **C / U / R / L**. Odd rarities `J`/`M` were remapped (J Snizzle → C, Sir Kensworth & Meemow → L) so they can drop.
 
-New accounts get a random 40-card **starter deck** from commons/uncommons/rares across the **whole catalog** (not pack-gated), plus some reps. Packs are how you get more copies.
+New accounts get a random **20-card starter deck** (4C×3 + 2U×3 + 2R×1) from commons/uncommons/rares in **sets already on sale at signup**, plus some reps. Existing users received one Cyber Chad via startup migration `cyber_chad_grant_v1`. Packs are how you get more copies.
 
 ---
 
@@ -190,7 +190,7 @@ Routes (auth-gated except login): Home, How to play, Play, Collection, Decks, Sh
 - **Battle:** compact one-screen table, two-click play/attack, AI replay with lunge/SFX, live power + “was X” after decay.
 - **Cards:** fixed-size Pokémon-like layout; art `object-fit: cover`, square art corners; name/ability **shrink to fit** (`FitText` in `CardView.js`).
 - **Shop:** lists on-sale packs only.
-- **Decks:** click collection to add, click deck list to remove, save at 40.
+- **Decks:** click collection to add, click deck list to remove, save at 20.
 
 Play: PvE vs AI. Friend challenges (live / correspondence) on Friends. Open matchmaking **not** built.
 
@@ -223,7 +223,7 @@ Play: PvE vs AI. Friend challenges (live / correspondence) on Friends. Open matc
 - [x] Soundtrack playlist loops for the whole session (`frontend/public/audio/`)
 - [ ] Decorative table/menu art (user asked for solids for now)
 - [x] Ability keywords wired (v4.0)
-- [ ] Grant new cards to existing users if needed (they only appear via packs/starter RNG)
+- [x] Grant Cyber Chad to existing users (idempotent startup migration)
 - [x] Deleted stale `frontend/public/data/cards.json`
 - [ ] Rename User.collection field to silence Mongoose warning (breaking if not migrated)
 
@@ -248,7 +248,7 @@ Fixed (Oct 2026): shop pack art; unreleased packs hidden; home logo; card backs;
 | PvE battle UX | 80 | Playable, AI animated, compact board |
 | Collection / decks / shop | 75 | Packs + schedule; 11 missing arts |
 | PvP / social | 60 | Friends, DMs, challenges; no open queue |
-| Content / sets | 85 | 225 cards, 4 named products |
+| Content / sets | 86 | 226 cards, 4 named products |
 | Deploy / prod | 15 | Local only; no Render/Vercel files yet |
 | Juice (SFX/music/art chrome) | 40 | Web Audio placeholders; no card-back image |
 

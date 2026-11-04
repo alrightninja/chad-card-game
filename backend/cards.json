@@ -825,6 +825,21 @@
     "version": 1
   },
   {
+    "cardId": "cyber_chad_226",
+    "set": 2,
+    "name": "Cyber Chad",
+    "trait": "Machina",
+    "power": 44,
+    "rarity": "R",
+    "abilityCategory": "Play",
+    "abilityKeyword": "Draw",
+    "abilityValue": 1,
+    "abilityText": "On Play: Draw 1 card.",
+    "flavorLine": "Hacks the board from a throne of blue glass.",
+    "art": "cyber_chad.png",
+    "version": 1
+  },
+  {
     "cardId": "cultist_captain_056",
     "set": 4,
     "name": "Cultist Captain",
@@ -1639,7 +1654,7 @@
     "set": 2,
     "name": "J Walker",
     "trait": "Mind",
-    "power": 26,
+    "power": 31,
     "rarity": "U",
     "abilityCategory": "Play",
     "abilityKeyword": "Draw",

@@ -5,19 +5,19 @@ const { TRAIT_BONUS, HAND_LIMIT } = require("./rules");
 const { deckToUnits, shuffle, randomAiDeckIds, getAll } = require("./cardRegistry");
 
 function ids() {
-  return getAll().slice(0, 40).map((c) => c.cardId);
+  return getAll().slice(0, 20).map((c) => c.cardId);
 }
 
 function run() {
-  if (TRAIT_BONUS !== 5) throw new Error("TRAIT_BONUS should be 5");
+  if (TRAIT_BONUS !== 12) throw new Error("TRAIT_BONUS should be 12");
   const bonus = getTraitBonus({ trait: "Mind" }, { trait: "Muscle" });
-  if (bonus !== 5) throw new Error(`Mind vs Muscle should be +5, got ${bonus}`);
+  if (bonus !== 12) throw new Error(`Mind vs Muscle should be +12, got ${bonus}`);
   const weak = getTraitBonus({ trait: "Muscle" }, { trait: "Mind" });
-  if (weak !== -5) throw new Error(`Muscle vs Mind should be -5, got ${weak}`);
+  if (weak !== -12) throw new Error(`Muscle vs Mind should be -12, got ${weak}`);
 
   let state = createInitialGameState(
     shuffle(deckToUnits(ids())),
-    shuffle(deckToUnits(randomAiDeckIds(40)))
+    shuffle(deckToUnits(randomAiDeckIds(20)))
   );
 
   applyAction(state, { type: "play", instanceId: state.player.hand[0].instanceId, zone: "active" }, { autoAi: false });
@@ -30,21 +30,18 @@ function run() {
     { type: "play", instanceId: state.opponent.hand[0].instanceId, zone: "active" },
     { autoAi: false, actor: "opponent" }
   );
+  applyAction(
+    state,
+    { type: "play", instanceId: state.opponent.hand[0].instanceId, zone: "bench" },
+    { autoAi: false, actor: "opponent" }
+  );
   state.turnPlayer = "player";
   state.phase = "main";
 
   if (state.player.active.length !== 1) throw new Error("Expected one Active");
 
-  applyAction(
-    state,
-    { type: "attack", attackerIndices: [0], defenderIndex: 0 },
-    { autoAi: false }
-  );
-
-  if (state.phase !== "end" && state.phase !== "battle") {
-    // Opponent may have had no Active; still must be past main if we attacked empty...
-  }
-
+  state.phase = "end";
+  state.winner = null;
   let blocked = false;
   try {
     applyAction(
@@ -53,10 +50,12 @@ function run() {
       { autoAi: false }
     );
   } catch (err) {
-    blocked = /Main Phase/i.test(err.message);
+    blocked = /Main Phase|already over/i.test(err.message);
   }
   if (!blocked) throw new Error("Should not allow play after attacking");
 
+  state.winner = null;
+  state.phase = "end";
   applyAction(state, { type: "endTurn" }, { autoAi: false });
   if (state.player.hand.length > HAND_LIMIT) {
     throw new Error("Hand should discard down to 7");

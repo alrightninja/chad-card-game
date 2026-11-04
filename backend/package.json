@@ -18,6 +18,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "seed": "node seedCards.js",
-    "smoke": "node engine/smokeMatch.js"
+    "smoke": "node engine/smokeMatch.js",
+    "test": "node scripts/runTests.js"
   }
 }

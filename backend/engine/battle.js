@@ -1,6 +1,7 @@
 // battle.js
 const { triggerDefeatAbilities } = require("./abilities");
-const { DECAY_RATE, ASSIST_RATE, TRAIT_BONUS, TRAIT_ARMOR, TRAIT_ADVANTAGE } = require("./rules");
+const { DECAY_RATE, ASSIST_RATE, TRAIT_BONUS, TRAIT_ARMOR, TRAIT_ADVANTAGE, MAX_ACTIVE } = require("./rules");
+const { addToActive } = require("./board");
 
 /**
  * Simple 50/50 coin flip helper.
@@ -206,14 +207,14 @@ function resolveBattle(state, attackersParam, defender) {
     state.lastKoSeat = defenderOwner === state.player ? "player" : "opponent";
     triggerDefeatAbilities(state, defender);
 
-    // Promote from bench if available
-    if (defenderOwner.bench.length > 0) {
+    // Promote from bench if available, never past 3 Active
+    if (defenderOwner.bench.length > 0 && defenderOwner.active.length < MAX_ACTIVE) {
       const promoted = defenderOwner.bench.shift();
-      defenderOwner.active.push(promoted);
+      addToActive(defenderOwner, promoted);
       state.log.push(
         `${promoted.name} is promoted from the Bench to Active.`
       );
-    } else {
+    } else if (!defenderOwner.bench.length) {
       state.log.push(
         `${defenderOwner === state.player ? "Player" : "Opponent"} has no Bench units to promote.`
       );
@@ -240,11 +241,11 @@ function resolveBattle(state, attackersParam, defender) {
       triggerDefeatAbilities(state, attacker);
     });
 
-    // Promote from bench for each KO'd attacker (up to available bench)
+    // Promote from bench for each KO'd attacker, never past 3 Active
     attackers.forEach(() => {
-      if (attackerOwner.bench.length > 0) {
+      if (attackerOwner.bench.length > 0 && attackerOwner.active.length < MAX_ACTIVE) {
         const promoted = attackerOwner.bench.shift();
-        attackerOwner.active.push(promoted);
+        addToActive(attackerOwner, promoted);
         state.log.push(
           `${promoted.name} is promoted from the Bench to Active.`
         );

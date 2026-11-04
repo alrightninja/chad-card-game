@@ -27,6 +27,11 @@
       "react-app/jest"
     ]
   },
+  "jest": {
+    "moduleNameMapper": {
+      "^react-router/dom$": "react-router-dom"
+    }
+  },
   "browserslist": {
     "production": [
       ">0.2%",

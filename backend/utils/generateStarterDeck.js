@@ -1,7 +1,7 @@
-// utils/generateStarterDeck.js
 const cards = require("../cards.json");
+const { DECK_SIZE } = require("../engine/rules");
+const { releasedSetNumbers } = require("../lib/packs");
 
-// OPTIONAL: list of ability keywords to exclude from beginner decks
 const bannedAbilities = new Set([
   "Stun",
   "Silence",
@@ -17,39 +17,37 @@ const bannedAbilities = new Set([
   "ShuffleBench"
 ]);
 
-function generateStarterDeck() {
-  // Filter cards by rarity and remove legendaries + banned abilities
-  const commons = cards.filter(
-    c => c.rarity === "C" && !bannedAbilities.has(c.abilityKeyword)
+function pickRandom(arr, count, rand = Math.random) {
+  const shuffled = [...arr].sort(() => rand() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+function generateStarterDeck(now = new Date(), rand = Math.random) {
+  const released = releasedSetNumbers(now);
+  const pool = cards.filter(
+    (c) => released.has(c.set) && !bannedAbilities.has(c.abilityKeyword)
   );
 
-  const uncommons = cards.filter(
-    c => c.rarity === "U" && !bannedAbilities.has(c.abilityKeyword)
-  );
+  const commons = pool.filter((c) => c.rarity === "C");
+  const uncommons = pool.filter((c) => c.rarity === "U");
+  const rares = pool.filter((c) => c.rarity === "R");
 
-  const rares = cards.filter(
-    c => c.rarity === "R" && !bannedAbilities.has(c.abilityKeyword)
-  );
+  const selectedCommons = pickRandom(commons, 4, rand);
+  const selectedUncommons = pickRandom(uncommons, 2, rand);
+  const selectedRares = pickRandom(rares, 2, rand);
 
-  // Helper to pick N random unique cards
-  function pickRandom(arr, count) {
-    const shuffled = [...arr].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, count);
-  }
-
-  // Pick unique cards
-  const selectedCommons = pickRandom(commons, 8);
-  const selectedUncommons = pickRandom(uncommons, 4);
-  const selectedRares = pickRandom(rares, 2);
-
-  // Build deck with duplicates
   const deck = [
-    ...selectedCommons.flatMap(c => Array(3).fill(c.cardId)), // 24 cards
-    ...selectedUncommons.flatMap(c => Array(3).fill(c.cardId)), // 12 cards
-    ...selectedRares.flatMap(c => Array(2).fill(c.cardId)) // 4 cards
+    ...selectedCommons.flatMap((c) => Array(3).fill(c.cardId)),
+    ...selectedUncommons.flatMap((c) => Array(3).fill(c.cardId)),
+    ...selectedRares.flatMap((c) => Array(1).fill(c.cardId))
   ];
 
-  return deck; // 40 cards total
+  if (deck.length !== DECK_SIZE) {
+    throw new Error(
+      `Starter deck expected ${DECK_SIZE} cards, built ${deck.length} from released sets`
+    );
+  }
+  return deck;
 }
 
 module.exports = generateStarterDeck;

@@ -6,6 +6,7 @@ import CardView from "../components/CardView";
 import SetFilterBar, { useSetFilter } from "../components/SetFilterBar";
 
 const MAX_DECKS = 5;
+const DECK_SIZE = 20;
 
 function nextDeckName(decks) {
   const used = new Set((decks || []).map((d) => d.name));
@@ -133,8 +134,8 @@ export default function DeckBuilderPage() {
         setError("Give this deck a name.");
         return;
       }
-      if (list.length !== 40) {
-        setError("A legal deck needs exactly 40 cards.");
+      if (list.length !== DECK_SIZE) {
+        setError(`A legal deck needs exactly ${DECK_SIZE} cards.`);
         return;
       }
       if (savedName) {
@@ -228,12 +229,18 @@ export default function DeckBuilderPage() {
             <input value={name} onChange={(e) => setName(e.target.value)} />
           </label>
           <button className="btn" type="button" onClick={save}>
-            Save ({list.length}/40)
+            Save ({list.length}/{DECK_SIZE})
           </button>
           <button className="btn secondary" type="button" onClick={removeDeck}>
             {savedName ? "Delete" : "Discard"}
           </button>
         </div>
+        {list.length !== DECK_SIZE ? (
+          <p className="muted">
+            Legal decks are {DECK_SIZE} cards. Older 40-card lists stay in place until you save a
+            legal {DECK_SIZE} — nothing is removed from your collection.
+          </p>
+        ) : null}
         {error ? <div className="error">{error}</div> : null}
         {message ? <div className="muted">{message}</div> : null}
 
@@ -250,7 +257,7 @@ export default function DeckBuilderPage() {
             ))}
           </div>
         ) : (
-          <p className="muted">Empty — click cards below to add (40 to save).</p>
+          <p className="muted">Empty — click cards below to add ({DECK_SIZE} to save).</p>
         )}
 
         <h2>Collection — click to add</h2>

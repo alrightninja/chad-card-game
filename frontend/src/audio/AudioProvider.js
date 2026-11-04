@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { playSfx, unlockSfx } from "./sfx";
+import { pickNextIndex, reshuffleOrder } from "./shufflePlaylist";
 
 const AudioContextValue = createContext(null);
 
@@ -20,10 +21,27 @@ function bgmState() {
     window.__gigachadBgm = {
       el: null,
       index: 0,
+      lastIndex: -1,
+      queue: reshuffleOrder(PLAYLIST.length, -1),
       enabled: false
     };
   }
   return window.__gigachadBgm;
+}
+
+function takeNextTrack() {
+  const state = bgmState();
+  if (!state) return PLAYLIST[0];
+  if (!state.queue.length) {
+    state.queue = reshuffleOrder(PLAYLIST.length, state.lastIndex);
+  }
+  let next = state.queue.shift();
+  if (next === state.lastIndex) {
+    next = pickNextIndex(PLAYLIST.length, state.lastIndex);
+  }
+  state.lastIndex = next;
+  state.index = next;
+  return PLAYLIST[next];
 }
 
 function getPlayer() {
@@ -36,8 +54,7 @@ function getPlayer() {
     el.addEventListener("ended", () => {
       const current = bgmState();
       if (!current?.enabled) return;
-      current.index = (current.index + 1) % PLAYLIST.length;
-      el.src = PLAYLIST[current.index];
+      el.src = takeNextTrack();
       el.play().catch(() => {});
     });
     state.el = el;
@@ -50,7 +67,11 @@ function stopMusic() {
   if (!state) return;
   state.enabled = false;
   if (state.el) {
-    state.el.pause();
+    try {
+      state.el.pause();
+    } catch {
+      /* jsdom has no media */
+    }
   }
 }
 
@@ -59,9 +80,8 @@ function startMusic() {
   const el = getPlayer();
   if (!state || !el) return;
   state.enabled = true;
-  const src = PLAYLIST[state.index];
-  if (!el.src || !el.src.endsWith(src)) {
-    el.src = src;
+  if (!el.src || el.paused) {
+    el.src = takeNextTrack();
   }
   el.play().catch(() => {});
 }

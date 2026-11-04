@@ -1,6 +1,6 @@
 # Gigachad TCG — Living Rulebook (v4.3)
 
-This is the rules the **engine actually runs**. If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
+This is the rules the **engine actually runs** (v4.4). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
 
 Numbers live in `backend/engine/rules.js`.
 
@@ -11,8 +11,9 @@ Numbers live in `backend/engine/rules.js`.
 Knock out the other player’s units. You **lose** when you have:
 
 - no Active units, **and**
-- no Bench units, **and**
-- no cards in hand.
+- no Bench units.
+
+A hand full of cards does not keep you in the game once the board is empty (opening setup is exempt until a unit has been discarded or turn 2 begins).
 
 A scenario or effect can also end the game (for example Unblockable damage reducing health to 0).
 
@@ -49,7 +50,7 @@ Reverse Weakness flips the bonus. Each type has a colored glow on the card (Musc
 
 | Zone | Size | Notes |
 | --- | --- | --- |
-| Deck | 40 to start | Face down. You lose draws if it is empty; you do not lose yet. |
+| Deck | 20 to start | Face down. You lose draws if it is empty; you do not lose yet. |
 | Hand | Opening **5**. Limit **7** at end of turn | Only you see your own. Opponent sees a count. |
 | Active | **3** | These fight. Center of the table. |
 | Bench | **3** | Backup. Cannot attack until moved to Active. |
@@ -63,7 +64,7 @@ You do **not** dump your opening hand onto the board before turn 1. You play fro
 
 ## 5. Setup
 
-1. Shuffle a 40-card deck (max 3 copies of a card).
+1. Shuffle a 20-card deck (max 3 copies of a card).
 2. Both players draw **5**.
 3. **First player** takes the first turn and **does not draw**.
 4. **Second player** draws 1 at the start of their first turn.
@@ -158,34 +159,44 @@ Keywords the engine implements include Power Up/Down, Draw, Spike, Stun, Peek, S
 
 Live friend matches update both players over the match socket. Challenge a friend from the Friends page (you must already be friends).
 
-**Live turn timer:** each player has **3 minutes** to finish their turn. If time runs out, the turn passes. If the same player times out **twice in a row**, they forfeit. The clock resets after you complete a turn.
+**Live turn timer:** each player has **3 minutes** to finish their turn. The clock **restarts at the start of every turn** for both players. If time runs out, the turn passes. If the same player times out **twice in a row**, they forfeit. Completing a turn clears that streak.
 
 ---
 
 ## 10. Winning
 
-You lose when Active, Bench, and hand are all empty, or your health hits 0.
+You lose when Active and Bench are empty, or your health hits 0.
 
 ---
 
-## 11. What changed in v4.3
+## 11. What changed in v4.4
+
+- Decks are **20** cards
+- Empty Active + Bench is a loss even with cards in hand
+- Active is hard-capped at **3** (including KO promotions)
+- You may have **1 live** and **1 correspondence** match at once
+- Forfeiting vs AI awards **0** reps
+- Starter decks only use **released** sets
+- Cyber Chad (Rare, Ultra Nightmare Mode)
+
+## 12. What changed in v4.3
 
 - Trait bonus is **+12 / −12**, and **only the Lead’s type** is counted
 - A defender that beats the Lead’s type gains **+8 Armor** for that fight
 - Combat ability numbers (Power Up/Down, Spike, Heal, and similar) were raised so they can flip a close fight
 - Battle UI: colored type glow, type bar, ability chip on Active, and a type line when you pick a Lead
 
-## 12. What changed in v4.2
+## 13. What changed in v4.2
 
 - Team attacks are **Lead (full Power) + Assists (half Power)**
 - Assists become **Tired** next turn
 - **Guard** forces the opponent’s attack target
 
-## 13. What changed in v4.1
+## 14. What changed in v4.1
 
 - Bench is **3** (was 5), so backup slots are a real choice
 
-## 14. What changed in v4.0
+## 15. What changed in v4.0
 
 - Trait bonus **+5 / −5** (was ±20)
 - Second player’s start-of-turn draw is the first-player compensation

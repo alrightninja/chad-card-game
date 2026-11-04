@@ -101,7 +101,7 @@ export default function HomePage() {
         </div>
         <div className="panel home-card stack">
           <strong>Build and collect</strong>
-          <p className="muted">40-card decks. Packs are 5 cards for 100 reps.</p>
+          <p className="muted">20-card decks. Packs are 5 cards for 100 reps.</p>
           <div className="row">
             <Link className="btn secondary" to="/decks">Decks</Link>
             <Link className="btn secondary" to="/shop">Open a pack</Link>

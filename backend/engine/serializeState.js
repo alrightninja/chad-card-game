@@ -1,6 +1,7 @@
 const { resolveCoinFlip } = require("./battle");
 const { getById } = require("./cardRegistry");
 const { HAND_LIMIT, TRAIT_BONUS, MAX_ACTIVE, MAX_BENCH } = require("./rules");
+const { enforceBoardLimits } = require("./board");
 
 function stampPrintedPower(unit) {
   if (!unit || unit.printedPower != null) return unit;
@@ -64,6 +65,8 @@ function hydrateState(raw) {
   if (!state.opponent) state.opponent = {};
   stampSide(state.player);
   stampSide(state.opponent);
+  enforceBoardLimits(state.player);
+  enforceBoardLimits(state.opponent);
   if (!state.player.guardInstanceId) state.player.guardInstanceId = null;
   if (!state.opponent.guardInstanceId) state.opponent.guardInstanceId = null;
   if (!state.secretLog) state.secretLog = { player: [], opponent: [] };

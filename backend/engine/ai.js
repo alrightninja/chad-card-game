@@ -3,6 +3,7 @@ const { startPhase } = require("./phases");
 const { checkWin } = require("./checkWin");
 const { computeBattlePower, computeTeamBattlePower } = require("./battle");
 const { MAX_ACTIVE, MAX_BENCH } = require("./rules");
+const { addToActive } = require("./board");
 
 function getUnitPower(unit) {
   return Math.max(0, (unit.power || 0) + (unit.tempPower || 0));
@@ -105,7 +106,7 @@ function aiTakeFullTurn(state, onStep = () => {}) {
 
   if (ai.active.length === 0 && ai.bench.length > 0) {
     const promoted = ai.bench.shift();
-    ai.active.push(promoted);
+    addToActive(ai, promoted);
     state.log.push(`Opponent promotes ${promoted.name} from the Bench.`);
     onStep({ kind: "promote" });
   }

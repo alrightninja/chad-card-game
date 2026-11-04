@@ -4,6 +4,7 @@ const { applyAbility } = require("./abilities");
 const { resolveBattle } = require("./battle");
 const { endPhase } = require("./phases");
 const { MAX_ACTIVE, MAX_BENCH } = require("./rules");
+const { addToActive } = require("./board");
 
 function enterPlay(state, playerState, cardIndex, destination) {
   const card = playerState.hand[cardIndex];
@@ -12,7 +13,7 @@ function enterPlay(state, playerState, cardIndex, destination) {
     playerState.bench.push(card);
     state.log.push(`${card.name} is added to the Bench.`);
   } else {
-    playerState.active.push(card);
+    addToActive(playerState, card);
     state.log.push(`${card.name} enters the field as an Active Unit.`);
   }
 
@@ -76,7 +77,7 @@ function promoteFromBench(state, benchIndex) {
     throw new Error("No unit on that Bench slot.");
   }
   playerState.bench.splice(benchIndex, 1);
-  playerState.active.push(unit);
+  addToActive(playerState, unit);
   state.log.push(`${unit.name} moves from the Bench to Active.`);
   return state;
 }

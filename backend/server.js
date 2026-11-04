@@ -22,6 +22,8 @@ const { assertCleanUsername } = require("./utils/moderation");
 const { safeMe } = require("./lib/publicUser");
 const { normalizeEmail, emailsMatch, emailQuery } = require("./lib/email");
 const retention = require("./lib/retention");
+const { PACKS, packOnSale } = require("./lib/packs");
+const { isLegalDeckList, DECK_SIZE } = require("./lib/deck");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -286,7 +288,9 @@ app.get("/api/decks", requireAuth, async (req, res) => {
   try {
     const allDecks = req.user.decks.map((deck) => ({
       name: deck.name,
-      cards: expandCardIds(deck.cards)
+      cards: expandCardIds(deck.cards),
+      legal: isLegalDeckList(deck.cards),
+      needsRebuild: !isLegalDeckList(deck.cards)
     }));
     res.json({ decks: allDecks });
   } catch (err) {
@@ -313,8 +317,8 @@ app.post("/api/decks/create", requireAuth, async (req, res) => {
     if (!Array.isArray(cards)) {
       return res.status(400).json({ error: "Cards must be an array" });
     }
-    if (cards.length !== 40) {
-      return res.status(400).json({ error: "Deck must contain exactly 40 cards" });
+    if (!isLegalDeckList(cards, DECK_SIZE)) {
+      return res.status(400).json({ error: `Deck must contain exactly ${DECK_SIZE} cards` });
     }
 
     const counts = {};
@@ -376,8 +380,8 @@ app.post("/api/decks/update", requireAuth, async (req, res) => {
       if (!Array.isArray(cards)) {
         return res.status(400).json({ error: "Cards must be an array" });
       }
-      if (cards.length !== 40) {
-        return res.status(400).json({ error: "Deck must contain exactly 40 cards" });
+      if (!isLegalDeckList(cards, DECK_SIZE)) {
+        return res.status(400).json({ error: `Deck must contain exactly ${DECK_SIZE} cards` });
       }
 
       const counts = {};
@@ -457,9 +461,16 @@ app.post("/api/matches", requireAuth, async (req, res) => {
 
 app.get("/api/matches/active", requireAuth, async (req, res) => {
   try {
-    const match = await matchService.getActiveMatch(req.user._id);
-    if (!match) return res.json({ match: null });
-    res.json({ match: matchService.toClient(match, req.user._id) });
+    const active = await matchService.listActiveMatches(req.user._id);
+    const liveDoc = active.find((m) => (m.mode || "live") === "live") || null;
+    const corrDoc = active.find((m) => m.mode === "correspondence") || null;
+    const live = liveDoc ? matchService.toClient(liveDoc, req.user._id) : null;
+    const correspondence = corrDoc ? matchService.toClient(corrDoc, req.user._id) : null;
+    res.json({
+      match: live || correspondence || null,
+      live,
+      correspondence
+    });
   } catch (err) {
     console.error("Error fetching match:", err);
     res.status(500).json({ error: "Server error" });
@@ -564,60 +575,7 @@ app.post("/api/battle/action", requireAuth, async (req, res) => {
    SHOP
    ============================================================ */
 
-const packs = [
-  {
-    id: "ordo_chadorum",
-    name: "Ordo Chadorum",
-    cost: 100,
-    cards: 5,
-    set: 1,
-    art: "/packs/ordo_chadorum.jpg"
-  },
-  {
-    id: "ultra_nightmare_mode",
-    name: "Ultra Nightmare Mode",
-    cost: 100,
-    cards: 5,
-    set: 2,
-    art: "/packs/ultra_nightmare_mode.jpg",
-    // Midnight Eastern, 1 Dec 2026. Override with ULTRA_NIGHTMARE_RELEASE_AT.
-    availableFrom: process.env.ULTRA_NIGHTMARE_RELEASE_AT || "2026-12-01T05:00:00.000Z"
-  },
-  {
-    id: "to_the_hilt",
-    name: "To the Hilt",
-    cost: 100,
-    cards: 5,
-    set: 3,
-    art: "/packs/to_the_hilt.jpg",
-    // Midnight Eastern, 1 Nov 2026. Override with TO_THE_HILT_RELEASE_AT.
-    availableFrom: process.env.TO_THE_HILT_RELEASE_AT || "2026-11-01T04:00:00.000Z"
-  },
-  {
-    id: "chaos",
-    name: "Chaos",
-    cost: 100,
-    cards: 5,
-    set: 4,
-    art: "/packs/chaos.jpg",
-    // Midnight Eastern, 1 Dec 2026. Override with CHAOS_RELEASE_AT.
-    availableFrom: process.env.CHAOS_RELEASE_AT || "2026-12-01T05:00:00.000Z"
-  }
-];
-
-function packOnSale(pack, now = new Date()) {
-  if (pack.availableFrom) {
-    const start = new Date(pack.availableFrom);
-    if (Number.isNaN(start.getTime()) || now < start) return false;
-  } else if (pack.available === false) {
-    return false;
-  }
-  if (pack.availableUntil) {
-    const end = new Date(pack.availableUntil);
-    if (!Number.isNaN(end.getTime()) && now >= end) return false;
-  }
-  return true;
-}
+const packs = PACKS;
 
 app.post("/api/shop/buy-pack", requireAuth, async (req, res) => {
   try {

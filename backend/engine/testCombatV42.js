@@ -51,7 +51,7 @@ function run() {
     throw new Error(`Assists should ignore trait, got ${withAssist.total}`);
   }
 
-  const ids = getAll().slice(0, 40).map((c) => c.cardId);
+  const ids = getAll().slice(0, 20).map((c) => c.cardId);
   const state = createInitialGameState(shuffle(deckToUnits(ids)), shuffle(deckToUnits(ids)));
 
   while (state.player.active.length < 2 && state.player.hand.length) {

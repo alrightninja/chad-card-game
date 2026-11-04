@@ -3,13 +3,13 @@ const { applyAction } = require("./applyAction");
 const { deckToUnits, shuffle, randomAiDeckIds, getAll } = require("./cardRegistry");
 const { serializeState, publicMatchState } = require("./serializeState");
 
-function firstFortyIds() {
-  return getAll().slice(0, 40).map((c) => c.cardId);
+function firstTwentyIds() {
+  return getAll().slice(0, 20).map((c) => c.cardId);
 }
 
 function run() {
-  const player = shuffle(deckToUnits(firstFortyIds()));
-  const opponent = shuffle(deckToUnits(randomAiDeckIds(40)));
+  const player = shuffle(deckToUnits(firstTwentyIds()));
+  const opponent = shuffle(deckToUnits(randomAiDeckIds(20)));
   let state = createInitialGameState(player, opponent);
 
   if (state.player.hand.length !== 5) {

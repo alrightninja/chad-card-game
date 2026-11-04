@@ -11,16 +11,24 @@ const {
 } = require("../engine/serializeState");
 
 const FINISHED_KEEP_MS = 60 * 60 * 1000;
-const LIVE_TURN_MS = 3 * 60 * 1000;
 const {
   shuffle,
   deckToUnits,
   randomAiDeckIds
 } = require("../engine/cardRegistry");
-
-const WIN_REPS = 50;
-const LOSS_REPS = 20;
-const DRAW_REPS = 30;
+const { DECK_SIZE } = require("../engine/rules");
+const { isLegalDeckList } = require("../lib/deck");
+const {
+  LIVE_TURN_MS,
+  WIN_REPS,
+  LOSS_REPS,
+  DRAW_REPS,
+  canStartMode,
+  clockKey,
+  isHumanTurn,
+  nextLiveDeadline,
+  finishReps
+} = require("../lib/matchLogic");
 
 function validateDeck(deck) {
   if (!deck) {
@@ -28,8 +36,8 @@ function validateDeck(deck) {
     err.status = 404;
     throw err;
   }
-  if (!Array.isArray(deck.cards) || deck.cards.length !== 40) {
-    const err = new Error("Deck must contain exactly 40 cards");
+  if (!isLegalDeckList(deck.cards, DECK_SIZE)) {
+    const err = new Error(`Deck must contain exactly ${DECK_SIZE} cards (max 3 copies). Rebuild it in Decks.`);
     err.status = 400;
     throw err;
   }
@@ -55,11 +63,6 @@ function seatForUser(match, userId) {
 function nextDeadline(match) {
   if (match.mode !== "correspondence" || !match.hoursPerMove) return null;
   return new Date(Date.now() + match.hoursPerMove * 60 * 60 * 1000);
-}
-
-function isHumanTurn(match, turnPlayer) {
-  if (turnPlayer === "player") return true;
-  return match.opponentType === "user";
 }
 
 function liveDeadlineFor(match, state, winner) {
@@ -102,13 +105,14 @@ function toClient(match, userId) {
   };
 }
 
-async function awardAndFinish(match) {
+async function awardAndFinish(match, options = {}) {
   if (match.status === "finished") return;
 
-  const playerReps =
-    match.winner === "player" ? WIN_REPS : match.winner === "draw" ? DRAW_REPS : LOSS_REPS;
-  const opponentReps =
-    match.winner === "opponent" ? WIN_REPS : match.winner === "draw" ? DRAW_REPS : LOSS_REPS;
+  const { player: playerReps, opponent: opponentReps } = finishReps({
+    opponentType: match.opponentType,
+    winner: match.winner,
+    forfeit: !!options.forfeit
+  });
 
   match.status = "finished";
   match.rewards = { reps: playerReps, player: playerReps, opponent: opponentReps };
@@ -198,16 +202,16 @@ async function startPveMatch(user, deckName, options = {}) {
   const deck = user.decks.find((d) => d.name === deckName);
   validateDeck(deck);
 
-  const existing = await getActiveMatch(user._id);
+  const existing = await getActiveMatch(user._id, "live");
   if (existing) {
-    const err = new Error("You already have an active match. Resume or forfeit it first.");
+    const err = new Error("You already have an active live match. Resume or forfeit it first.");
     err.status = 409;
     err.payload = { match: toClient(existing, user._id) };
     throw err;
   }
 
   const playerUnits = shuffle(deckToUnits(deck.cards));
-  const aiUnits = shuffle(deckToUnits(randomAiDeckIds(40)));
+  const aiUnits = shuffle(deckToUnits(randomAiDeckIds(DECK_SIZE)));
   const state = createInitialGameState(playerUnits, aiUnits);
 
   const match = await Match.create({
@@ -239,6 +243,18 @@ async function startPvpMatch({
   const opponentDeck = opponentUser.decks.find((d) => d.name === opponentDeckName);
   validateDeck(playerDeck);
   validateDeck(opponentDeck);
+
+  for (const user of [playerUser, opponentUser]) {
+    const existing = await getActiveMatch(user._id, mode);
+    if (existing) {
+      const err = new Error(
+        `${user.username} already has an active ${mode} match. Resume or forfeit it first.`
+      );
+      err.status = 409;
+      err.payload = { match: toClient(existing, user._id) };
+      throw err;
+    }
+  }
 
   const playerUnits = shuffle(deckToUnits(playerDeck.cards));
   const opponentUnits = shuffle(deckToUnits(opponentDeck.cards));
@@ -272,17 +288,32 @@ function userMatchQuery(userId) {
   };
 }
 
-async function getActiveMatch(userId) {
+async function getActiveMatch(userId, mode) {
   for (let i = 0; i < 4; i += 1) {
-    const match = await Match.findOne({
+    const filter = {
       ...userMatchQuery(userId),
       status: "active"
-    }).sort({ updatedAt: -1 });
+    };
+    if (mode) filter.mode = mode;
+    const match = await Match.findOne(filter).sort({ updatedAt: -1 });
     if (!match) return null;
     const settled = await settleIfTimedOut(match);
     if (settled.status === "active") return settled;
   }
   return null;
+}
+
+async function listActiveMatches(userId) {
+  const rows = await Match.find({
+    ...userMatchQuery(userId),
+    status: "active"
+  }).sort({ updatedAt: -1 });
+  const active = [];
+  for (const match of rows) {
+    const settled = await settleIfTimedOut(match);
+    if (settled.status === "active") active.push(settled);
+  }
+  return active;
 }
 
 async function listMatchesForUser(userId, limit = 20) {
@@ -329,7 +360,7 @@ async function forfeitMatch(user, matchId) {
   match.version += 1;
   match.set("state", serializeState(state));
   match.markModified("state");
-  await awardAndFinish(match);
+  await awardAndFinish(match, { forfeit: true });
   return toClient(match, user._id);
 }
 
@@ -349,6 +380,8 @@ async function applyMatchAction(user, matchId, action) {
   }
 
   const state = hydrateState(match.state);
+  const beforeClock = { turn: state.turn, turnPlayer: state.turnPlayer };
+  const beforeKey = clockKey(beforeClock);
   const turnBefore = state.turnPlayer;
   const autoAi = match.opponentType === "ai";
   const replay = [];
@@ -378,7 +411,7 @@ async function applyMatchAction(user, matchId, action) {
   const serialized = serializeState(state);
   const winner = state.winner || null;
   match.winner = winner;
-  if (state.turnPlayer !== turnBefore) {
+  if (clockKey(state) !== beforeKey) {
     const strikes = {
       player: match.timeoutStrikes?.player || 0,
       opponent: match.timeoutStrikes?.opponent || 0
@@ -390,9 +423,7 @@ async function applyMatchAction(user, matchId, action) {
   if (winner) {
     match.moveDeadlineAt = null;
   } else if (match.mode === "live") {
-    if (state.turnPlayer !== turnBefore) {
-      match.moveDeadlineAt = liveDeadlineFor(match, state, null);
-    }
+    match.moveDeadlineAt = nextLiveDeadline(match, beforeClock, state);
   } else {
     match.moveDeadlineAt = nextDeadline(match);
   }
@@ -419,6 +450,7 @@ module.exports = {
   startPveMatch,
   startPvpMatch,
   getActiveMatch,
+  listActiveMatches,
   listMatchesForUser,
   getMatchForUser,
   applyMatchAction,
@@ -426,5 +458,9 @@ module.exports = {
   seatForUser,
   WIN_REPS,
   LOSS_REPS,
-  LIVE_TURN_MS
+  LIVE_TURN_MS,
+  clockKey,
+  nextLiveDeadline,
+  canStartMode,
+  finishReps
 };

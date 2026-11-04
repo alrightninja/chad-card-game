@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 async function connectOnce() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("MongoDB connected successfully");
+  const { runStartupMigrations } = require("../lib/startupMigrations");
+  await runStartupMigrations();
 }
 
 function connectDB() {

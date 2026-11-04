@@ -16,7 +16,7 @@ const HAND_SLOTS = 7;
 const DRAG_PX = 8;
 
 function pad(list, size) {
-  const next = [...(list || [])];
+  const next = [...(list || [])].slice(0, size);
   while (next.length < size) next.push(null);
   return next;
 }
@@ -313,6 +313,10 @@ export default function BattlePage() {
     if (!drop?.kind) return;
     if (drag.from === "hand") {
       if (drop.kind === "active-empty") {
+        if ((matchRef.current?.state?.you?.active || []).filter(Boolean).length >= ACTIVE_SLOTS) {
+          setError("Active is full (max 3).");
+          return;
+        }
         send({ type: "play", instanceId: drag.instanceId, zone: "active" });
         return;
       }
@@ -603,6 +607,10 @@ export default function BattlePage() {
     }
     if (!card) {
       if (selectedHand) {
+        if ((you?.active || []).filter(Boolean).length >= ACTIVE_SLOTS) {
+          setError("Active is full (max 3).");
+          return;
+        }
         send({ type: "play", instanceId: selectedHand, zone: "active" });
         return;
       }
@@ -755,7 +763,7 @@ export default function BattlePage() {
               <li>Attack: first click is the Lead (full Power). Extra clicks Assist (half Power) but those units are Tired next turn.</li>
               <li>If they have a Guard (blue), you must attack that unit. After the fight you cannot play more cards.</li>
               <li>Only the Lead’s type counts: +12 if it beats the defender, −12 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type.</li>
-              <li>You go first and skip a draw. Hand limit 7. You lose if Active, Bench, and hand are all empty.</li>
+              <li>You go first and skip a draw. Hand limit 7. You lose if Active and Bench are empty.</li>
             </ol>
           </div>
         ) : null}
