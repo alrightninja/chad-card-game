@@ -107,7 +107,7 @@ app.get("/api/trait/:trait", (req, res) => {
 
 app.post("/api/register", async (req, res) => {
   try {
-    const { email, emailConfirm, username, password, termsAccepted, guardianPermission } = req.body;
+    const { email, emailConfirm, username, password, termsAccepted } = req.body;
 
     if (!email || !username || !password) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -117,11 +117,6 @@ app.post("/api/register", async (req, res) => {
     }
     if (!termsAccepted) {
       return res.status(400).json({ error: "You must accept the terms to create an account" });
-    }
-    if (!guardianPermission) {
-      return res.status(400).json({
-        error: "Confirm you are 18+ or have a parent/guardian’s permission"
-      });
     }
 
     assertCleanUsername(username);
@@ -147,8 +142,7 @@ app.post("/api/register", async (req, res) => {
       friends: [],
       friendRequests: [],
       sentRequests: [],
-      termsAcceptedAt: new Date(),
-      guardianPermission: true
+      termsAcceptedAt: new Date()
     });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {

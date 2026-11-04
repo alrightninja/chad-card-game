@@ -97,7 +97,7 @@ export default function CardView({
         {nameEl}
         {unowned ? <div className="tcg-hp" /> : (
           <div className="tcg-hp">
-            <span className="tcg-hp-num">{inCombat ? hpNow : now}</span>
+            <span className="tcg-hp-num">{now}</span>
             {temp ? <span className="tcg-temp">{temp > 0 ? `+${temp}` : temp}</span> : null}
           </div>
         )}

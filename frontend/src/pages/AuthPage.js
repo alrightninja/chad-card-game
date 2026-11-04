@@ -11,8 +11,7 @@ export default function AuthPage() {
     emailConfirm: "",
     username: "",
     password: "",
-    termsAccepted: false,
-    guardianPermission: false
+    termsAccepted: false
   });
 
   function update(field, value) {
@@ -34,8 +33,7 @@ export default function AuthPage() {
           emailConfirm: form.emailConfirm,
           username: form.username,
           password: form.password,
-          termsAccepted: form.termsAccepted,
-          guardianPermission: form.guardianPermission
+          termsAccepted: form.termsAccepted
         });
       }
     } catch (err) {
@@ -95,14 +93,6 @@ export default function AuthPage() {
                 onChange={(e) => update("termsAccepted", e.target.checked)}
               />
               I accept these terms.
-            </label>
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={form.guardianPermission}
-                onChange={(e) => update("guardianPermission", e.target.checked)}
-              />
-              I am 18 or older, or I have permission from a parent or guardian.
             </label>
           </>
         ) : null}

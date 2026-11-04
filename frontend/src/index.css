@@ -418,7 +418,7 @@ label { font-size: 0.9rem; display: grid; gap: 0.35rem; }
 
 .tcg-hp-num { font-size: 1.05rem; line-height: 1; }
 
-.tcg.wounded .tcg-hp-num {
+.tcg.wounded .tcg-was {
   color: #8a2f2f;
 }
 
