@@ -32,15 +32,15 @@ function generateStarterDeck(now = new Date(), rand = Math.random) {
   const uncommons = pool.filter((c) => c.rarity === "U");
   const rares = pool.filter((c) => c.rarity === "R");
 
-  const selectedCommons = pickRandom(commons, 6, rand);
-  const selectedUncommons = pickRandom(uncommons, 3, rand);
-  const selectedRares = pickRandom(rares, 2, rand);
-
+  const selectedCommons = pickRandom(commons, Math.min(6, commons.length), rand);
+  const selectedUncommons = pickRandom(uncommons, Math.min(3, uncommons.length), rand);
   const deck = [
     ...selectedCommons.flatMap((c) => Array(2).fill(c.cardId)),
-    ...selectedUncommons.flatMap((c) => Array(2).fill(c.cardId)),
-    ...selectedRares.flatMap((c) => Array(1).fill(c.cardId))
+    ...selectedUncommons.flatMap((c) => Array(2).fill(c.cardId))
   ];
+  const rareSlots = DECK_SIZE - deck.length;
+  const selectedRares = pickRandom(rares, rareSlots, rand);
+  deck.push(...selectedRares.map((c) => c.cardId));
 
   if (deck.length !== DECK_SIZE) {
     throw new Error(

@@ -401,6 +401,28 @@ test("Jerry, Howard, and Wickthrop sit in the requested packs", () => {
   assert.equal(getById("john_wickthrop_221").set, 3);
 });
 
+test("requested rarity and power retunes landed", () => {
+  const expect = {
+    joey_mac_116: { rarity: "R", power: 38 },
+    supreme_leader_chadenbach_196: { rarity: "R", power: 44 },
+    pastor_chadenbach_150: { rarity: "R", power: 43 },
+    pastor_studson_152: { rarity: "R", power: 43 },
+    pastor_chadrigo_151: { rarity: "R", power: 43 },
+    dwayne_068: { rarity: "R", power: 43 },
+    j_walker_110: { rarity: "U", power: 35 },
+    chadministrative_pastor_038: { rarity: "R", power: 43 },
+    janitor_chad_112: { rarity: "R", power: 43 },
+    bear_sized_goose_012: { rarity: "R", power: 43 },
+    bigback_tony_014: { rarity: "C", power: 28 },
+    john_wickthrop_221: { rarity: "L", power: 55 }
+  };
+  for (const [id, want] of Object.entries(expect)) {
+    const card = getById(id);
+    assert.equal(card.rarity, want.rarity, id);
+    assert.equal(card.power, want.power, id);
+  }
+});
+
 test("personal kensworth/wickthrop grant cannot run twice", async () => {
   const cards = {};
   let claimed = false;
