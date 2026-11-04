@@ -228,6 +228,31 @@ button, input, select, textarea {
   padding: 0.32rem 0.7rem;
 }
 
+.tcg.unowned {
+  background: #141210;
+  border-color: #2a2622;
+  color: #d8d0c4;
+  box-shadow: none;
+}
+
+.tcg.unowned .tcg-name {
+  color: #ece6dc;
+}
+
+.tcg.unowned .tcg-art {
+  background: radial-gradient(circle at 50% 40%, #2a2622 0%, #0b0a09 72%);
+  filter: brightness(0.35);
+}
+
+.tcg.unowned .tcg-type {
+  background: #1c1a17;
+  color: #8a8378;
+}
+
+.card-fit:has(.unowned) {
+  filter: none;
+}
+
 .set-section {
   margin-bottom: 1.4rem;
 }

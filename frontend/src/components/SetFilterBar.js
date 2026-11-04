@@ -16,7 +16,8 @@ export default function SetFilterBar({
   layout,
   setLayout,
   setId,
-  setSetId
+  setSetId,
+  extraRow
 }) {
   const ownedSets = useMemo(() => {
     const have = new Set(cards.map((c) => Number(c.set)).filter(Boolean));
@@ -25,6 +26,7 @@ export default function SetFilterBar({
 
   return (
     <div className="set-filter" role="group" aria-label="Organize cards">
+      {extraRow || null}
       <div className="set-filter-row">
         <span className="muted set-filter-label">View</span>
         <button

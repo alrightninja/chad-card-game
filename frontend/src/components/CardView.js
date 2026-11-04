@@ -63,6 +63,7 @@ export default function CardView({
   badges = []
 }) {
   if (!card) return null;
+  const unowned = card.unowned || card.quantity === 0;
   const printed = card.printedPower ?? card.power;
   const now = currentPower(card);
   const decayed = printed != null && (card.power || 0) < printed;
@@ -75,7 +76,8 @@ export default function CardView({
     selected ? "selected" : "",
     dragging ? "is-ghost-source" : "",
     hot ? "drop-hot" : "",
-    card.trait ? `trait-${card.trait}` : ""
+    unowned ? "unowned" : "",
+    !unowned && card.trait ? `trait-${card.trait}` : ""
   ].join(" ");
 
   const nameEl = compact ? (
@@ -88,27 +90,33 @@ export default function CardView({
     <>
       <div className="tcg-top">
         {nameEl}
-        <div className="tcg-hp">
-          <span className="tcg-hp-num">{now}</span>
-          {temp ? <span className="tcg-temp">{temp > 0 ? `+${temp}` : temp}</span> : null}
-        </div>
+        {unowned ? <div className="tcg-hp" /> : (
+          <div className="tcg-hp">
+            <span className="tcg-hp-num">{now}</span>
+            {temp ? <span className="tcg-temp">{temp > 0 ? `+${temp}` : temp}</span> : null}
+          </div>
+        )}
       </div>
       <div className="tcg-art">
-        {cardArtSrc(card) ? (
+        {!unowned && cardArtSrc(card) ? (
           <img src={cardArtSrc(card)} alt="" draggable="false" />
         ) : null}
       </div>
-      <div className="tcg-type">{card.trait}</div>
-      {compact && sizeClass === "active" && card.abilityKeyword ? (
+      {unowned ? (
+        <div className="tcg-type">Unknown</div>
+      ) : (
+        <div className="tcg-type">{card.trait}</div>
+      )}
+      {!unowned && compact && sizeClass === "active" && card.abilityKeyword ? (
         <div className="tcg-ability-chip">{card.abilityKeyword}</div>
       ) : null}
-      {showAbility && !compact ? (
+      {!unowned && showAbility && !compact ? (
         <FitText className="tcg-ability" minPx={8}>{card.abilityText || ""}</FitText>
       ) : null}
-      {showAbility && !compact && card.flavorLine ? (
+      {!unowned && showAbility && !compact && card.flavorLine ? (
         <div className="tcg-flavor">{card.flavorLine}</div>
       ) : null}
-      <div className="tcg-was">{decayed ? `was ${printed}` : "\u00a0"}</div>
+      <div className="tcg-was">{!unowned && decayed ? `was ${printed}` : "\u00a0"}</div>
     </>
   );
 
