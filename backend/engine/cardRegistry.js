@@ -44,6 +44,8 @@ function toBattleUnit(card, instanceId) {
     trait: card.trait,
     power: card.power,
     printedPower: card.power,
+    maxHp: card.power,
+    hp: card.power,
     rarity: card.rarity,
     abilityCategory: card.abilityCategory,
     abilityKeyword: card.abilityKeyword,

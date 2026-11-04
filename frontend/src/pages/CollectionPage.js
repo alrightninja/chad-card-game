@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import { useAudio } from "../audio/AudioProvider";
 import CardView from "../components/CardView";
 import SetFilterBar, { useSetFilter } from "../components/SetFilterBar";
+import { rarityLabel } from "../lib/rarity";
 
 function mergeCatalog(catalog, owned) {
   const have = new Map((owned || []).map((card) => [card.cardId, card]));
@@ -31,7 +32,9 @@ function CardGrid({ cards, picked, onPick, audio }) {
               onPick(card);
             }}
           />
-          <div className="muted" style={{ fontSize: "0.8rem", marginTop: 4 }}>
+          <div className="muted card-slot-meta">
+            {rarityLabel(card.rarity) || "Unknown"}
+            {" · "}
             {card.unowned || !card.quantity ? "Not owned" : `×${card.quantity}`}
           </div>
         </div>
@@ -116,13 +119,17 @@ export default function CollectionPage() {
             <div>
               <h2 style={{ marginTop: 0 }}>{picked.name}</h2>
               {picked.unowned || !picked.quantity ? (
-                <p className="muted">Not in your collection yet. Open packs to find this card.</p>
+                <p className="muted">
+                  {rarityLabel(picked.rarity) || "Unknown rarity"}. Not in your collection yet. Open
+                  packs to find this card.
+                </p>
               ) : (
                 <>
                   <p>{picked.abilityText}</p>
                   <p className="muted">{picked.flavorLine}</p>
                   <p>
-                    Power {picked.power} · {picked.trait} · {picked.rarity} · ×{picked.quantity}
+                    Power {picked.power} · {picked.trait} · {rarityLabel(picked.rarity) || picked.rarity}
+                    {picked.quantity ? ` · ×${picked.quantity}` : ""}
                   </p>
                 </>
               )}

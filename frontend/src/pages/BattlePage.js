@@ -83,18 +83,19 @@ function bannerText(battle) {
   (battle.assists || []).forEach((a) => {
     parts.push(`ASSIST ${a.name} +${a.added}`);
   });
-  parts.push(`= ${battle.atkTotal} vs ${battle.defTotal}`);
+  parts.push(`= ${battle.atkTotal} dmg`);
+  if (battle.defTotal) parts.push(`armor ${battle.defTotal}`);
   if (battle.traitBonus > 0) parts.push(`TYPE +${battle.traitBonus}`);
   if (battle.traitBonus < 0) parts.push(`TYPE ${battle.traitBonus}`);
   if (battle.traitArmor) parts.push(`+${battle.traitArmor} type Armor`);
   if (battle.result === "ko") parts.push(`— ${battle.defenderName} is KO'd`);
-  else if (battle.result === "wipe") parts.push("— attackers are KO'd");
-  else if (battle.result === "tie") parts.push("— tie, both Decay");
+  else if (battle.damage != null) parts.push(`— ${battle.defenderName} ${battle.hpAfter}/${battle.maxHp} HP`);
   return parts.join("   ");
 }
 
-function powerOf(card) {
+function hpOf(card) {
   if (!card) return 0;
+  if (card.hp != null) return card.hp;
   return Math.max(0, (card.power || 0) + (card.tempPower || 0));
 }
 
@@ -129,7 +130,7 @@ function battleFloats(prev, next, attackerIndices, defenderIndex, from) {
     if (!after) {
       floats.push({ side: defSide, index: defenderIndex, text: "KO", kind: "ko" });
     } else {
-      const drop = powerOf(def) - powerOf(after);
+      const drop = hpOf(def) - hpOf(after);
       if (drop > 0) floats.push({ side: defSide, index: defenderIndex, text: `-${drop}`, kind: "hit" });
     }
   }
@@ -142,7 +143,7 @@ function battleFloats(prev, next, attackerIndices, defenderIndex, from) {
     if (!after) {
       floats.push({ side: atkSide, index: i, text: "KO", kind: "ko" });
     } else {
-      const drop = powerOf(atk) - powerOf(after);
+      const drop = hpOf(atk) - hpOf(after);
       if (drop > 0) floats.push({ side: atkSide, index: i, text: `-${drop}`, kind: "hit" });
     }
   });
@@ -963,8 +964,8 @@ export default function BattlePage() {
               <div className="inspect-copy">
                 <h2>{inspect.name}</h2>
                 <p>
+                  {inspect.hp != null ? `HP ${inspect.hp}/${inspect.maxHp ?? inspect.printedPower ?? inspect.power} · ` : ""}
                   Power {Math.max(0, (inspect.power || 0) + (inspect.tempPower || 0))}
-                  {inspect.printedPower != null && inspect.power < inspect.printedPower ? ` (was ${inspect.printedPower})` : ""}
                   {" · "}{inspect.trait}
                   {inspect.rarity ? ` · ${inspect.rarity}` : ""}
                 </p>

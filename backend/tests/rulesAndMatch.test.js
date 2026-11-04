@@ -4,14 +4,14 @@ const assert = require("node:assert/strict");
 const { DECK_SIZE, MAX_ACTIVE } = require("../engine/rules");
 const { createInitialGameState } = require("../engine/gameState");
 const { applyAction } = require("../engine/applyAction");
-const { playUnit } = require("../engine/actions");
+const { playUnit, attack } = require("../engine/actions");
 const { resolveBattle } = require("../engine/battle");
 const { checkWin, sideEliminated } = require("../engine/checkWin");
 const { enforceBoardLimits } = require("../engine/board");
 const { deckToUnits, shuffle, getAll, getById } = require("../engine/cardRegistry");
 const generateStarterDeck = require("../utils/generateStarterDeck");
 const { releasedSetNumbers } = require("../lib/packs");
-const { isLegalDeckList, deckNeedsRebuild } = require("../lib/deck");
+const { isLegalDeckList, deckNeedsRebuild, deckIllegalReason } = require("../lib/deck");
 const {
   canStartMode,
   clockKey,
@@ -33,7 +33,15 @@ function units(n) {
 }
 
 function dummyUnit(name, power = 10) {
-  return { instanceId: name, name, power, printedPower: power, trait: "Mind" };
+  return {
+    instanceId: name,
+    name,
+    power,
+    printedPower: power,
+    maxHp: power,
+    hp: power,
+    trait: "Mind"
+  };
 }
 
 test("4. decks are 20 cards and old 40-card lists need rebuild", () => {
@@ -42,8 +50,22 @@ test("4. decks are 20 cards and old 40-card lists need rebuild", () => {
   assert.equal(isLegalDeckList(twenty), true);
   assert.equal(deckNeedsRebuild(Array(40).fill("x")), true);
   assert.equal(isLegalDeckList(Array(40).fill("x").map((_, i) => `c${i}`)), false);
+  const threeOf = Array(10).fill("c1").concat(Array(10).fill("c2"));
+  assert.match(deckIllegalReason(threeOf) || "", /copies/i);
   const starter = generateStarterDeck(new Date("2026-11-03T12:00:00.000Z"));
   assert.equal(starter.length, 20);
+  const counts = {};
+  for (const id of starter) counts[id] = (counts[id] || 0) + 1;
+  assert.equal(Object.values(counts).every((n) => n <= 2), true);
+  assert.equal(isLegalDeckList(starter), true);
+
+  const rares = getAll().filter((c) => c.rarity === "R").map((c) => c.cardId);
+  const commons = getAll().filter((c) => c.rarity === "C").map((c) => c.cardId);
+  const legends = getAll().filter((c) => c.rarity === "L").map((c) => c.cardId);
+  const sevenRares = rares.slice(0, 7).concat(commons.slice(0, 13));
+  assert.match(deckIllegalReason(sevenRares) || "", /Rares/i);
+  const threeLegends = legends.slice(0, 3).concat(commons.slice(0, 17));
+  assert.match(deckIllegalReason(threeLegends) || "", /Legendaries/i);
 });
 
 test("5. empty active and bench loses even with a hand", () => {
@@ -68,17 +90,23 @@ test("6. never more than 3 active, including KO promote", () => {
   const state = {
     log: [],
     player: {
-      active: [dummyUnit("A", 5), dummyUnit("B", 5), dummyUnit("C", 5)],
-      bench: [dummyUnit("D", 5), dummyUnit("E", 5), dummyUnit("F", 5)],
+      active: [dummyUnit("A", 80)],
+      bench: [],
       hand: [],
       discard: []
     },
-    opponent: { active: [dummyUnit("Tank", 80)], bench: [], hand: [], discard: [] },
+    opponent: {
+      active: [dummyUnit("Snack", 5)],
+      bench: [dummyUnit("D", 5), dummyUnit("E", 5), dummyUnit("F", 5), dummyUnit("G", 5)],
+      hand: [],
+      discard: []
+    },
     turnPlayer: "player",
     phase: "battle"
   };
   resolveBattle(state, state.player.active.slice(), state.opponent.active[0]);
-  assert.ok(state.player.active.length <= MAX_ACTIVE);
+  assert.ok(state.opponent.active.length <= MAX_ACTIVE);
+  assert.equal(state.player.active.length, 1);
 
   const over = { active: [1, 2, 3, extra].map((n, i) => dummyUnit(String(i))), bench: [], hand: [] };
   enforceBoardLimits(over);
@@ -181,6 +209,47 @@ test("migration 2-3 cannot run twice", async () => {
   assert.equal(reps["1"], 2500);
   assert.equal(reps["2"], 510);
   assert.equal(first.crkGranted, true);
+});
+
+test("HP combat chips a bigger defender and still one-shots equals", () => {
+  const small = dummyUnit("Small", 26);
+  const tank = dummyUnit("Tank", 51);
+  const chip = {
+    log: [],
+    player: { active: [small], bench: [], hand: [], discard: [] },
+    opponent: { active: [tank], bench: [], hand: [], discard: [] },
+    turnPlayer: "player",
+    phase: "battle"
+  };
+  resolveBattle(chip, [small], tank);
+  assert.equal(chip.player.active.length, 1);
+  assert.equal(chip.opponent.active[0].hp, 25);
+  assert.equal(chip.opponent.active[0].power, 51);
+  assert.equal(chip.lastBattle.result, "hit");
+
+  const a = dummyUnit("A", 34);
+  const b = dummyUnit("B", 34);
+  const even = {
+    log: [],
+    player: { active: [a], bench: [], hand: [], discard: [] },
+    opponent: { active: [b], bench: [], hand: [], discard: [] },
+    turnPlayer: "player",
+    phase: "battle"
+  };
+  resolveBattle(even, [a], b);
+  assert.equal(even.lastBattle.result, "ko");
+  assert.equal(even.opponent.active.length, 0);
+  assert.equal(even.player.active.length, 1);
+});
+
+test("Lead becomes Tired after attacking", () => {
+  const state = createInitialGameState(units(20), units(20));
+  state.phase = "main";
+  state.player.active = [dummyUnit("Lead", 40)];
+  state.opponent.active = [dummyUnit("Wall", 80)];
+  attack(state, [0], 0);
+  assert.equal(state.player.active[0].tiredTurns, 2);
+  assert.equal(state.opponent.active[0].hp, 40);
 });
 
 test("Jerry, Howard, and Wickthrop sit in the requested packs", () => {

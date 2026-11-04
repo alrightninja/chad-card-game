@@ -1,13 +1,14 @@
 // actions.js
 
 const { applyAbility } = require("./abilities");
-const { resolveBattle } = require("./battle");
+const { resolveBattle, resetCombatForPlay } = require("./battle");
 const { endPhase } = require("./phases");
 const { MAX_ACTIVE, MAX_BENCH } = require("./rules");
 const { addToActive } = require("./board");
 
 function enterPlay(state, playerState, cardIndex, destination) {
   const card = playerState.hand[cardIndex];
+  resetCombatForPlay(card);
   playerState.hand.splice(cardIndex, 1);
   if (destination === "bench") {
     playerState.bench.push(card);
@@ -235,7 +236,7 @@ function attack(state, attackerIndices, defenderIndex = 0) {
       `${attackers.map(a => a.name).join(", ")} attack directly (Unblockable)!`
     );
     enemyState.health -= attackers.reduce((sum, a) => sum + a.power, 0);
-    attackers.slice(1).forEach((unit) => {
+    attackers.forEach((unit) => {
       unit.tiredTurns = 2;
       state.log.push(`${unit.name} is Tired and cannot attack next turn.`);
     });
@@ -245,7 +246,8 @@ function attack(state, attackerIndices, defenderIndex = 0) {
 
   resolveBattle(state, attackers, defender);
 
-  attackers.slice(1).forEach((unit) => {
+  attackers.forEach((unit) => {
+    if ((unit.hp || 0) <= 0) return;
     unit.tiredTurns = 2;
     state.log.push(`${unit.name} is Tired and cannot attack next turn.`);
   });

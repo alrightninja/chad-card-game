@@ -1,7 +1,26 @@
 // battle.js
 const { triggerDefeatAbilities } = require("./abilities");
-const { DECAY_RATE, ASSIST_RATE, TRAIT_BONUS, TRAIT_ARMOR, TRAIT_ADVANTAGE, MAX_ACTIVE } = require("./rules");
+const { ASSIST_RATE, TRAIT_BONUS, TRAIT_ARMOR, TRAIT_ADVANTAGE, MAX_ACTIVE } = require("./rules");
 const { addToActive } = require("./board");
+
+function ensureCombatStats(unit) {
+  if (!unit) return unit;
+  const printed = unit.printedPower ?? unit.power ?? 0;
+  if (unit.printedPower == null) unit.printedPower = printed;
+  if (unit.maxHp == null) unit.maxHp = printed;
+  if (unit.hp == null) unit.hp = unit.maxHp;
+  return unit;
+}
+
+function resetCombatForPlay(unit) {
+  if (!unit) return unit;
+  ensureCombatStats(unit);
+  unit.hp = unit.maxHp;
+  unit.tiredTurns = 0;
+  unit.stunned = false;
+  unit.tempPower = 0;
+  return unit;
+}
 
 /**
  * Simple 50/50 coin flip helper.
@@ -102,169 +121,91 @@ function computeTeamBattlePower(attackers, defender) {
   };
 }
 
-/**
- * Apply percentage decay to a surviving unit.
- */
-function applyDecay(unit, state) {
-  if ((unit.shield || 0) > 0) {
-    unit.shield -= 1;
-    state.log.push(`${unit.name}'s Power Shield prevents decay.`);
-    return;
+function knockOut(state, unit, owner) {
+  const idx = owner.active.indexOf(unit);
+  if (idx !== -1) owner.active.splice(idx, 1);
+  owner.discard.push(unit);
+  if (owner.guardInstanceId === unit.instanceId) {
+    owner.guardInstanceId = null;
   }
-  const before = unit.power || 0;
-  const after = Math.floor(before * (1 - DECAY_RATE));
-  unit.power = after;
-  state.log.push(
-    `${unit.name} suffers decay: ${before} → ${after} Power after battle.`
-  );
-}
+  state.lastKoSeat = owner === state.player ? "player" : "opponent";
+  triggerDefeatAbilities(state, unit);
 
-/**
- * Apply percentage decay to multiple surviving units.
- */
-function applyDecayToTeam(units, state) {
-  units.forEach((unit) => applyDecay(unit, state));
+  if (owner.bench.length > 0 && owner.active.length < MAX_ACTIVE) {
+    const promoted = owner.bench.shift();
+    addToActive(owner, promoted);
+    state.log.push(`${promoted.name} is promoted from the Bench to Active.`);
+  } else if (!owner.bench.length) {
+    state.log.push(
+      `${owner === state.player ? "Player" : "Opponent"} has no Bench units to promote.`
+    );
+  }
 }
 
 /**
  * Resolve a battle between one or more attackers and a single defender.
- *
- * - Supports team attacks (ganging up)
- * - Applies trait advantage
- * - Applies armor on defender
- * - Uses tempPower
- * - Applies percentage decay to survivors
- * - Handles KO + defeat movement
- * - Logs a detailed breakdown
- *
- * attackersParam can be:
- *  - a single unit
- *  - an array of units
+ * Attack total is dealt as HP damage (minus Armor). Attackers are not KO'd
+ * for punching a bigger card. Decay is retired.
  */
 function resolveBattle(state, attackersParam, defender) {
   const attackers = Array.isArray(attackersParam)
     ? attackersParam
     : [attackersParam];
 
-  const attackerOwner =
-    state.turnPlayer === "player" ? state.player : state.opponent;
+  attackers.forEach(ensureCombatStats);
+  ensureCombatStats(defender);
+
   const defenderOwner =
     state.turnPlayer === "player" ? state.opponent : state.player;
 
-  // Compute team attack stats
   const teamStats = computeTeamBattlePower(attackers, defender);
   const defStats = computeBattlePower(defender, attackers[0], true);
+  const atkTotal = teamStats.total;
+  const rawDamage = Math.max(0, atkTotal - (defStats.armor || 0));
+  const hpBefore = defender.hp;
 
   state.log.push(
     `${teamStats.lead.name} leads an attack on ${defender.name}` +
       (attackers.length > 1 ? ` with ${attackers.length - 1} assist(s).` : ".")
   );
-
   teamStats.breakdown.forEach((line) => state.log.push(line));
-
   state.log.push(
-    `${defender.name}: ${defStats.base} base + ${defStats.temp} temp + ${defStats.armor} armor` +
-      (defStats.traitArmor ? ` (includes +${defStats.traitArmor} type Armor)` : "") +
-      ` = ${defStats.total}`
+    `${defender.name}: ${hpBefore}/${defender.maxHp} HP, ${defStats.armor} Armor` +
+      (defStats.traitArmor ? ` (includes +${defStats.traitArmor} type Armor)` : "")
   );
 
-  const atkTotal = teamStats.total;
-  const defTotal = defStats.total;
+  let damage = rawDamage;
+  if ((defender.shield || 0) > 0) {
+    defender.shield -= 1;
+    damage = 0;
+    state.log.push(`${defender.name}'s Power Shield absorbs the hit.`);
+  } else {
+    defender.hp = Math.max(0, defender.hp - damage);
+    state.log.push(
+      `${defender.name} takes ${damage} damage (${hpBefore} → ${defender.hp} HP).`
+    );
+  }
 
-  state.log.push(
-    `Total Attack Power: ${atkTotal} vs Defender Power: ${defTotal}`
-  );
-
-  let result = "tie";
-  if (atkTotal > defTotal) result = "ko";
-  else if (atkTotal < defTotal) result = "wipe";
-
+  const result = defender.hp <= 0 ? "ko" : "hit";
   state.lastBattle = {
     leadName: teamStats.lead.name,
     leadPower: teamStats.lead.total,
     assists: teamStats.assists,
     atkTotal,
-    defTotal,
+    defTotal: defStats.armor,
+    damage,
+    hpBefore,
+    hpAfter: defender.hp,
+    maxHp: defender.maxHp,
     defenderName: defender.name,
     result,
     traitBonus: getTraitBonus(attackers[0], defender),
     traitArmor: defStats.traitArmor
   };
 
-  if (atkTotal > defTotal) {
-    // Defender is KO'd
+  if (defender.hp <= 0) {
     state.log.push(`${defender.name} is KO'd!`);
-
-    const defIndex = defenderOwner.active.indexOf(defender);
-    if (defIndex !== -1) {
-      defenderOwner.active.splice(defIndex, 1);
-    }
-
-    defenderOwner.discard.push(defender);
-    if (defenderOwner.guardInstanceId === defender.instanceId) {
-      defenderOwner.guardInstanceId = null;
-    }
-    state.lastKoSeat = defenderOwner === state.player ? "player" : "opponent";
-    triggerDefeatAbilities(state, defender);
-
-    // Promote from bench if available, never past 3 Active
-    if (defenderOwner.bench.length > 0 && defenderOwner.active.length < MAX_ACTIVE) {
-      const promoted = defenderOwner.bench.shift();
-      addToActive(defenderOwner, promoted);
-      state.log.push(
-        `${promoted.name} is promoted from the Bench to Active.`
-      );
-    } else if (!defenderOwner.bench.length) {
-      state.log.push(
-        `${defenderOwner === state.player ? "Player" : "Opponent"} has no Bench units to promote.`
-      );
-    }
-
-    // Apply decay to surviving attackers
-    applyDecayToTeam(attackers, state);
-  } else if (atkTotal < defTotal) {
-    // All attackers are KO'd
-    state.log.push(
-      `${attackers.map((a) => a.name).join(", ")} are KO'd!`
-    );
-
-    attackers.forEach((attacker) => {
-      const atkIndex = attackerOwner.active.indexOf(attacker);
-      if (atkIndex !== -1) {
-        attackerOwner.active.splice(atkIndex, 1);
-      }
-      attackerOwner.discard.push(attacker);
-      if (attackerOwner.guardInstanceId === attacker.instanceId) {
-        attackerOwner.guardInstanceId = null;
-      }
-      state.lastKoSeat = attackerOwner === state.player ? "player" : "opponent";
-      triggerDefeatAbilities(state, attacker);
-    });
-
-    // Promote from bench for each KO'd attacker, never past 3 Active
-    attackers.forEach(() => {
-      if (attackerOwner.bench.length > 0 && attackerOwner.active.length < MAX_ACTIVE) {
-        const promoted = attackerOwner.bench.shift();
-        addToActive(attackerOwner, promoted);
-        state.log.push(
-          `${promoted.name} is promoted from the Bench to Active.`
-        );
-      }
-    });
-
-    if (attackerOwner.bench.length === 0) {
-      state.log.push(
-        `${attackerOwner === state.player ? "Player" : "Opponent"} has no more Bench units to promote.`
-      );
-    }
-
-    // Apply decay to surviving defender
-    applyDecay(defender, state);
-  } else {
-    // Rulebook §6: equal Power — both sides survive and both suffer Decay
-    state.log.push("Battle tied. Both sides survive and suffer Decay.");
-    applyDecayToTeam(attackers, state);
-    applyDecay(defender, state);
+    knockOut(state, defender, defenderOwner);
   }
 }
 
@@ -274,5 +215,6 @@ module.exports = {
   getTraitBonus,
   computeBattlePower,
   computeTeamBattlePower,
-  DECAY_RATE
+  ensureCombatStats,
+  resetCombatForPlay
 };

@@ -4,9 +4,11 @@ import { api } from "../api/client";
 import { useAudio } from "../audio/AudioProvider";
 import CardView from "../components/CardView";
 import SetFilterBar, { useSetFilter } from "../components/SetFilterBar";
+import { rarityBucket, rarityLabel } from "../lib/rarity";
 
 const MAX_DECKS = 5;
 const DECK_SIZE = 20;
+const DEFAULT_LIMITS = { size: 20, copies: 2, rares: 6, legendaries: 2 };
 
 function nextDeckName(decks) {
   const used = new Set((decks || []).map((d) => d.name));
@@ -18,24 +20,29 @@ function nextDeckName(decks) {
   return "New Deck";
 }
 
-function PoolGrid({ cards, copiesInDeck, add }) {
+function PoolGrid({ cards, copiesInDeck, capReason, add }) {
   if (!cards.length) {
     return <p className="muted">No cards in this pack yet.</p>;
   }
   return (
     <div className="card-grid">
-      {cards.map((card) => (
-        <div key={card.cardId}>
-          <CardView
-            layoutKey={`pool-${card.cardId}`}
-            card={card}
-            onClick={() => add(card)}
-          />
-          <div className="muted" style={{ fontSize: "0.8rem" }}>
-            {copiesInDeck(card.cardId)} / {card.quantity} in deck
+      {cards.map((card) => {
+        const capped = capReason(card);
+        return (
+          <div key={card.cardId} className={`card-slot ${capped ? "is-capped" : ""}`}>
+            <CardView
+              layoutKey={`pool-${card.cardId}`}
+              card={card}
+              onClick={() => add(card)}
+            />
+            <div className={`muted card-slot-meta`}>
+              {rarityLabel(card.rarity) || "Unknown"}
+              {" · "}
+              {capped || `${copiesInDeck(card.cardId)} / ${card.quantity} in deck`}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -49,6 +56,7 @@ export default function DeckBuilderPage() {
   const [list, setList] = useState([]);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [limits, setLimits] = useState(DEFAULT_LIMITS);
 
   useEffect(() => {
     audio?.setTrack("menu");
@@ -56,6 +64,7 @@ export default function DeckBuilderPage() {
       .then(([c, d]) => {
         setCollection(c.collection || []);
         const deckList = d.decks || [];
+        if (d.limits) setLimits({ ...DEFAULT_LIMITS, ...d.limits });
         setDecks(deckList);
         const current = deckList[0];
         if (current) {
@@ -81,17 +90,31 @@ export default function DeckBuilderPage() {
     return list.filter((id) => id === cardId).length;
   }
 
-  function add(card) {
-    if (list.length >= 40) {
-      setError("Deck is full (40).");
-      return;
-    }
-    if (copiesInDeck(card.cardId) >= 3) {
-      setError("Max 3 copies of a card.");
-      return;
+  function rarityCount(bucket) {
+    return list.filter((id) => rarityBucket(owned[id]?.rarity) === bucket).length;
+  }
+
+  function capReason(card) {
+    if (copiesInDeck(card.cardId) >= limits.copies) {
+      return `Max ${limits.copies} copies`;
     }
     if (copiesInDeck(card.cardId) >= (card.quantity || 0)) {
-      setError("You don’t own another copy.");
+      return "No extra copies owned";
+    }
+    if (rarityBucket(card.rarity) === "L" && rarityCount("L") >= limits.legendaries) {
+      return "Legendary cap reached";
+    }
+    if (rarityBucket(card.rarity) === "R" && rarityCount("R") >= limits.rares) {
+      return "Rare cap reached";
+    }
+    if (list.length >= limits.size) return "Deck is full";
+    return "";
+  }
+
+  function add(card) {
+    const blocked = capReason(card);
+    if (blocked) {
+      setError(blocked);
       return;
     }
     setError("");
@@ -202,6 +225,9 @@ export default function DeckBuilderPage() {
         <p className="muted">
           {decks.length}/{MAX_DECKS} saved
           {savedName ? "" : " · unsaved draft"}
+          {" · "}max {limits.copies} copies
+          {" · "}Rares {rarityCount("R")}/{limits.rares}
+          {" · "}Legendaries {rarityCount("L")}/{limits.legendaries}
         </p>
         <div className="row">
           {decks.map((d) => (
@@ -237,8 +263,9 @@ export default function DeckBuilderPage() {
         </div>
         {list.length !== DECK_SIZE ? (
           <p className="muted">
-            Legal decks are {DECK_SIZE} cards. Older 40-card lists stay in place until you save a
-            legal {DECK_SIZE} — nothing is removed from your collection.
+            Legal decks are {DECK_SIZE} cards, max {limits.copies} copies, {limits.rares} rares,{" "}
+            {limits.legendaries} legendaries. Older lists stay until you save a legal deck — nothing
+            is removed from your collection.
           </p>
         ) : null}
         {error ? <div className="error">{error}</div> : null}
@@ -247,14 +274,21 @@ export default function DeckBuilderPage() {
         <h2>In this deck</h2>
         {list.length ? (
           <div className="card-grid">
-            {list.map((id, index) => (
-              <CardView
-                key={`${id}-${index}`}
-                layoutKey={`deck-${id}-${index}`}
-                card={owned[id] || { cardId: id, name: id, power: 0, trait: "" }}
-                onClick={() => removeAt(index)}
-              />
-            ))}
+            {list.map((id, index) => {
+              const card = owned[id] || { cardId: id, name: id, power: 0, trait: "" };
+              return (
+                <div key={`${id}-${index}`}>
+                  <CardView
+                    layoutKey={`deck-${id}-${index}`}
+                    card={card}
+                    onClick={() => removeAt(index)}
+                  />
+                  <div className="muted card-slot-meta">
+                    {rarityLabel(card.rarity) || "Unknown"}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className="muted">Empty — click cards below to add ({DECK_SIZE} to save).</p>
@@ -275,11 +309,11 @@ export default function DeckBuilderPage() {
                 {group.name}
                 <span className="muted"> · {group.cards.length}</span>
               </h2>
-              <PoolGrid cards={group.cards} copiesInDeck={copiesInDeck} add={add} />
+              <PoolGrid cards={group.cards} copiesInDeck={copiesInDeck} capReason={capReason} add={add} />
             </section>
           ))
         ) : (
-          <PoolGrid cards={filtered} copiesInDeck={copiesInDeck} add={add} />
+          <PoolGrid cards={filtered} copiesInDeck={copiesInDeck} capReason={capReason} add={add} />
         )}
       </div>
     </LayoutGroup>

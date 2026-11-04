@@ -418,6 +418,10 @@ label { font-size: 0.9rem; display: grid; gap: 0.35rem; }
 
 .tcg-hp-num { font-size: 1.05rem; line-height: 1; }
 
+.tcg.wounded .tcg-hp-num {
+  color: #8a2f2f;
+}
+
 .tcg-temp { color: var(--accent); margin-left: 0.15rem; font-size: 0.72rem; }
 
 .tcg-type {
@@ -434,6 +438,36 @@ label { font-size: 0.9rem; display: grid; gap: 0.35rem; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.tcg-rarity {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-align: center;
+  border-radius: 4px;
+  padding: 0.12rem 0.2rem;
+  margin: 0.04rem 0.08rem 0;
+  flex-shrink: 0;
+}
+
+.tcg-rarity.rarity-C { background: #e7e2da; color: #4a453f; }
+.tcg-rarity.rarity-U { background: #d3ead8; color: #1d5a32; }
+.tcg-rarity.rarity-R { background: #d5e4f8; color: #1c3f7a; }
+.tcg-rarity.rarity-L { background: #f4dfae; color: #7a4a08; }
+
+.card-slot-meta {
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.card-slot.is-capped .card-fit {
+  opacity: 0.42;
+}
+
+.card-slot.is-capped .card-slot-meta {
+  color: #8a2f2f;
 }
 
 .tcg-was {

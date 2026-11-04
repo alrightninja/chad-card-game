@@ -1,6 +1,6 @@
 # Gigachad TCG — project status
 
-Last updated: 3 November 2026 (rules v4.4).  
+Last updated: 4 November 2026 (rules v4.5).  
 Workspace: `C:\Users\coleb\OneDrive\Documents\Projects\Apps\chad-card-game`
 
 Use this file if a chat runs out of context. The game is **playable locally** vs AI. It is **not deployed**. Do **not** commit `.env`.
@@ -17,8 +17,8 @@ Turn-based multiplayer TCG. Current engine (`RULEBOOK.md` v4.4):
 - Active **3** / Bench **3** (hand is not 5 slots)
 - First player skips the turn-1 draw; second player draws on their first Start Phase
 - Main Phase (play/swap/Guard) then Battle; **no plays after you attack**
-- Lead (full Power) + Assists (half); Assists are Tired next turn; Guard forces the target
-- Survivors lose **20%** power (decay)
+- Lead (full Power) + Assists (half); every attacker is Tired next turn; Guard forces the target
+- Unit **HP = printed Power**; damage = attack total minus Armor; KO at 0 HP (no decay, no suicide into bigger cards)
 - Trait wheel **Lead only, +12 / −12** (defender +8 Armor on a bad matchup): Mind → Muscle → Mystic → Machina → Mayhem → Mind
 - Lose if Active and Bench are empty (hand does not save you after opening)
 
@@ -117,7 +117,7 @@ Database: Atlas cluster, app DB typically `gigachad`.
 | --- | --- |
 | email, username, passwordHash | unique email/username |
 | collection | `[cardId]` strings (duplicates = extra copies) |
-| decks[] | `{ name, cards: [cardId] }` — legal deck is **exactly 20**, max **3** copies. Older 40-card lists stay stored until the player saves a legal 20 (`needsRebuild`). Collection copies are never deleted. |
+| decks[] | `{ name, cards: [cardId] }` — legal deck is **exactly 20**, max **2** copies, max **6** Rares, max **2** Legendaries. Older lists stay stored until the player saves a legal 20 (`needsRebuild`). Collection copies are never deleted. |
 | friends, friendRequests, sentRequests | ObjectId refs |
 | currency.reps | pack currency |
 | tutorialCompleted, verified, verifiedAt | |
@@ -179,7 +179,7 @@ Old shop id `starter_pump` still maps to Ordo Chadorum on buy.
 
 Rarities used by packs: **C / U / R / L**. Odd rarities `J`/`M` were remapped (J Snizzle → C, Sir Kensworth & Meemow → L) so they can drop.
 
-New accounts get a random **20-card starter deck** (4C×3 + 2U×3 + 2R×1) from commons/uncommons/rares in **sets already on sale at signup**, plus some reps. Existing users received one Cyber Chad via startup migration `cyber_chad_grant_v1`. `alrightninja_kensworth_wickthrop_v1` grants alrightninja one Sir Kensworth and one John Wickthrop. Packs are how you get more copies.
+New accounts get a random **20-card starter deck** (6C×2 + 3U×2 + 2R×1) from commons/uncommons/rares in **sets already on sale at signup**, plus some reps. Existing users received one Cyber Chad via startup migration `cyber_chad_grant_v1`. `alrightninja_kensworth_wickthrop_v1` grants alrightninja one Sir Kensworth and one John Wickthrop. Packs are how you get more copies.
 
 ---
 
@@ -187,10 +187,10 @@ New accounts get a random **20-card starter deck** (4C×3 + 2U×3 + 2R×1) from 
 
 Routes (auth-gated except login): Home, How to play, Play, Collection, Decks, Shop, Friends, Battle `/:matchId`.
 
-- **Battle:** compact one-screen table, two-click play/attack, AI replay with lunge/SFX, live power + “was X” after decay.
+- **Battle:** compact one-screen table, two-click play/attack, AI replay with lunge/SFX, HP on units in combat.
 - **Cards:** fixed-size Pokémon-like layout; art `object-fit: cover`, square art corners; name/ability **shrink to fit** (`FitText` in `CardView.js`).
 - **Shop:** lists on-sale packs only.
-- **Decks:** click collection to add, click deck list to remove, save at 20.
+- **Decks:** click collection to add, click deck list to remove, save at 20 (2 copies / 6 rares / 2 legendaries).
 
 Play: PvE vs AI. Friend challenges (live / correspondence) on Friends. Open matchmaking **not** built.
 

@@ -1,13 +1,15 @@
-const { resolveCoinFlip } = require("./battle");
+const { resolveCoinFlip, ensureCombatStats } = require("./battle");
 const { getById } = require("./cardRegistry");
 const { HAND_LIMIT, TRAIT_BONUS, MAX_ACTIVE, MAX_BENCH } = require("./rules");
 const { enforceBoardLimits } = require("./board");
 
 function stampPrintedPower(unit) {
-  if (!unit || unit.printedPower != null) return unit;
-  const catalog = unit.cardId ? getById(unit.cardId) : null;
-  if (catalog && catalog.power != null) unit.printedPower = catalog.power;
-  return unit;
+  if (!unit) return unit;
+  if (unit.printedPower == null) {
+    const catalog = unit.cardId ? getById(unit.cardId) : null;
+    if (catalog && catalog.power != null) unit.printedPower = catalog.power;
+  }
+  return ensureCombatStats(unit);
 }
 
 function stampSide(side) {

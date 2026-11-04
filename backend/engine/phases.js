@@ -1,5 +1,6 @@
 // phases.js
 const { applyAbility } = require("./abilities");
+const { resetCombatForPlay } = require("./battle");
 const { HAND_LIMIT } = require("./rules");
 
 /**
@@ -26,7 +27,7 @@ function startPhase(state) {
   }
 
   if ((playerState.deck || []).length > 0) {
-    const drawn = playerState.deck.shift();
+    const drawn = resetCombatForPlay(playerState.deck.shift());
     playerState.hand.push(drawn);
     const who = state.turnPlayer === "player" ? "Player" : "Opponent";
     state.log.push(`${who} draws a card.`);

@@ -1,6 +1,6 @@
-# Gigachad TCG — Living Rulebook (v4.3)
+# Gigachad TCG — Living Rulebook (v4.5)
 
-This is the rules the **engine actually runs** (v4.4). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
+This is the rules the **engine actually runs** (v4.5). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
 
 Numbers live in `backend/engine/rules.js`.
 
@@ -64,7 +64,7 @@ You do **not** dump your opening hand onto the board before turn 1. You play fro
 
 ## 5. Setup
 
-1. Shuffle a 20-card deck (max 3 copies of a card).
+1. Shuffle a 20-card deck (max **2** copies of a card, max **6** Rares, max **2** Legendaries).
 2. Both players draw **5**.
 3. **First player** takes the first turn and **does not draw**.
 4. **Second player** draws 1 at the start of their first turn.
@@ -119,16 +119,14 @@ If you skip Battle, nothing fights.
 3. Unblockable attacks skip the defender and hit remaining health instead.
 4. **Lead:** Power + temp + trait bonus (**±12**, Lead only).
 5. **Each Assist:** add **half** of that unit’s Power + temp, rounded down. Assists do **not** add type.
-6. Defender: Power + temp + printed Armor, plus **+8 Armor** if their type beats the Lead.
-7. **Attack total > defender** — defender is KO’d. Attackers survive and suffer Decay.
-8. **Attack total < defender** — all attackers are KO’d. Defender survives and suffer Decay.
-9. **Tie** — both sides survive; both suffer Decay.
+6. Defender Armor: printed Armor, plus **+8 Armor** if their type beats the Lead.
+7. Each unit has **HP equal to its printed Power**. Damage = attack total minus Armor (minimum 0).
+8. A Power Shield on the defender absorbs that hit (no HP lost) and is then spent.
+9. If the defender’s HP hits 0, it is KO’d. Attackers are not KO’d for attacking a tougher card.
 
-**Assist / Tired:** every Assist becomes **Tired** and cannot attack (Lead or Assist) on its controller’s **next** turn. The Lead does not become Tired.
+**Tired:** every unit that attacked (Lead and Assists) becomes **Tired** and cannot attack on its controller’s **next** turn.
 
 **Guard:** in Main Phase, mark one Active unit. The opponent must target that unit. Guard ends at the start of your next turn, or if the unit leaves Active.
-
-**Decay:** surviving units that fought lose **20%** of current Power, rounded down. A Power Shield prevents that unit’s next Decay.
 
 **KO:** the unit goes to discard. Defeat abilities fire. If it was Active, the next Bench unit is promoted automatically.
 

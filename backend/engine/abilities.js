@@ -65,9 +65,11 @@ function discardRandom(hand, n, pile) {
 
 function healUnit(unit, value) {
   const printed = unit.printedPower ?? unit.power ?? 0;
-  const before = unit.power || 0;
-  unit.power = Math.min(printed, before + value);
-  return unit.power - before;
+  if (unit.maxHp == null) unit.maxHp = printed;
+  if (unit.hp == null) unit.hp = unit.maxHp;
+  const before = unit.hp;
+  unit.hp = Math.min(unit.maxHp, before + value);
+  return unit.hp - before;
 }
 
 const AbilityHandlers = {
@@ -104,7 +106,7 @@ const AbilityHandlers = {
     const result = state.resolveCoinFlip();
     state.log.push(`${source.name} flips a coin… ${result ? "Heads!" : "Tails."}`);
     if (result && target) {
-      target.tempPower = -9999;
+      target.hp = 0;
       state.log.push(`${source.name}'s CoinFlipKO triggers! ${target.name} is KO'd.`);
     }
     return state;
@@ -137,7 +139,7 @@ const AbilityHandlers = {
 
   KORevenge: (state, source, target) => {
     if (target) {
-      target.tempPower = -9999;
+      target.hp = 0;
       state.log.push(`${source.name}'s KORevenge triggers!`);
     }
     return state;
@@ -313,14 +315,14 @@ const AbilityHandlers = {
 
   Heal: (state, source, target, value) => {
     const healed = healUnit(source, value);
-    state.log.push(`${source.name} heals ${healed} Power.`);
+    state.log.push(`${source.name} heals ${healed} HP.`);
     return state;
   },
 
   Restore: (state, source, target, value) => {
     const mine = friendSide(state, source);
     [...mine.active, ...mine.bench].forEach((unit) => healUnit(unit, value));
-    state.log.push(`${source.name} restores ${value} Power to friendly units.`);
+    state.log.push(`${source.name} restores ${value} HP to friendly units.`);
     return state;
   },
 
@@ -426,8 +428,9 @@ const AbilityHandlers = {
   },
 
   KOThreshold: (state, source, target, value) => {
-    if (target && (target.power || 0) <= value) {
-      target.tempPower = -9999;
+    const hp = target ? (target.hp ?? target.power ?? 0) : 0;
+    if (target && hp <= value) {
+      target.hp = 0;
       state.log.push(`${source.name} meets KO Threshold — ${target.name} is KO'd!`);
     }
     return state;

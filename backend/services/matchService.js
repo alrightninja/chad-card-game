@@ -17,7 +17,7 @@ const {
   randomAiDeckIds
 } = require("../engine/cardRegistry");
 const { DECK_SIZE } = require("../engine/rules");
-const { isLegalDeckList } = require("../lib/deck");
+const { deckIllegalReason } = require("../lib/deck");
 const {
   LIVE_TURN_MS,
   WIN_REPS,
@@ -36,19 +36,11 @@ function validateDeck(deck) {
     err.status = 404;
     throw err;
   }
-  if (!isLegalDeckList(deck.cards, DECK_SIZE)) {
-    const err = new Error(`Deck must contain exactly ${DECK_SIZE} cards (max 3 copies). Rebuild it in Decks.`);
+  const illegal = deckIllegalReason(deck.cards, DECK_SIZE);
+  if (illegal) {
+    const err = new Error(`${illegal}. Rebuild it in Decks.`);
     err.status = 400;
     throw err;
-  }
-  const counts = {};
-  for (const id of deck.cards) {
-    counts[id] = (counts[id] || 0) + 1;
-    if (counts[id] > 3) {
-      const err = new Error(`Deck contains too many copies of card: ${id}`);
-      err.status = 400;
-      throw err;
-    }
   }
 }
 

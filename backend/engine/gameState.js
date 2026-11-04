@@ -1,4 +1,4 @@
-const { resolveCoinFlip } = require("./battle");
+const { resolveCoinFlip, resetCombatForPlay } = require("./battle");
 const { OPENING_HAND } = require("./rules");
 
 function emptySide() {
@@ -17,7 +17,7 @@ function emptySide() {
 function drawCards(side, count) {
   for (let i = 0; i < count; i++) {
     if (!side.deck.length) break;
-    side.hand.push(side.deck.shift());
+    side.hand.push(resetCombatForPlay(side.deck.shift()));
   }
 }
 

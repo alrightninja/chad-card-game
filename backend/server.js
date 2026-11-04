@@ -23,7 +23,7 @@ const { safeMe } = require("./lib/publicUser");
 const { normalizeEmail, emailsMatch, emailQuery } = require("./lib/email");
 const retention = require("./lib/retention");
 const { PACKS, packOnSale } = require("./lib/packs");
-const { isLegalDeckList, DECK_SIZE } = require("./lib/deck");
+const { isLegalDeckList, deckIllegalReason, deckLimits, DECK_SIZE } = require("./lib/deck");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -292,7 +292,7 @@ app.get("/api/decks", requireAuth, async (req, res) => {
       legal: isLegalDeckList(deck.cards),
       needsRebuild: !isLegalDeckList(deck.cards)
     }));
-    res.json({ decks: allDecks });
+    res.json({ decks: allDecks, limits: deckLimits() });
   } catch (err) {
     console.error("Error fetching decks:", err);
     res.status(500).json({ error: "Server error" });
@@ -317,18 +317,9 @@ app.post("/api/decks/create", requireAuth, async (req, res) => {
     if (!Array.isArray(cards)) {
       return res.status(400).json({ error: "Cards must be an array" });
     }
-    if (!isLegalDeckList(cards, DECK_SIZE)) {
-      return res.status(400).json({ error: `Deck must contain exactly ${DECK_SIZE} cards` });
-    }
-
-    const counts = {};
-    for (const id of cards) {
-      counts[id] = (counts[id] || 0) + 1;
-      if (counts[id] > 3) {
-        return res.status(400).json({
-          error: `Too many copies of card: ${id} (max 3 allowed)`
-        });
-      }
+    const illegal = deckIllegalReason(cards, DECK_SIZE);
+    if (illegal) {
+      return res.status(400).json({ error: illegal });
     }
 
     const userCollection = [...user.collection];
@@ -380,18 +371,9 @@ app.post("/api/decks/update", requireAuth, async (req, res) => {
       if (!Array.isArray(cards)) {
         return res.status(400).json({ error: "Cards must be an array" });
       }
-      if (!isLegalDeckList(cards, DECK_SIZE)) {
-        return res.status(400).json({ error: `Deck must contain exactly ${DECK_SIZE} cards` });
-      }
-
-      const counts = {};
-      for (const id of cards) {
-        counts[id] = (counts[id] || 0) + 1;
-        if (counts[id] > 3) {
-          return res.status(400).json({
-            error: `Too many copies of card: ${id} (max 3 allowed)`
-          });
-        }
+      const illegal = deckIllegalReason(cards, DECK_SIZE);
+      if (illegal) {
+        return res.status(400).json({ error: illegal });
       }
 
       const userCollection = [...user.collection];

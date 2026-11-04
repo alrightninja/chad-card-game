@@ -9,6 +9,19 @@ function getUnitPower(unit) {
   return Math.max(0, (unit.power || 0) + (unit.tempPower || 0));
 }
 
+function remainingHp(unit) {
+  if (!unit) return 0;
+  if (unit.hp != null) return unit.hp;
+  return unit.printedPower ?? unit.power ?? 0;
+}
+
+function damageInto(attackers, defender) {
+  if (!attackers.length || !defender) return 0;
+  const atk = computeTeamBattlePower(attackers, defender).total;
+  const armor = computeBattlePower(defender, attackers[0], true).armor || 0;
+  return Math.max(0, atk - armor);
+}
+
 function chooseBestTarget(state) {
   const playerActive = state.player.active;
   if (!playerActive.length) return 0;
@@ -24,7 +37,7 @@ function chooseBestTarget(state) {
   let bestScore = -Infinity;
 
   for (let i = 0; i < playerActive.length; i++) {
-    const score = 200 - getUnitPower(playerActive[i]);
+    const score = 200 - remainingHp(playerActive[i]);
     if (score > bestScore) {
       bestScore = score;
       bestIndex = i;
@@ -50,19 +63,21 @@ function chooseAttackers(state, defenderIndex) {
 
   if (!eligible.length) return [];
 
-  const defPower = computeBattlePower(defender, eligible[0].unit, true).total;
+  const hp = remainingHp(defender);
   const chosen = [eligible[0].index];
   let lineup = [eligible[0].unit];
-  if (computeTeamBattlePower(lineup, defender).total > defPower) {
+  if (damageInto(lineup, defender) >= hp) {
     return chosen;
   }
 
   for (const extra of eligible.slice(1)) {
     lineup = [...lineup, extra.unit];
     chosen.push(extra.index);
-    if (computeTeamBattlePower(lineup, defender).total > defPower) break;
+    if (damageInto(lineup, defender) >= hp) return chosen;
   }
-  return chosen;
+
+  // Cannot KO this turn — chip with the Lead only so Assists stay fresh.
+  return [eligible[0].index];
 }
 
 function beginTurnIfNeeded(state) {

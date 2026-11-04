@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { rarityClass, rarityLabel } from "../lib/rarity";
 
 function FitText({ className, children, minPx = 7 }) {
   const ref = useRef(null);
@@ -66,7 +67,10 @@ export default function CardView({
   const unowned = card.unowned || card.quantity === 0;
   const printed = card.printedPower ?? card.power;
   const now = currentPower(card);
-  const decayed = printed != null && (card.power || 0) < printed;
+  const inCombat = card.hp != null;
+  const maxHp = card.maxHp ?? printed;
+  const hpNow = inCombat ? card.hp : null;
+  const wounded = inCombat && maxHp != null && hpNow < maxHp;
   const temp = card.tempPower || 0;
   const compact = size === "bench" || size === "board" || size === "tiny" || size === "active" || size === "hand";
   const sizeClass = size === "board" ? "bench" : size;
@@ -77,6 +81,7 @@ export default function CardView({
     dragging ? "is-ghost-source" : "",
     hot ? "drop-hot" : "",
     unowned ? "unowned" : "",
+    !unowned && wounded ? "wounded" : "",
     !unowned && card.trait ? `trait-${card.trait}` : ""
   ].join(" ");
 
@@ -92,7 +97,7 @@ export default function CardView({
         {nameEl}
         {unowned ? <div className="tcg-hp" /> : (
           <div className="tcg-hp">
-            <span className="tcg-hp-num">{now}</span>
+            <span className="tcg-hp-num">{inCombat ? hpNow : now}</span>
             {temp ? <span className="tcg-temp">{temp > 0 ? `+${temp}` : temp}</span> : null}
           </div>
         )}
@@ -107,6 +112,9 @@ export default function CardView({
       ) : (
         <div className="tcg-type">{card.trait}</div>
       )}
+      {!compact && card.rarity ? (
+        <div className={`tcg-rarity ${rarityClass(card.rarity)}`}>{rarityLabel(card.rarity)}</div>
+      ) : null}
       {!unowned && compact && sizeClass === "active" && card.abilityKeyword ? (
         <div className="tcg-ability-chip">{card.abilityKeyword}</div>
       ) : null}
@@ -116,7 +124,9 @@ export default function CardView({
       {!unowned && showAbility && !compact && card.flavorLine ? (
         <div className="tcg-flavor">{card.flavorLine}</div>
       ) : null}
-      <div className="tcg-was">{!unowned && decayed ? `was ${printed}` : "\u00a0"}</div>
+      <div className="tcg-was">
+        {!unowned && inCombat ? `HP ${hpNow}/${maxHp}` : !unowned && printed != null && (card.power || 0) < printed ? `was ${printed}` : "\u00a0"}
+      </div>
     </>
   );
 

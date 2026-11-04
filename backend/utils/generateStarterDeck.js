@@ -32,13 +32,13 @@ function generateStarterDeck(now = new Date(), rand = Math.random) {
   const uncommons = pool.filter((c) => c.rarity === "U");
   const rares = pool.filter((c) => c.rarity === "R");
 
-  const selectedCommons = pickRandom(commons, 4, rand);
-  const selectedUncommons = pickRandom(uncommons, 2, rand);
+  const selectedCommons = pickRandom(commons, 6, rand);
+  const selectedUncommons = pickRandom(uncommons, 3, rand);
   const selectedRares = pickRandom(rares, 2, rand);
 
   const deck = [
-    ...selectedCommons.flatMap((c) => Array(3).fill(c.cardId)),
-    ...selectedUncommons.flatMap((c) => Array(3).fill(c.cardId)),
+    ...selectedCommons.flatMap((c) => Array(2).fill(c.cardId)),
+    ...selectedUncommons.flatMap((c) => Array(2).fill(c.cardId)),
     ...selectedRares.flatMap((c) => Array(1).fill(c.cardId))
   ];
 
