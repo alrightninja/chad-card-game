@@ -14,7 +14,7 @@ const PACKS = [
     cards: 5,
     set: 2,
     art: "/packs/ultra_nightmare_mode.jpg",
-    availableFrom: process.env.ULTRA_NIGHTMARE_RELEASE_AT || "2026-12-01T05:00:00.000Z"
+    availableFrom: process.env.ULTRA_NIGHTMARE_RELEASE_AT || "2026-11-16T05:00:00.000Z"
   },
   {
     id: "to_the_hilt",
@@ -23,7 +23,7 @@ const PACKS = [
     cards: 5,
     set: 3,
     art: "/packs/to_the_hilt.jpg",
-    availableFrom: process.env.TO_THE_HILT_RELEASE_AT || "2026-11-01T04:00:00.000Z"
+    availableFrom: process.env.TO_THE_HILT_RELEASE_AT || "2026-12-01T05:00:00.000Z"
   },
   {
     id: "chaos",
@@ -32,7 +32,7 @@ const PACKS = [
     cards: 5,
     set: 4,
     art: "/packs/chaos.jpg",
-    availableFrom: process.env.CHAOS_RELEASE_AT || "2026-12-01T05:00:00.000Z"
+    availableFrom: process.env.CHAOS_RELEASE_AT || "2027-02-01T05:00:00.000Z"
   }
 ];
 

@@ -118,8 +118,8 @@ test("11. starter deck uses only released sets", () => {
   const now = new Date("2026-11-03T12:00:00.000Z");
   const released = releasedSetNumbers(now);
   assert.equal(released.has(1), true);
-  assert.equal(released.has(3), true);
   assert.equal(released.has(2), false);
+  assert.equal(released.has(3), false);
   assert.equal(released.has(4), false);
   const starter = generateStarterDeck(now);
   for (const id of starter) {

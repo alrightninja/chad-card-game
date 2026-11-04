@@ -163,9 +163,9 @@ Packs are defined in `backend/server.js`. Shop `GET /api/shop/packs` only return
 | Pack | Set | Shop | Release |
 | --- | --- | --- | --- |
 | **Ordo Chadorum** `ordo_chadorum` | 1 (30 cards) | Live | now |
-| **To the Hilt** `to_the_hilt` | 3 (44 cards) | Hidden until date | **1 Nov 2026, midnight Eastern** (`2026-11-01T04:00:00.000Z`) |
-| **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (22 cards, includes Cyber Chad) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
-| **Chaos** `chaos` | 4 (130 cards) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
+| **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (22 cards, includes Cyber Chad) | Hidden until date | **16 Nov 2026, midnight Eastern** (`2026-11-16T05:00:00.000Z`) |
+| **To the Hilt** `to_the_hilt` | 3 (44 cards) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
+| **Chaos** `chaos` | 4 (130 cards) | Hidden until date | **1 Feb 2027, midnight Eastern** (`2027-02-01T05:00:00.000Z`) |
 
 Old shop id `starter_pump` still maps to Ordo Chadorum on buy.
 
