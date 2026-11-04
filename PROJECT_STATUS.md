@@ -1,6 +1,6 @@
 # Gigachad TCG — project status
 
-Last updated: 4 November 2026 (rules v4.5).  
+Last updated: 4 November 2026 (rules v4.7).  
 Workspace: `C:\Users\coleb\OneDrive\Documents\Projects\Apps\chad-card-game`
 
 Use this file if a chat runs out of context. The game is **playable locally** vs AI. It is **not deployed**. Do **not** commit `.env`.
@@ -17,9 +17,11 @@ Turn-based multiplayer TCG. Current engine (`RULEBOOK.md` v4.4):
 - Active **3** / Bench **3** (hand is not 5 slots)
 - First player skips the turn-1 draw; second player draws on their first Start Phase
 - Main Phase (play/swap/Guard) then Battle; **no plays after you attack**
-- Lead (full Power) + Assists (half); every attacker is Tired next turn; Guard forces the target
-- Unit **HP = printed Power**; damage = attack total minus Armor; KO at 0 HP (no decay, no suicide into bigger cards)
-- Trait wheel **Lead only, +12 / −12** (defender +8 Armor on a bad matchup): Mind → Muscle → Mystic → Machina → Mayhem → Mind
+- Lead (full Power) + **one Assist** (half; Commons/Uncommons only); every attacker is Tired next turn; Guard forces the target
+- **One** Bench-to-Active move per turn; KO auto-promotes only if Active is empty
+- Unit **HP = 2× printed Power**; damage = attack total minus Armor; KO at 0 HP (no decay, no suicide into bigger cards)
+- Trait wheel **Lead only, +6 / −6** (defender +8 Armor on a bad matchup): Mind → Muscle → Mystic → Machina → Mayhem → Mind
+- Loss reps only if the match reached **turn 5**; forfeits pay the quitter **0**
 - Lose if Active and Bench are empty (hand does not save you after opening)
 
 ---

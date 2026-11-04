@@ -21,7 +21,7 @@ function run() {
   state.opponent.active = [tank];
   resolveBattle(state, [jab], tank);
   if (state.player.active.length !== 1) throw new Error("Jab should survive punching Gigachad");
-  if (tank.hp !== 25) throw new Error(`Gigachad should have 25 HP, got ${tank.hp}`);
+  if (tank.hp !== 76) throw new Error(`Gigachad should have 76 HP (2× printed minus 26), got ${tank.hp}`);
   if (jab.power !== 26) throw new Error("Jab Power should be unchanged");
 
   const lead = unit("Lead", 40);

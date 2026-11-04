@@ -100,10 +100,12 @@ function toClient(match, userId) {
 async function awardAndFinish(match, options = {}) {
   if (match.status === "finished") return;
 
+  const turn = hydrateState(match.state)?.turn || 1;
   const { player: playerReps, opponent: opponentReps } = finishReps({
     opponentType: match.opponentType,
     winner: match.winner,
-    forfeit: !!options.forfeit
+    forfeit: !!options.forfeit,
+    turn
   });
 
   match.status = "finished";
@@ -148,7 +150,7 @@ async function settleLiveTurnTimeout(match) {
     match.version += 1;
     match.set("state", serializeState(state));
     match.markModified("state");
-    await awardAndFinish(match);
+    await awardAndFinish(match, { forfeit: true });
     return match;
   }
 
@@ -186,7 +188,7 @@ async function settleIfTimedOut(match) {
   match.version += 1;
   match.set("state", serializeState(state));
   match.markModified("state");
-  await awardAndFinish(match);
+  await awardAndFinish(match, { forfeit: true });
   return match;
 }
 

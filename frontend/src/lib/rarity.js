@@ -22,3 +22,10 @@ export function rarityBucket(rarity) {
 export function rarityClass(rarity) {
   return `rarity-${rarityBucket(rarity)}`;
 }
+
+/** Commons and Uncommons may Assist or receive an Assist. */
+export function canAssist(unit) {
+  if (!unit) return false;
+  const bucket = rarityBucket(unit.rarity);
+  return bucket === "C" || bucket === "U";
+}

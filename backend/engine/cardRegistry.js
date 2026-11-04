@@ -1,5 +1,5 @@
 const catalog = require("../cards.json");
-const { DECK_SIZE } = require("./rules");
+const { DECK_SIZE, HP_MULT } = require("./rules");
 
 const byId = new Map(catalog.map((card) => [card.cardId, card]));
 const byName = new Map(catalog.map((card) => [card.name.toLowerCase(), card]));
@@ -44,8 +44,8 @@ function toBattleUnit(card, instanceId) {
     trait: card.trait,
     power: card.power,
     printedPower: card.power,
-    maxHp: card.power,
-    hp: card.power,
+    maxHp: card.power * HP_MULT,
+    hp: card.power * HP_MULT,
     rarity: card.rarity,
     abilityCategory: card.abilityCategory,
     abilityKeyword: card.abilityKeyword,

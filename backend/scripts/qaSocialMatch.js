@@ -84,13 +84,21 @@ function traitAdv(atk, def) {
   return 0;
 }
 
+function canAssist(unit) {
+  const r = unit?.rarity;
+  return r !== "R" && r !== "SR" && r !== "UR" && r !== "L";
+}
+
 function chooseAttack(you, foe) {
   if (!you.active?.length || !foe.active?.length) return null;
   let best = { score: -999, attackers: [0], defender: 0 };
   for (let d = 0; d < foe.active.length; d++) {
     const def = foe.active[d];
-    const attackers = you.active.map((_, i) => i);
-    const score = you.active.reduce((sum, a) => {
+    const attackers = [0];
+    const helper = you.active.findIndex((u, i) => i > 0 && canAssist(you.active[0]) && canAssist(u));
+    if (helper >= 0) attackers.push(helper);
+    const score = attackers.reduce((sum, i) => {
+      const a = you.active[i];
       return sum + (a.power || 0) + 20 * traitAdv(a.trait, def.trait);
     }, 0) - (def.power || 0);
     if (score > best.score) best = { score, attackers, defender: d };

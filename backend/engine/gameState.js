@@ -10,7 +10,8 @@ function emptySide() {
     discard: [],
     health: 100,
     silencedTurns: 0,
-    guardInstanceId: null
+    guardInstanceId: null,
+    benchMovesThisTurn: 0
   };
 }
 

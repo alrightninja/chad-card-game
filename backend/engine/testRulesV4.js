@@ -9,11 +9,11 @@ function ids() {
 }
 
 function run() {
-  if (TRAIT_BONUS !== 12) throw new Error("TRAIT_BONUS should be 12");
+  if (TRAIT_BONUS !== 6) throw new Error("TRAIT_BONUS should be 6");
   const bonus = getTraitBonus({ trait: "Mind" }, { trait: "Muscle" });
-  if (bonus !== 12) throw new Error(`Mind vs Muscle should be +12, got ${bonus}`);
+  if (bonus !== 6) throw new Error(`Mind vs Muscle should be +${TRAIT_BONUS}, got ${bonus}`);
   const weak = getTraitBonus({ trait: "Muscle" }, { trait: "Mind" });
-  if (weak !== -12) throw new Error(`Muscle vs Mind should be -12, got ${weak}`);
+  if (weak !== -6) throw new Error(`Muscle vs Mind should be -${TRAIT_BONUS}, got ${weak}`);
 
   let state = createInitialGameState(
     shuffle(deckToUnits(ids())),

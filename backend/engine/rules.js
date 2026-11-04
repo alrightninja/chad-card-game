@@ -7,7 +7,10 @@ const MAX_BENCH = 3;
 const DECK_SIZE = 20;
 const DECAY_RATE = 0.2;
 const ASSIST_RATE = 0.5;
-const TRAIT_BONUS = 12;
+const MAX_ASSISTS = 1;
+const MAX_BENCH_MOVES_PER_TURN = 1;
+const HP_MULT = 2;
+const TRAIT_BONUS = 6;
 const TRAIT_ARMOR = 8;
 const TRAIT_WHEEL = ["Mind", "Muscle", "Mystic", "Machina", "Mayhem"];
 
@@ -19,6 +22,20 @@ const TRAIT_ADVANTAGE = {
   Mayhem: "Mind"
 };
 
+function rarityBucket(rarity) {
+  if (rarity === "L") return "L";
+  if (rarity === "R" || rarity === "SR" || rarity === "UR") return "R";
+  if (rarity === "U") return "U";
+  return "C";
+}
+
+/** Commons and Uncommons may Assist or receive an Assist. Rares and Legendaries fight alone. */
+function canAssist(unit) {
+  if (!unit) return false;
+  const bucket = rarityBucket(unit.rarity);
+  return bucket === "C" || bucket === "U";
+}
+
 module.exports = {
   OPENING_HAND,
   HAND_LIMIT,
@@ -27,8 +44,13 @@ module.exports = {
   DECK_SIZE,
   DECAY_RATE,
   ASSIST_RATE,
+  MAX_ASSISTS,
+  MAX_BENCH_MOVES_PER_TURN,
+  HP_MULT,
   TRAIT_BONUS,
   TRAIT_ARMOR,
   TRAIT_WHEEL,
-  TRAIT_ADVANTAGE
+  TRAIT_ADVANTAGE,
+  rarityBucket,
+  canAssist
 };

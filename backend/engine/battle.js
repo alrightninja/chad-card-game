@@ -1,13 +1,13 @@
 // battle.js
 const { triggerDefeatAbilities } = require("./abilities");
-const { ASSIST_RATE, TRAIT_BONUS, TRAIT_ARMOR, TRAIT_ADVANTAGE, MAX_ACTIVE } = require("./rules");
+const { ASSIST_RATE, HP_MULT, TRAIT_BONUS, TRAIT_ARMOR, TRAIT_ADVANTAGE } = require("./rules");
 const { addToActive } = require("./board");
 
 function ensureCombatStats(unit) {
   if (!unit) return unit;
   const printed = unit.printedPower ?? unit.power ?? 0;
   if (unit.printedPower == null) unit.printedPower = printed;
-  if (unit.maxHp == null) unit.maxHp = printed;
+  if (unit.maxHp == null) unit.maxHp = printed * HP_MULT;
   if (unit.hp == null) unit.hp = unit.maxHp;
   return unit;
 }
@@ -131,11 +131,11 @@ function knockOut(state, unit, owner) {
   state.lastKoSeat = owner === state.player ? "player" : "opponent";
   triggerDefeatAbilities(state, unit);
 
-  if (owner.bench.length > 0 && owner.active.length < MAX_ACTIVE) {
+  if (owner.active.length === 0 && owner.bench.length > 0) {
     const promoted = owner.bench.shift();
     addToActive(owner, promoted);
     state.log.push(`${promoted.name} is promoted from the Bench to Active.`);
-  } else if (!owner.bench.length) {
+  } else if (owner.active.length === 0 && !owner.bench.length) {
     state.log.push(
       `${owner === state.player ? "Player" : "Opponent"} has no Bench units to promote.`
     );

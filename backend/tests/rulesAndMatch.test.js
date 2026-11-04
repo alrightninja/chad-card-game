@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const { DECK_SIZE, MAX_ACTIVE } = require("../engine/rules");
 const { createInitialGameState } = require("../engine/gameState");
 const { applyAction } = require("../engine/applyAction");
-const { playUnit, attack } = require("../engine/actions");
+const { playUnit, attack, swapActive, promoteFromBench } = require("../engine/actions");
 const { resolveBattle } = require("../engine/battle");
 const { checkWin, sideEliminated } = require("../engine/checkWin");
 const { enforceBoardLimits } = require("../engine/board");
@@ -129,12 +129,32 @@ test("7. one live and one correspondence at the same time", () => {
 });
 
 test("9. AI forfeit awards 0 reps", () => {
-  const loss = finishReps({ opponentType: "ai", winner: "opponent", forfeit: false });
-  assert.equal(loss.player, 20);
-  const forfeit = finishReps({ opponentType: "ai", winner: "opponent", forfeit: true });
+  const earlyLoss = finishReps({
+    opponentType: "ai",
+    winner: "opponent",
+    forfeit: false,
+    turn: 2
+  });
+  assert.equal(earlyLoss.player, 0);
+  const lateLoss = finishReps({
+    opponentType: "ai",
+    winner: "opponent",
+    forfeit: false,
+    turn: 5
+  });
+  assert.equal(lateLoss.player, 20);
+  const earlyWin = finishReps({
+    opponentType: "ai",
+    winner: "player",
+    forfeit: false,
+    turn: 2
+  });
+  assert.equal(earlyWin.player, 50);
+  const forfeit = finishReps({ opponentType: "ai", winner: "opponent", forfeit: true, turn: 8 });
   assert.equal(forfeit.player, 0);
-  const pvp = finishReps({ opponentType: "user", winner: "opponent", forfeit: true });
-  assert.equal(pvp.player, 20);
+  const pvp = finishReps({ opponentType: "user", winner: "opponent", forfeit: true, turn: 8 });
+  assert.equal(pvp.player, 0);
+  assert.equal(pvp.opponent, 50);
 });
 
 test("10. live turn clock restarts when the turn changes, including PvE wrap", () => {
@@ -240,6 +260,89 @@ test("HP combat chips a bigger defender and still one-shots equals", () => {
   assert.equal(even.lastBattle.result, "ko");
   assert.equal(even.opponent.active.length, 0);
   assert.equal(even.player.active.length, 1);
+});
+
+test("assists are one Common/Uncommon from Active only", () => {
+  const lead = dummyUnit("Lead", 20);
+  const help = dummyUnit("Help", 20);
+  const extra = dummyUnit("Extra", 20);
+  const wall = dummyUnit("Wall", 80);
+  const state = createInitialGameState([], []);
+  state.phase = "main";
+  state.player.active = [lead, help, extra];
+  state.opponent.active = [wall];
+  assert.throws(() => attack(state, [0, 1, 2]), /one Assist/i);
+
+  const rareLead = dummyUnit("RareLead", 20);
+  rareLead.rarity = "R";
+  const rareState = createInitialGameState([], []);
+  rareState.phase = "main";
+  rareState.player.active = [rareLead, dummyUnit("Help", 20)];
+  rareState.opponent.active = [dummyUnit("Wall", 80)];
+  assert.throws(() => attack(rareState, [0, 1]), /cannot receive an Assist/i);
+
+  const legendHelp = dummyUnit("Legend", 20);
+  legendHelp.rarity = "L";
+  const legendState = createInitialGameState([], []);
+  legendState.phase = "main";
+  legendState.player.active = [dummyUnit("Lead", 20), legendHelp];
+  legendState.opponent.active = [dummyUnit("Wall", 80)];
+  assert.throws(() => attack(legendState, [0, 1]), /cannot Assist/i);
+
+  const ok = createInitialGameState([], []);
+  ok.phase = "main";
+  ok.player.active = [dummyUnit("Lead", 20), dummyUnit("Help", 20)];
+  ok.opponent.active = [dummyUnit("Wall", 80)];
+  attack(ok, [0, 1]);
+  assert.equal(ok.lastBattle.assists.length, 1);
+});
+
+test("one Bench-to-Active move per turn and KO fill only if Active is empty", () => {
+  const state = createInitialGameState([], []);
+  state.phase = "main";
+  state.player.active = [dummyUnit("A", 10)];
+  state.player.bench = [dummyUnit("B", 10), dummyUnit("C", 10)];
+  swapActive(state, 0, 0);
+  assert.throws(() => swapActive(state, 0, 0), /one Bench unit/i);
+  assert.throws(() => promoteFromBench(state, 0), /one Bench unit/i);
+
+  const snack = dummyUnit("Snack", 5);
+  const other = dummyUnit("Other", 10);
+  const koKeep = {
+    log: [],
+    player: { active: [dummyUnit("A", 80)], bench: [], hand: [], discard: [] },
+    opponent: {
+      active: [snack, other],
+      bench: [dummyUnit("D", 5)],
+      hand: [],
+      discard: []
+    },
+    turnPlayer: "player",
+    phase: "battle"
+  };
+  resolveBattle(koKeep, koKeep.player.active.slice(), snack);
+  assert.equal(koKeep.opponent.active.length, 1);
+  assert.equal(koKeep.opponent.active[0].name, "Other");
+  assert.equal(koKeep.opponent.bench.length, 1);
+
+  const last = dummyUnit("Last", 5);
+  const filler = dummyUnit("Filler", 10);
+  const koEmpty = {
+    log: [],
+    player: { active: [dummyUnit("A", 80)], bench: [], hand: [], discard: [] },
+    opponent: {
+      active: [last],
+      bench: [filler],
+      hand: [],
+      discard: []
+    },
+    turnPlayer: "player",
+    phase: "battle"
+  };
+  resolveBattle(koEmpty, koEmpty.player.active.slice(), last);
+  assert.equal(koEmpty.opponent.active.length, 1);
+  assert.equal(koEmpty.opponent.active[0].name, "Filler");
+  assert.equal(koEmpty.opponent.bench.length, 0);
 });
 
 test("Lead becomes Tired after attacking", () => {

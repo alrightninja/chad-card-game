@@ -2,7 +2,7 @@ const { playUnit, attack, endTurn, setGuard } = require("./actions");
 const { startPhase } = require("./phases");
 const { checkWin } = require("./checkWin");
 const { computeBattlePower, computeTeamBattlePower } = require("./battle");
-const { MAX_ACTIVE, MAX_BENCH } = require("./rules");
+const { MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, canAssist } = require("./rules");
 const { addToActive } = require("./board");
 
 function getUnitPower(unit) {
@@ -69,8 +69,13 @@ function chooseAttackers(state, defenderIndex) {
   if (damageInto(lineup, defender) >= hp) {
     return chosen;
   }
+  if (!canAssist(eligible[0].unit)) {
+    return chosen;
+  }
 
   for (const extra of eligible.slice(1)) {
+    if (chosen.length >= 1 + MAX_ASSISTS) break;
+    if (!canAssist(extra.unit)) continue;
     lineup = [...lineup, extra.unit];
     chosen.push(extra.index);
     if (damageInto(lineup, defender) >= hp) return chosen;

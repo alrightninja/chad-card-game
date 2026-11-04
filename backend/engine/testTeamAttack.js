@@ -16,7 +16,7 @@ function runTest() {
   console.log("=== BEFORE ===");
   console.log(JSON.stringify(state, null, 2));
 
-  attack(state, [0, 1, 2]);
+  attack(state, [0, 1]);
 
   console.log("=== AFTER ===");
   console.log(JSON.stringify(state, null, 2));

@@ -73,11 +73,12 @@ function runFullMatch() {
     console.log(`\n=== TURN ${turn} (${state.turnPlayer}) ===`);
 
     if (state.turnPlayer === "player") {
-      // Player attacks with all active units
+      // Player attacks with Lead + at most one Assist
       const attackers = state.player.active
         .map((unit, i) => ({ unit, i }))
         .filter(({ unit }) => unit && !unit.stunned && !(unit.tiredTurns > 0))
-        .map(({ i }) => i);
+        .map(({ i }) => i)
+        .slice(0, 2);
       if (attackers.length > 0 && state.opponent.active.length > 0) {
         attack(state, attackers);
       }

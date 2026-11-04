@@ -12,6 +12,8 @@ function startPhase(state) {
   const playerState =
     state.turnPlayer === "player" ? state.player : state.opponent;
 
+  playerState.benchMovesThisTurn = 0;
+
   if (playerState.silencedTurns && playerState.silencedTurns > 0) {
     playerState.silencedTurns -= 1;
   }

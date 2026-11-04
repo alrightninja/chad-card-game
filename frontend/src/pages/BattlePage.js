@@ -7,6 +7,7 @@ import { WS_URL } from "../api/config";
 import { useAudio } from "../audio/AudioProvider";
 import { useAuth } from "../context/AuthContext";
 import CardView from "../components/CardView";
+import { canAssist } from "../lib/rarity";
 import { matchupPhrase } from "../lib/traits";
 import "../battle-mobile.css";
 
@@ -326,6 +327,12 @@ export default function BattlePage() {
       }
       return;
     }
+    if (drag.from === "bench" || (drag.from === "active" && drop.kind === "bench")) {
+      if ((matchRef.current?.state?.you?.benchMovesThisTurn || 0) >= 1) {
+        setError("You can only move one Bench unit into Active per turn.");
+        return;
+      }
+    }
     if (drag.from === "bench") {
       if (drop.kind === "active-empty") {
         send({ type: "promote", benchIndex: drag.benchIndex });
@@ -572,11 +579,16 @@ export default function BattlePage() {
     if (guardMode) return "Click YOUR Active unit to make it Guard. The opponent must attack that unit.";
     if (ghost) return "Drop on Active or Bench.";
     if (selectedHand) return "Click or drop on an Active slot, or a Bench slot.";
-    if (selectedBench != null) return "Click an empty Active slot to move up, or an Active unit to swap.";
+    if (selectedBench != null) {
+      if ((you?.benchMovesThisTurn || 0) >= 1) {
+        return "You already moved a Bench unit into Active this turn.";
+      }
+      return "Click an empty Active slot to move up, or an Active unit to swap (one Bench move per turn).";
+    }
     if (attackers.length) {
       return attackers.length === 1
-        ? "That unit is the Lead (full Power + its type). Click more Active units to Assist (half Power, no type), then click the enemy."
-        : "Lead + Assists ready. Click the enemy Active (must be their Guard if they have one). Watch the type line.";
+        ? "That unit is the Lead. You may add one Common or Uncommon Assist from Active, then click the enemy."
+        : "Lead + one Assist ready. Click the enemy Active (must be their Guard if they have one).";
     }
     return "Main Phase: play, swap, or Guard. Then click your Lead to attack. Type glow shows the wheel. Double-click to inspect abilities.";
   }
@@ -615,11 +627,21 @@ export default function BattlePage() {
         send({ type: "play", instanceId: selectedHand, zone: "active" });
         return;
       }
-      if (selectedBench != null) send({ type: "promote", benchIndex: selectedBench });
+      if (selectedBench != null) {
+        if ((you?.benchMovesThisTurn || 0) >= 1) {
+          setError("You can only move one Bench unit into Active per turn.");
+          return;
+        }
+        send({ type: "promote", benchIndex: selectedBench });
+      }
       return;
     }
     if (selectedHand) return;
     if (selectedBench != null) {
+      if ((you?.benchMovesThisTurn || 0) >= 1) {
+        setError("You can only move one Bench unit into Active per turn.");
+        return;
+      }
       send({ type: "swap", activeIndex: i, benchIndex: selectedBench });
       return;
     }
@@ -630,8 +652,34 @@ export default function BattlePage() {
     }
     setSelectedHand(null);
     setSelectedBench(null);
-    setAttackers((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
-    audio?.playSfx("select");
+    setAttackers((prev) => {
+      if (prev.includes(i)) {
+        audio?.playSfx("select");
+        return prev.filter((x) => x !== i);
+      }
+      if (!prev.length) {
+        audio?.playSfx("select");
+        return [i];
+      }
+      const lead = you?.active?.[prev[0]];
+      if (!canAssist(lead)) {
+        audio?.playSfx("error");
+        setError(`${lead?.name || "That unit"} is Rare or Legendary and cannot receive an Assist.`);
+        return prev;
+      }
+      if (!canAssist(card)) {
+        audio?.playSfx("error");
+        setError(`${card.name} is Rare or Legendary and cannot Assist.`);
+        return prev;
+      }
+      if (prev.length >= 2) {
+        audio?.playSfx("error");
+        setError("Only one Assist is allowed.");
+        return prev;
+      }
+      audio?.playSfx("select");
+      return [...prev, i];
+    });
   }
 
   function onYourBench(i, card) {
@@ -760,10 +808,10 @@ export default function BattlePage() {
           <div className="coach coach-compact">
             <strong>Coach</strong>
             <ol>
-              <li>Main Phase: play to Active (3) or Bench (3), swap, or press Guard then click an Active unit.</li>
-              <li>Attack: first click is the Lead (full Power). Extra clicks Assist (half Power) but those units are Tired next turn.</li>
+              <li>Main Phase: play to Active (3) or Bench (3), one Bench-to-Active move, or press Guard then click an Active unit.</li>
+              <li>Attack: first click is the Lead. You may add one Common or Uncommon Assist from Active. Rares and Legendaries fight alone. Attackers become Tired.</li>
               <li>If they have a Guard (blue), you must attack that unit. After the fight you cannot play more cards.</li>
-              <li>Only the Lead’s type counts: +12 if it beats the defender, −12 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type.</li>
+              <li>Only the Lead’s type counts: +6 if it beats the defender, −6 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type. Units have HP equal to twice their Power.</li>
               <li>You go first and skip a draw. Hand limit 7. You lose if Active and Bench are empty.</li>
             </ol>
           </div>

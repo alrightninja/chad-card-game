@@ -1,6 +1,6 @@
 const { resolveCoinFlip, ensureCombatStats } = require("./battle");
 const { getById } = require("./cardRegistry");
-const { HAND_LIMIT, TRAIT_BONUS, MAX_ACTIVE, MAX_BENCH } = require("./rules");
+const { HAND_LIMIT, TRAIT_BONUS, MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, MAX_BENCH_MOVES_PER_TURN } = require("./rules");
 const { enforceBoardLimits } = require("./board");
 
 function stampPrintedPower(unit) {
@@ -71,6 +71,8 @@ function hydrateState(raw) {
   enforceBoardLimits(state.opponent);
   if (!state.player.guardInstanceId) state.player.guardInstanceId = null;
   if (!state.opponent.guardInstanceId) state.opponent.guardInstanceId = null;
+  if (state.player.benchMovesThisTurn == null) state.player.benchMovesThisTurn = 0;
+  if (state.opponent.benchMovesThisTurn == null) state.opponent.benchMovesThisTurn = 0;
   if (!state.secretLog) state.secretLog = { player: [], opponent: [] };
   return state;
 }
@@ -108,6 +110,8 @@ function publicMatchState(state, perspective = "player") {
     traitBonus: TRAIT_BONUS,
     maxActive: MAX_ACTIVE,
     maxBench: MAX_BENCH,
+    maxAssists: MAX_ASSISTS,
+    maxBenchMovesPerTurn: MAX_BENCH_MOVES_PER_TURN,
     winner: serialized.winner || null,
     skipTurn: serialized.skipTurn || null,
     lastBattle: serialized.lastBattle || null,
@@ -116,6 +120,7 @@ function publicMatchState(state, perspective = "player") {
       health: you.health,
       silencedTurns: you.silencedTurns || 0,
       guardInstanceId: you.guardInstanceId || null,
+      benchMovesThisTurn: you.benchMovesThisTurn || 0,
       hand: you.hand,
       active: you.active,
       bench: you.bench,

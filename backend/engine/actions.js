@@ -3,7 +3,7 @@
 const { applyAbility } = require("./abilities");
 const { resolveBattle, resetCombatForPlay } = require("./battle");
 const { endPhase } = require("./phases");
-const { MAX_ACTIVE, MAX_BENCH } = require("./rules");
+const { MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, MAX_BENCH_MOVES_PER_TURN, canAssist } = require("./rules");
 const { addToActive } = require("./board");
 
 function enterPlay(state, playerState, cardIndex, destination) {
@@ -66,6 +66,13 @@ function playUnit(state, cardIndex, zone) {
 /**
  * Move a benched unit into an empty Active slot.
  */
+function consumeBenchMove(playerState) {
+  if ((playerState.benchMovesThisTurn || 0) >= MAX_BENCH_MOVES_PER_TURN) {
+    throw new Error("You can only move one Bench unit into Active per turn.");
+  }
+  playerState.benchMovesThisTurn = (playerState.benchMovesThisTurn || 0) + 1;
+}
+
 function promoteFromBench(state, benchIndex) {
   const playerState =
     state.turnPlayer === "player" ? state.player : state.opponent;
@@ -77,6 +84,7 @@ function promoteFromBench(state, benchIndex) {
   if (!unit) {
     throw new Error("No unit on that Bench slot.");
   }
+  consumeBenchMove(playerState);
   playerState.bench.splice(benchIndex, 1);
   addToActive(playerState, unit);
   state.log.push(`${unit.name} moves from the Bench to Active.`);
@@ -108,6 +116,7 @@ function swapActive(state, activeIndex, benchIndex) {
     return state;
   }
 
+  consumeBenchMove(playerState);
   playerState.active[activeIndex] = benchUnit;
   playerState.bench[benchIndex] = activeUnit;
   if (playerState.guardInstanceId === activeUnit.instanceId) {
@@ -169,10 +178,18 @@ function attack(state, attackerIndices, defenderIndex = 0) {
     ? attackerIndices
     : [attackerIndices];
 
+  const unique = [...new Set(indices)];
+  if (unique.length !== indices.length) {
+    throw new Error("Each attacker can only be chosen once.");
+  }
+  if (unique.length > 1 + MAX_ASSISTS) {
+    throw new Error("Only one Assist is allowed.");
+  }
+
   const attackers = [];
-  for (const idx of indices) {
+  for (const idx of unique) {
     if (idx < 0 || idx >= playerState.active.length) {
-      throw new Error("Invalid attacker.");
+      throw new Error("Only Active units can attack or Assist. Bench units cannot.");
     }
     const unit = playerState.active[idx];
     if (unit.stunned) {
@@ -185,6 +202,16 @@ function attack(state, attackerIndices, defenderIndex = 0) {
   }
   if (!attackers.length) {
     throw new Error("Choose at least one attacker.");
+  }
+  if (attackers.length > 1) {
+    const lead = attackers[0];
+    if (!canAssist(lead)) {
+      throw new Error(`${lead.name} is ${lead.rarity === "L" ? "Legendary" : "Rare"} and cannot receive an Assist.`);
+    }
+    const helper = attackers[1];
+    if (!canAssist(helper)) {
+      throw new Error(`${helper.name} is ${helper.rarity === "L" ? "Legendary" : "Rare"} and cannot Assist.`);
+    }
   }
 
   const defIdx = Number.isInteger(defenderIndex) ? defenderIndex : 0;

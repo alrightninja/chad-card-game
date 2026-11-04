@@ -1,6 +1,6 @@
-# Gigachad TCG — Living Rulebook (v4.5)
+# Gigachad TCG — Living Rulebook (v4.7)
 
-This is the rules the **engine actually runs** (v4.5). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
+This is the rules the **engine actually runs** (v4.7). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
 
 Numbers live in `backend/engine/rules.js`.
 
@@ -38,8 +38,8 @@ Every card is a **Unit**. Printed on each card:
 
 Mind → Muscle → Mystic → Machina → Mayhem → Mind
 
-- Advantage: Lead **+12** Power
-- Disadvantage: Lead **−12** Power, and the defender gains **+8 Armor** for that fight
+- Advantage: Lead **+6** Power
+- Disadvantage: Lead **−6** Power, and the defender gains **+8 Armor** for that fight
 - Same trait or two steps apart: even (0)
 
 Reverse Weakness flips the bonus. Each type has a colored glow on the card (Muscle red, Mind blue, Mystic teal, Machina gold, Mayhem purple).
@@ -86,8 +86,7 @@ Each turn has four phases, in order.
 You may, in any order:
 
 - Play units from hand into empty Active (max 3) or Bench (max 3)
-- Promote a Bench unit into an empty Active slot
-- Swap an Active unit with a Bench unit (Rooted units cannot leave Active)
+- Promote a Bench unit into an empty Active slot, or swap an Active unit with a Bench unit (Rooted units cannot leave Active) — **one** of these Bench-to-Active moves per turn
 - Set **Guard** on one Active unit (the opponent must attack that unit)
 
 Click-then-slot and drag-and-drop both work.
@@ -96,8 +95,9 @@ Click-then-slot and drag-and-drop both work.
 
 ### Battle
 
-- Choose 1–3 of **your** Active units that are not Tired or Stunned.
-- The **first** unit you choose is the **Lead** (full Power). Extra units are **Assists** (half Power).
+- Choose **your** Active units that are not Tired or Stunned. Bench units cannot attack or Assist.
+- The **first** unit you choose is the **Lead** (full Power). You may add **one Assist** (half Power).
+- Rares and Legendaries cannot Assist and cannot receive an Assist. Commons and Uncommons can do both.
 - Choose **one** enemy Active unit. If they have a Guard, you must choose it.
 - Resolve immediately.
 - One battle per turn, unless a unit has Multi-Attack and attacked **alone**.
@@ -117,10 +117,10 @@ If you skip Battle, nothing fights.
 1. Attack abilities fire (Stun, Spike, Chaos Swing, and so on).
 2. If a Cancel Battle effect is waiting, the fight fizzles.
 3. Unblockable attacks skip the defender and hit remaining health instead.
-4. **Lead:** Power + temp + trait bonus (**±12**, Lead only).
-5. **Each Assist:** add **half** of that unit’s Power + temp, rounded down. Assists do **not** add type.
+4. **Lead:** Power + temp + trait bonus (**±6**, Lead only).
+5. **One Assist:** add **half** of that unit’s Power + temp, rounded down. Assists do **not** add type. Rares/Legendaries cannot Assist or be Assisted.
 6. Defender Armor: printed Armor, plus **+8 Armor** if their type beats the Lead.
-7. Each unit has **HP equal to its printed Power**. Damage = attack total minus Armor (minimum 0).
+7. Each unit has **HP equal to twice its printed Power**. Damage = attack total minus Armor (minimum 0).
 8. A Power Shield on the defender absorbs that hit (no HP lost) and is then spent.
 9. If the defender’s HP hits 0, it is KO’d. Attackers are not KO’d for attacking a tougher card.
 
@@ -128,7 +128,7 @@ If you skip Battle, nothing fights.
 
 **Guard:** in Main Phase, mark one Active unit. The opponent must target that unit. Guard ends at the start of your next turn, or if the unit leaves Active.
 
-**KO:** the unit goes to discard. Defeat abilities fire. If it was Active, the next Bench unit is promoted automatically.
+**KO:** the unit goes to discard. Defeat abilities fire. A Bench unit is promoted automatically **only if Active is empty** after the KO.
 
 **Stun:** a stunned unit cannot be chosen as an attacker on its controller’s next turn.
 
@@ -165,9 +165,18 @@ Live friend matches update both players over the match socket. Challenge a frien
 
 You lose when Active and Bench are empty, or your health hits 0.
 
+**Reps:** win 50 / draw 30 / loss 20. A loss pays **0** if the match ended before turn **5**. A forfeit pays **0** to the player who quit (vs AI, nobody is paid).
+
 ---
 
-## 11. What changed in v4.4
+## 11. What changed in v4.7
+
+- At most **one Assist**, and only Commons/Uncommons can Assist or receive an Assist
+- Bench units cannot Assist
+- **One** Bench-to-Active move (promote or swap) per turn
+- KO auto-promotes from Bench only if Active is empty
+
+## 12. What changed in v4.4
 
 - Decks are **20** cards
 - Empty Active + Bench is a loss even with cards in hand
@@ -177,24 +186,24 @@ You lose when Active and Bench are empty, or your health hits 0.
 - Starter decks only use **released** sets
 - Cyber Chad (Rare, Ultra Nightmare Mode)
 
-## 12. What changed in v4.3
+## 13. What changed in v4.3
 
 - Trait bonus is **+12 / −12**, and **only the Lead’s type** is counted
 - A defender that beats the Lead’s type gains **+8 Armor** for that fight
 - Combat ability numbers (Power Up/Down, Spike, Heal, and similar) were raised so they can flip a close fight
 - Battle UI: colored type glow, type bar, ability chip on Active, and a type line when you pick a Lead
 
-## 13. What changed in v4.2
+## 14. What changed in v4.2
 
 - Team attacks are **Lead (full Power) + Assists (half Power)**
 - Assists become **Tired** next turn
 - **Guard** forces the opponent’s attack target
 
-## 14. What changed in v4.1
+## 15. What changed in v4.1
 
 - Bench is **3** (was 5), so backup slots are a real choice
 
-## 15. What changed in v4.0
+## 16. What changed in v4.0
 
 - Trait bonus **+5 / −5** (was ±20)
 - Second player’s start-of-turn draw is the first-player compensation
