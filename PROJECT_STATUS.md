@@ -162,16 +162,16 @@ Packs are defined in `backend/server.js`. Shop `GET /api/shop/packs` only return
 
 | Pack | Set | Shop | Release |
 | --- | --- | --- | --- |
-| **Ordo Chadorum** `ordo_chadorum` | 1 (30 cards) | Live | now |
-| **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (24 cards, includes Cyber Chad) | Hidden until date | **16 Nov 2026, midnight Eastern** (`2026-11-16T05:00:00.000Z`) |
+| **Ordo Chadorum** `ordo_chadorum` | 1 (29 cards) | Live | now |
+| **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (25 cards, includes Cyber Chad) | Hidden until date | **16 Nov 2026, midnight Eastern** (`2026-11-16T05:00:00.000Z`) |
 | **To the Hilt** `to_the_hilt` | 3 (45 cards) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
 | **Chaos** `chaos` | 4 (127 cards) | Hidden until date | **1 Feb 2027, midnight Eastern** (`2027-02-01T05:00:00.000Z`) |
 
 Old shop id `starter_pump` still maps to Ordo Chadorum on buy.
 
-**Set 1 (Ordo):** Aviator Chad, Baller Chad, Chad Numero Uno, Chad of Pizzazz, Chadministrative Pastor, Dictator Chad, Donut Chad, E Dog, E Money, E Unit, Fashion Chad, Father Chad, Fresh Chad, Hungry Hippo Chad, J Snizzle, Joey Mac, Manager Chad, Ninja Chad, Pastor Chadenbach, Pastor Chadrigo (Jorge art), Pastor Studson, Samurai Chad, Samwise Chadenbach, Sir Kensworth, Sleeper Chad, Stereotypical Chadette, Supreme Leader Chadenbach, The Chadministrator (L 60, strongest), Thimple Chad, Yapper Chad.
+**Set 1 (Ordo):** Aviator Chad, Baller Chad, Chad Numero Uno, Chad of Pizzazz, Dictator Chad, Donut Chad, E Dog, E Money, E Unit, Fashion Chad, Father Chad, Fresh Chad, Hungry Hippo Chad, J Snizzle, Joey Mac, Manager Chad, Ninja Chad, Pastor Chadenbach, Pastor Chadrigo (Jorge art), Pastor Studson, Samurai Chad, Samwise Chadenbach, Sir Kensworth, Sleeper Chad, Stereotypical Chadette, Supreme Leader Chadenbach, The Chadministrator (L 60, strongest), Thimple Chad, Yapper Chad.
 
-**Set 2 (Ultra Nightmare):** Apple, Blitzkrueger, Bobby J, Brodito, Chad Kroeger, Chad Vader, Cheyennomaly, Cyber Chad (R 44), Filius Automobilius, Hand-Me-Down Howard, Ice Knight, J Walker (U 31), Janitor Chad, Jerome, Jerry Bag-o-Donuts, Joc Boc, K-Pop, Leahnidas, Leif Erikson, Meemow (L 50), Micycle, Saint Chad of Mercia, Sassy Chad, Skibidi Chad.
+**Set 2 (Ultra Nightmare):** Apple, Blitzkrueger, Bobby J, Brodito, Chad Kroeger, Chad Vader, Cheyennomaly, Chadministrative Pastor, Cyber Chad (R 44), Filius Automobilius, Hand-Me-Down Howard, Ice Knight, J Walker (U 31), Janitor Chad, Jerome, Jerry Bag-o-Donuts, Joc Boc, K-Pop, Leahnidas, Leif Erikson, Meemow (L 50), Micycle, Saint Chad of Mercia, Sassy Chad, Skibidi Chad.
 
 **Set 3 (To the Hilt):** Anime Chad, Archon Strivemax, Astro Samurai, Bat Jeong-Eun, Bear-Sized Goose, Beowulf, Bigback Tony, Bradford Pitt, Branos, Brawn Weasley, Brick Thunderbulk, Brodir Doomgrip, Brofessor Rumbledore, Chad, Chad Danforth, Chad Knight, Chad Lee, Chad Marine, Chad Pitt, Chadiator, Chadly Squatter, Chadvald the Shredded, Coach Rumble, Cowboy Chad, Dwayne, Filch McNoreps, Flexecutioner, Gigachad, Goose-Sized Bear, Grilled Cheese Sandwich, Groaning Girdle, Hermione Gainger, Jack Steele, John Wickthrop, Marlene, Mr. Sniffles, Mrs. NoRizz, Orange Dragon Dude, Peregrine Vale, Professor Gainsworth, Robot Overlord, Sharawrrk, Super Case-Oh, Taco, Tom Diddle.
 
