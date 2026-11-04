@@ -1,6 +1,6 @@
 const { resolveCoinFlip, ensureCombatStats } = require("./battle");
 const { getById } = require("./cardRegistry");
-const { HAND_LIMIT, TRAIT_BONUS, MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, MAX_BENCH_MOVES_PER_TURN } = require("./rules");
+const { HAND_LIMIT, TRAIT_BONUS, MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, MAX_BENCH_MOVES_PER_TURN, KO_LIMIT_DEFAULT } = require("./rules");
 const { enforceBoardLimits } = require("./board");
 
 function stampPrintedPower(unit) {
@@ -73,6 +73,9 @@ function hydrateState(raw) {
   if (!state.opponent.guardInstanceId) state.opponent.guardInstanceId = null;
   if (state.player.benchMovesThisTurn == null) state.player.benchMovesThisTurn = 0;
   if (state.opponent.benchMovesThisTurn == null) state.opponent.benchMovesThisTurn = 0;
+  if (state.player.kos == null) state.player.kos = 0;
+  if (state.opponent.kos == null) state.opponent.kos = 0;
+  if (state.koLimit == null) state.koLimit = KO_LIMIT_DEFAULT;
   if (!state.secretLog) state.secretLog = { player: [], opponent: [] };
   return state;
 }
@@ -112,6 +115,7 @@ function publicMatchState(state, perspective = "player") {
     maxBench: MAX_BENCH,
     maxAssists: MAX_ASSISTS,
     maxBenchMovesPerTurn: MAX_BENCH_MOVES_PER_TURN,
+    koLimit: serialized.koLimit || KO_LIMIT_DEFAULT,
     winner: serialized.winner || null,
     skipTurn: serialized.skipTurn || null,
     lastBattle: serialized.lastBattle || null,
@@ -121,6 +125,7 @@ function publicMatchState(state, perspective = "player") {
       silencedTurns: you.silencedTurns || 0,
       guardInstanceId: you.guardInstanceId || null,
       benchMovesThisTurn: you.benchMovesThisTurn || 0,
+      kos: you.kos || 0,
       hand: you.hand,
       active: you.active,
       bench: you.bench,
@@ -131,6 +136,7 @@ function publicMatchState(state, perspective = "player") {
       health: them.health,
       silencedTurns: them.silencedTurns || 0,
       guardInstanceId: them.guardInstanceId || null,
+      kos: them.kos || 0,
       handCount: (them.hand || []).length,
       active: them.active,
       bench: them.bench,

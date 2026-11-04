@@ -129,6 +129,13 @@ function knockOut(state, unit, owner) {
     owner.guardInstanceId = null;
   }
   state.lastKoSeat = owner === state.player ? "player" : "opponent";
+  const scorer = owner === state.player ? state.opponent : state.player;
+  if (scorer) {
+    scorer.kos = (scorer.kos || 0) + 1;
+    const who = scorer === state.player ? "Player" : "Opponent";
+    const limit = state.koLimit || 5;
+    state.log.push(`${who} ${scorer.kos}/${limit} KOs.`);
+  }
   triggerDefeatAbilities(state, unit);
 
   if (owner.active.length === 0 && owner.bench.length > 0) {

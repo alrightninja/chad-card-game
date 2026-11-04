@@ -5,6 +5,9 @@ const HAND_LIMIT = 7;
 const MAX_ACTIVE = 3;
 const MAX_BENCH = 3;
 const DECK_SIZE = 20;
+const KO_LIMIT_DEFAULT = 5;
+const KO_LIMIT_MIN = 3;
+const KO_LIMIT_MAX = 10;
 const DECAY_RATE = 0.2;
 const ASSIST_RATE = 0.5;
 const MAX_ASSISTS = 1;
@@ -29,6 +32,12 @@ function rarityBucket(rarity) {
   return "C";
 }
 
+function clampKoLimit(value) {
+  const n = Number(value);
+  if (!Number.isInteger(n)) return KO_LIMIT_DEFAULT;
+  return Math.min(KO_LIMIT_MAX, Math.max(KO_LIMIT_MIN, n));
+}
+
 /** Commons and Uncommons may Assist or receive an Assist. Rares and Legendaries fight alone. */
 function canAssist(unit) {
   if (!unit) return false;
@@ -42,6 +51,10 @@ module.exports = {
   MAX_ACTIVE,
   MAX_BENCH,
   DECK_SIZE,
+  KO_LIMIT_DEFAULT,
+  KO_LIMIT_MIN,
+  KO_LIMIT_MAX,
+  clampKoLimit,
   DECAY_RATE,
   ASSIST_RATE,
   MAX_ASSISTS,

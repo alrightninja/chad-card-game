@@ -1,5 +1,5 @@
 const { resolveCoinFlip, resetCombatForPlay } = require("./battle");
-const { OPENING_HAND } = require("./rules");
+const { OPENING_HAND, clampKoLimit, KO_LIMIT_DEFAULT } = require("./rules");
 
 function emptySide() {
   return {
@@ -11,7 +11,8 @@ function emptySide() {
     health: 100,
     silencedTurns: 0,
     guardInstanceId: null,
-    benchMovesThisTurn: 0
+    benchMovesThisTurn: 0,
+    kos: 0
   };
 }
 
@@ -22,7 +23,7 @@ function drawCards(side, count) {
   }
 }
 
-function createInitialGameState(playerDeck, opponentDeck) {
+function createInitialGameState(playerDeck, opponentDeck, options = {}) {
   const player = emptySide();
   const opponent = emptySide();
 
@@ -31,6 +32,8 @@ function createInitialGameState(playerDeck, opponentDeck) {
 
   drawCards(player, OPENING_HAND);
   drawCards(opponent, OPENING_HAND);
+
+  const koLimit = clampKoLimit(options.koLimit ?? KO_LIMIT_DEFAULT);
 
   return {
     player,
@@ -42,11 +45,13 @@ function createInitialGameState(playerDeck, opponentDeck) {
     skipTurn: null,
     lastKoSeat: null,
     cancelNextBattle: false,
+    koLimit,
     log: [
       "Battle started.",
       "Both players draw 5 cards.",
       "Player goes first and does not draw this turn.",
-      "The opponent draws at the start of their first turn."
+      "The opponent draws at the start of their first turn.",
+      `First to ${koLimit} KOs wins.`
     ],
     resolveCoinFlip
   };

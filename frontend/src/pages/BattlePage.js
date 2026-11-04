@@ -755,6 +755,11 @@ export default function BattlePage() {
             {attackers.length ? (
               <span className="hint-text"> Attacking with {attackers.length}.</span>
             ) : null}
+            <div className="ko-board" aria-live="polite">
+              <span>{match.youName || "You"} {you?.kos || 0}/{match.state?.koLimit || 5}</span>
+              <span className="ko-mid">KOs</span>
+              <span>{foe?.kos || 0}/{match.state?.koLimit || 5} {match.opponentName || "Opp"}</span>
+            </div>
           </div>
           <div className="row">
             {match.status === "active" && match.moveDeadlineAt ? (
@@ -814,7 +819,7 @@ export default function BattlePage() {
               <li>Attack: first click is the Lead. You may add one Common or Uncommon Assist from Active. Rares and Legendaries fight alone. Attackers become Tired.</li>
               <li>If they have a Guard (blue), you must attack that unit. After the fight you cannot play more cards.</li>
               <li>Only the Lead’s type counts: +6 if it beats the defender, −6 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type. Units have HP equal to twice their Power.</li>
-              <li>You go first and skip a draw. Hand limit 7. You lose if Active and Bench are empty.</li>
+              <li>You go first and skip a draw. Hand limit 7. First to 5 KOs wins (friend matches can set 3–10). Empty Active and Bench still loses.</li>
             </ol>
           </div>
         ) : null}
@@ -860,7 +865,13 @@ export default function BattlePage() {
                   ))
                 ))}
               </div>
-              <div className="field-vs">VS</div>
+              <div className="field-vs">
+                <div className="ko-board ko-board-field">
+                  <span>{you?.kos || 0}</span>
+                  <span className="ko-mid">KOs · first to {match.state?.koLimit || 5}</span>
+                  <span>{foe?.kos || 0}</span>
+                </div>
+              </div>
               <div className="lane field-row">
                 {pad(you?.active, ACTIVE_SLOTS).map((card, i) => (
                   withPop("you", i, card ? (

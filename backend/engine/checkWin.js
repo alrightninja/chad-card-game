@@ -1,7 +1,9 @@
+const { KO_LIMIT_DEFAULT } = require("./rules");
+
 /**
- * A player loses when they have no Active Units and no Benched Units.
- * A hand does not keep you in the game once you have no board.
- * Opening setup is exempt until a unit has been KO'd/discarded or turn 2 begins.
+ * First to koLimit KOs wins. You also lose when Active and Bench are empty
+ * (a hand does not save you). Opening setup is exempt until a unit has been
+ * KO'd/discarded or turn 2 begins.
  */
 function fieldEmpty(side) {
   if (!side) return true;
@@ -19,6 +21,28 @@ function sideEliminated(side, state) {
 
 function checkWin(state) {
   if (state.winner) return true;
+
+  const limit = state.koLimit || KO_LIMIT_DEFAULT;
+  const playerKos = state.player?.kos || 0;
+  const opponentKos = state.opponent?.kos || 0;
+  const playerHit = playerKos >= limit;
+  const opponentHit = opponentKos >= limit;
+
+  if (playerHit && opponentHit) {
+    state.winner = "draw";
+    state.log.push(`Both players reached ${limit} KOs. Draw.`);
+    return true;
+  }
+  if (playerHit) {
+    state.winner = "player";
+    state.log.push(`Player wins — first to ${limit} KOs (${playerKos}–${opponentKos}).`);
+    return true;
+  }
+  if (opponentHit) {
+    state.winner = "opponent";
+    state.log.push(`Opponent wins — first to ${limit} KOs (${opponentKos}–${playerKos}).`);
+    return true;
+  }
 
   const playerDead = sideEliminated(state.player, state);
   const opponentDead = sideEliminated(state.opponent, state);

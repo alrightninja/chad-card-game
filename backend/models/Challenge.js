@@ -8,6 +8,7 @@ const ChallengeSchema = new mongoose.Schema(
     toDeckName: { type: String, default: null },
     mode: { type: String, enum: ["live", "correspondence"], default: "correspondence" },
     hoursPerMove: { type: Number, default: 24 },
+    koLimit: { type: Number, default: 5 },
     status: {
       type: String,
       enum: ["pending", "accepted", "declined", "cancelled"],

@@ -8,6 +8,7 @@ const { sanitizeMessage } = require("../utils/moderation");
 const matchService = require("../services/matchService");
 const { notifyUser } = require("../sockets/matchSocket");
 const { trimMessageThread } = require("../lib/retention");
+const { clampKoLimit } = require("../engine/rules");
 
 const router = express.Router();
 
@@ -185,6 +186,7 @@ router.get("/challenges", requireAuth, async (req, res) => {
         id: c._id,
         mode: c.mode,
         hoursPerMove: c.hoursPerMove,
+        koLimit: c.koLimit || 5,
         fromDeckName: c.fromDeckName,
         from: publicUser(c.fromUserId),
         to: publicUser(c.toUserId),
@@ -199,7 +201,7 @@ router.get("/challenges", requireAuth, async (req, res) => {
 
 router.post("/challenges", requireAuth, async (req, res) => {
   try {
-    const { username, deckName, mode, hoursPerMove } = req.body;
+    const { username, deckName, mode, hoursPerMove, koLimit } = req.body;
     const target = await User.findOne({ username: String(username || "").trim() });
     if (!target) return res.status(404).json({ error: "User not found" });
     if (!isFriend(req.user, target._id)) {
@@ -213,7 +215,8 @@ router.post("/challenges", requireAuth, async (req, res) => {
       toUserId: target._id,
       fromDeckName: deckName,
       mode: mode === "live" ? "live" : "correspondence",
-      hoursPerMove: Number(hoursPerMove) > 0 ? Number(hoursPerMove) : 24
+      hoursPerMove: Number(hoursPerMove) > 0 ? Number(hoursPerMove) : 24,
+      koLimit: clampKoLimit(koLimit)
     });
 
     notifyUser(target._id, "challenge_update", { kind: "incoming", id: challenge._id });
@@ -253,7 +256,8 @@ router.post("/challenges/:id/respond", requireAuth, async (req, res) => {
       playerDeckName: challenge.fromDeckName,
       opponentDeckName: deckName,
       mode: challenge.mode,
-      hoursPerMove: challenge.hoursPerMove
+      hoursPerMove: challenge.hoursPerMove,
+      koLimit: challenge.koLimit
     });
 
     await Challenge.deleteOne({ _id: challenge._id });

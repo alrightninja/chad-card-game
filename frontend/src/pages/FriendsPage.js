@@ -19,7 +19,8 @@ export default function FriendsPage() {
     username: "",
     deckName: "",
     mode: "correspondence",
-    hoursPerMove: 24
+    hoursPerMove: 24,
+    koLimit: 5
   });
   const [acceptDeck, setAcceptDeck] = useState("");
   const [active, setActive] = useState(null);
@@ -248,6 +249,17 @@ export default function FriendsPage() {
               <option value="correspondence">Correspondence</option>
             </select>
           </label>
+          <label>
+            First to how many KOs
+            <select
+              value={challenge.koLimit}
+              onChange={(e) => setChallenge({ ...challenge, koLimit: Number(e.target.value) })}
+            >
+              {Array.from({ length: 8 }, (_, i) => i + 3).map((n) => (
+                <option key={n} value={n}>{n}{n === 5 ? " (default)" : ""}</option>
+              ))}
+            </select>
+          </label>
           {challenge.mode === "correspondence" ? (
             <label>
               Hours per move
@@ -270,6 +282,7 @@ export default function FriendsPage() {
             <div>
               {c.from.username} → {c.to.username} · {c.mode}
               {c.mode === "correspondence" ? ` · ${c.hoursPerMove}h/move` : ""}
+              {` · first to ${c.koLimit || 5} KOs`}
             </div>
             {c.incoming ? (
               <div className="row">

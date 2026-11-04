@@ -16,7 +16,7 @@ const {
   deckToUnits,
   randomAiDeckIds
 } = require("../engine/cardRegistry");
-const { DECK_SIZE } = require("../engine/rules");
+const { DECK_SIZE, clampKoLimit, KO_LIMIT_DEFAULT } = require("../engine/rules");
 const { deckIllegalReason } = require("../lib/deck");
 const {
   LIVE_TURN_MS,
@@ -206,7 +206,7 @@ async function startPveMatch(user, deckName, options = {}) {
 
   const playerUnits = shuffle(deckToUnits(deck.cards));
   const aiUnits = shuffle(deckToUnits(randomAiDeckIds(DECK_SIZE)));
-  const state = createInitialGameState(playerUnits, aiUnits);
+  const state = createInitialGameState(playerUnits, aiUnits, { koLimit: KO_LIMIT_DEFAULT });
 
   const match = await Match.create({
     playerId: user._id,
@@ -231,7 +231,8 @@ async function startPvpMatch({
   playerDeckName,
   opponentDeckName,
   mode = "correspondence",
-  hoursPerMove = 24
+  hoursPerMove = 24,
+  koLimit = KO_LIMIT_DEFAULT
 }) {
   const playerDeck = playerUser.decks.find((d) => d.name === playerDeckName);
   const opponentDeck = opponentUser.decks.find((d) => d.name === opponentDeckName);
@@ -252,7 +253,9 @@ async function startPvpMatch({
 
   const playerUnits = shuffle(deckToUnits(playerDeck.cards));
   const opponentUnits = shuffle(deckToUnits(opponentDeck.cards));
-  const state = createInitialGameState(playerUnits, opponentUnits);
+  const state = createInitialGameState(playerUnits, opponentUnits, {
+    koLimit: clampKoLimit(koLimit)
+  });
 
   const match = await Match.create({
     playerId: playerUser._id,

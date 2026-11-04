@@ -54,7 +54,7 @@ export default function HomePage() {
             <VerifiedBadge verified={user?.verified} />
           </h1>
           <p className="muted">
-            3 Active, 3 Bench. HP is twice Power. One Assist (Commons/Uncommons only). One Bench swap per turn. The Lead’s type is +6 / −6. Guard forces the fight.
+            3 Active, 3 Bench. First to 5 KOs. HP is twice Power. One Assist (Commons/Uncommons only). One Bench swap per turn. The Lead’s type is +6 / −6. Guard forces the fight.
           </p>
           <div className="home-actions">
             <Link className="btn" to="/play">Play</Link>

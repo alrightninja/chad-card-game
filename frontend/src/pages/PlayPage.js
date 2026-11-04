@@ -123,7 +123,7 @@ export default function PlayPage() {
         Battle vs AI
       </button>
       <p className="muted">
-        Friend challenges (live or correspondence) live on the Friends page. Open matchmaking can wait until there are enough players.
+        Vs AI is first to 5 KOs. Friend challenges (live or correspondence, KO goal 3–10) live on the Friends page.
       </p>
     </div>
   );

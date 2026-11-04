@@ -1,6 +1,6 @@
-# Gigachad TCG — Living Rulebook (v4.7)
+# Gigachad TCG — Living Rulebook (v4.8)
 
-This is the rules the **engine actually runs** (v4.7). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
+This is the rules the **engine actually runs** (v4.8). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
 
 Numbers live in `backend/engine/rules.js`.
 
@@ -8,7 +8,7 @@ Numbers live in `backend/engine/rules.js`.
 
 ## 1. Goal
 
-Knock out the other player’s units. You **lose** when you have:
+Knock out the other player’s units. **First to 5 KOs wins** (friend matches may set 3–10). You also **lose** when you have:
 
 - no Active units, **and**
 - no Bench units.
@@ -163,20 +163,28 @@ Live friend matches update both players over the match socket. Challenge a frien
 
 ## 10. Winning
 
-You lose when Active and Bench are empty, or your health hits 0.
+**First to 5 KOs wins** (vs AI always 5). Friend live or correspondence challenges may set the goal anywhere from **3 to 10**.
+
+You also lose when Active and Bench are empty, or your health hits 0.
 
 **Reps:** win 50 / draw 30 / loss 20. A loss pays **0** if the match ended before turn **5**. A forfeit pays **0** to the player who quit (vs AI, nobody is paid).
 
 ---
 
-## 11. What changed in v4.7
+## 11. What changed in v4.8
+
+- Standard win is **first to 5 KOs**
+- Friend matches can set the KO goal from **3 to 10**
+- Empty board is still a loss
+
+## 12. What changed in v4.7
 
 - At most **one Assist**, and only Commons/Uncommons can Assist or receive an Assist
 - Bench units cannot Assist
 - **One** Bench-to-Active move (promote or swap) per turn
 - KO auto-promotes from Bench only if Active is empty
 
-## 12. What changed in v4.4
+## 13. What changed in v4.4
 
 - Decks are **20** cards
 - Empty Active + Bench is a loss even with cards in hand

@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { DECK_SIZE, MAX_ACTIVE } = require("../engine/rules");
+const { DECK_SIZE, MAX_ACTIVE, KO_LIMIT_DEFAULT, clampKoLimit } = require("../engine/rules");
 const { createInitialGameState } = require("../engine/gameState");
 const { applyAction } = require("../engine/applyAction");
 const { playUnit, attack, swapActive, promoteFromBench } = require("../engine/actions");
@@ -82,6 +82,46 @@ test("5. empty active and bench loses even with a hand", () => {
 
   const opening = createInitialGameState(units(20), units(20));
   assert.equal(sideEliminated(opening.player, opening), false);
+});
+
+test("first to 5 KOs wins while the opponent still has a board", () => {
+  assert.equal(KO_LIMIT_DEFAULT, 5);
+  assert.equal(clampKoLimit(2), 3);
+  assert.equal(clampKoLimit(11), 10);
+  const state = createInitialGameState([], [], { koLimit: 5 });
+  state.turn = 2;
+  state.player.active = [dummyUnit("Hero", 80)];
+  state.opponent.active = [dummyUnit("A", 5), dummyUnit("B", 5)];
+  state.opponent.bench = [dummyUnit("C", 5)];
+  for (let i = 0; i < 4; i++) {
+    const snack = dummyUnit(`Snack${i}`, 5);
+    state.opponent.active.push(snack);
+    resolveBattle(state, state.player.active.slice(), snack);
+    checkWin(state);
+    assert.equal(state.winner, null);
+  }
+  assert.equal(state.player.kos, 4);
+  const last = dummyUnit("Last", 5);
+  state.opponent.active.push(last);
+  resolveBattle(state, state.player.active.slice(), last);
+  checkWin(state);
+  assert.equal(state.player.kos, 5);
+  assert.equal(state.winner, "player");
+  assert.ok(state.opponent.active.length + state.opponent.bench.length > 0);
+
+  const custom = createInitialGameState([], [], { koLimit: 3 });
+  custom.turn = 2;
+  custom.player.active = [dummyUnit("Hero", 80)];
+  custom.opponent.active = [dummyUnit("Keep", 10)];
+  custom.opponent.bench = [dummyUnit("Bench", 10)];
+  for (let i = 0; i < 3; i++) {
+    const snack = dummyUnit(`N${i}`, 5);
+    custom.opponent.active.push(snack);
+    resolveBattle(custom, custom.player.active.slice(), snack);
+    checkWin(custom);
+  }
+  assert.equal(custom.winner, "player");
+  assert.equal(custom.player.kos, 3);
 });
 
 test("6. never more than 3 active, including KO promote", () => {
