@@ -436,24 +436,26 @@ export default function BattlePage() {
     });
   }
 
-  function combatBadges(card, index, side) {
+  function combatBadges(card, index, side, zone) {
     if (!card) return [];
     const list = [];
     if (card.tired || card.tiredTurns > 0) list.push({ kind: "tired", text: "Tired" });
-    if (card.guarding) list.push({ kind: "guard", text: "Guard" });
-    const picks = side === "opp" && lunge.from === "opp" ? lunge.attackers : side === "you" ? attackers : [];
-    if (picks.length) {
-      if (picks[0] === index) list.push({ kind: "lead", text: "Lead" });
-      else if (picks.includes(index)) list.push({ kind: "assist", text: "Assist" });
+    if (zone === "active" && card.guarding) list.push({ kind: "guard", text: "Guard" });
+    if (zone === "active") {
+      const picks = side === "opp" && lunge.from === "opp" ? lunge.attackers : side === "you" ? attackers : [];
+      if (picks.length) {
+        if (picks[0] === index) list.push({ kind: "lead", text: "Lead" });
+        else if (picks.includes(index)) list.push({ kind: "assist", text: "Assist" });
+      }
     }
     return list;
   }
 
-  function faceExtras(card, index, side) {
+  function faceExtras(card, index, side, zone) {
     if (!card) return {};
     return {
       entering: enteringSet.has(card.instanceId),
-      badges: combatBadges(card, index, side),
+      badges: combatBadges(card, index, side, zone),
       onDoubleClick: (e) => {
         e.preventDefault();
         inspectCard(card);
@@ -831,7 +833,7 @@ export default function BattlePage() {
             <div className="lane bench-row">
               {pad(foe?.bench, BENCH_SLOTS).map((card, i) => (
                 card ? (
-                  <CardView key={card.instanceId} card={card} size="bench" showAbility={false} {...faceExtras(card, i, "opp")} />
+                  <CardView key={card.instanceId} card={card} size="bench" showAbility={false} {...faceExtras(card, i, "opp", "bench")} />
                 ) : (
                   <EmptySlot key={`ob-${i}`} label="Bench" />
                 )
@@ -851,7 +853,7 @@ export default function BattlePage() {
                       showAbility={false}
                       lunge={lunge.from === "opp" && lunge.attackers.includes(i) ? lunge.dir : 0}
                       onClick={armClick(() => onEnemyActive(i, card))}
-                      {...faceExtras(card, i, "opp")}
+                      {...faceExtras(card, i, "opp", "active")}
                     />
                   ) : (
                     <EmptySlot key={`oe-${i}`} label="Enemy" size="active" />
@@ -880,7 +882,7 @@ export default function BattlePage() {
                         activeIndex: i
                       })}
                       onClick={armClick(() => onYourActive(i, card))}
-                      {...faceExtras(card, i, "you")}
+                      {...faceExtras(card, i, "you", "active")}
                     />
                   ) : (
                     <EmptySlot
@@ -919,7 +921,7 @@ export default function BattlePage() {
                           benchIndex: i
                         })}
                         onClick={armClick(() => onYourBench(i, card))}
-                        {...faceExtras(card, i, "you")}
+                        {...faceExtras(card, i, "you", "bench")}
                       />
                     ) : (
                       <EmptySlot
@@ -957,7 +959,7 @@ export default function BattlePage() {
                           setSelectedHand((id) => (id === card.instanceId ? null : card.instanceId));
                           audio?.playSfx("select");
                         })}
-                        {...faceExtras(card, i, "you")}
+                        {...faceExtras(card, i, "you", "hand")}
                       />
                     ) : (
                       <EmptySlot key={`yh-${i}`} label="Hand" size="hand" />
