@@ -22,6 +22,8 @@ const { assertCleanUsername } = require("./utils/moderation");
 const { safeMe, publicProfile } = require("./lib/publicUser");
 const { uniqueOwnedIds } = require("./lib/inventory");
 const { normalizeEmail, emailsMatch, isValidEmail, emailKey, emailQuery, emailTakenQuery } = require("./lib/email");
+const { createResetToken, hashResetToken, resetLink } = require("./lib/passwordReset");
+const { mailConfigured, sendPasswordResetEmail } = require("./lib/mail");
 const retention = require("./lib/retention");
 const { PACKS, packOnSale, packSaleState } = require("./lib/packs");
 const tradeRoutes = require("./routes/trades");
@@ -282,10 +284,89 @@ app.post("/api/me/password", requireAuth, async (req, res) => {
     const ok = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!ok) return res.status(400).json({ error: "Current password is incorrect" });
     user.passwordHash = await bcrypt.hash(newPassword, 10);
+    user.passwordResetTokenHash = null;
+    user.passwordResetExpires = null;
     await user.save();
     res.json({ message: "Password updated" });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+const forgotAtByKey = new Map();
+
+app.post("/api/forgot-password", async (req, res) => {
+  const generic = { message: "If that email is on an account, we sent a reset link." };
+  try {
+    const email = req.body && req.body.email;
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Enter a valid email address" });
+    }
+    if (!mailConfigured() && process.env.DEV_TOOLS !== "true") {
+      return res.status(503).json({ error: "Password reset email is not available yet" });
+    }
+
+    const key = emailKey(email);
+    const last = forgotAtByKey.get(key) || 0;
+    if (Date.now() - last < 60 * 1000) {
+      return res.json(generic);
+    }
+    forgotAtByKey.set(key, Date.now());
+
+    const user = await User.findOne(emailQuery(email));
+    if (!user) {
+      return res.json(generic);
+    }
+
+    const issued = createResetToken();
+    user.passwordResetTokenHash = issued.tokenHash;
+    user.passwordResetExpires = issued.expiresAt;
+    await user.save();
+
+    const url = resetLink(issued.token);
+    if (mailConfigured()) {
+      await sendPasswordResetEmail(user.email, url);
+    } else {
+      console.log(`[dev] password reset for ${user.email}: ${url}`);
+    }
+
+    const payload = { ...generic };
+    if (process.env.DEV_TOOLS === "true") payload.resetUrl = url;
+    res.json(payload);
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res.json(generic);
+  }
+});
+
+app.post("/api/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword, newPasswordConfirm } = req.body || {};
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Reset token and new password are required" });
+    }
+    if (newPassword !== newPasswordConfirm) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
+    if (String(newPassword).length < 6) {
+      return res.status(400).json({ error: "New password must be at least 6 characters" });
+    }
+    const tokenHash = hashResetToken(token);
+    const user = await User.findOne({
+      passwordResetTokenHash: tokenHash,
+      passwordResetExpires: { $gt: new Date() }
+    });
+    if (!user) {
+      return res.status(400).json({ error: "This reset link is invalid or has expired" });
+    }
+    user.passwordHash = await bcrypt.hash(newPassword, 10);
+    user.passwordResetTokenHash = null;
+    user.passwordResetExpires = null;
+    await user.save();
+    res.json({ message: "Password updated. You can log in now." });
+  } catch (err) {
+    console.error("Reset password error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

@@ -27,6 +27,9 @@ const UserSchema = new mongoose.Schema(
     level: { type: Number, default: 1 },
     avatarCardId: { type: String, default: null },
 
+    passwordResetTokenHash: { type: String, default: null, index: true },
+    passwordResetExpires: { type: Date, default: null },
+
     tutorialCompleted: { type: Boolean, default: false },
     verified: { type: Boolean, default: false },
     verifiedAt: { type: Date, default: null },

@@ -4,6 +4,7 @@ import { AudioProvider } from "./audio/AudioProvider";
 import Layout from "./components/Layout";
 import { SocialInboxProvider } from "./context/SocialInbox";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import HomePage from "./pages/HomePage";
 import CollectionPage from "./pages/CollectionPage";
 import ShopPage from "./pages/ShopPage";
@@ -28,6 +29,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <AuthPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route
         path="/"
         element={

@@ -1639,15 +1639,15 @@
     "set": 2,
     "name": "J Walker",
     "trait": "Mind",
-    "power": 31,
-    "rarity": "U",
+    "power": 43,
+    "rarity": "R",
     "abilityCategory": "Play",
     "abilityKeyword": "Draw",
     "abilityValue": 1,
     "abilityText": "On Play: Draw 1 card.",
     "flavorLine": "Moves with quiet purpose and careful planning.",
     "art": "j_walker.png",
-    "version": 2
+    "version": 3
   },
   {
     "cardId": "jack_steele_111",

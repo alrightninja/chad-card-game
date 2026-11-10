@@ -418,7 +418,7 @@ test("requested rarity and power retunes landed", () => {
     pastor_studson_152: { rarity: "R", power: 43 },
     pastor_chadrigo_151: { rarity: "R", power: 43 },
     dwayne_068: { rarity: "R", power: 43 },
-    j_walker_110: { rarity: "U", power: 31 },
+    j_walker_110: { rarity: "R", power: 43 },
     chadministrative_pastor_038: { rarity: "R", power: 43 },
     janitor_chad_112: { rarity: "R", power: 43 },
     bear_sized_goose_012: { rarity: "R", power: 43 },
@@ -542,6 +542,15 @@ test("strip Chad of Consistency from collections and decks", async () => {
   assert.equal(second.ran, false);
   assert.deepEqual(users[0].collection, ["e_unit_071"]);
   assert.equal(users[0].avatarCardId, null);
+});
+
+test("password reset tokens hash consistently and expire in one hour", () => {
+  const { createResetToken, hashResetToken, RESET_TTL_MS } = require("../lib/passwordReset");
+  const issued = createResetToken();
+  assert.equal(hashResetToken(issued.token), issued.tokenHash);
+  assert.notEqual(issued.token, issued.tokenHash);
+  assert.ok(issued.expiresAt.getTime() - Date.now() <= RESET_TTL_MS);
+  assert.ok(issued.expiresAt.getTime() - Date.now() > RESET_TTL_MS - 5000);
 });
 
 test("one account per email treats plus tags and Gmail dots as the same address", () => {
