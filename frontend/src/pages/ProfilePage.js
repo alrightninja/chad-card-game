@@ -80,6 +80,12 @@ export default function ProfilePage() {
     newPasswordConfirm: ""
   });
   const [passMsg, setPassMsg] = useState("");
+  const [emailForm, setEmailForm] = useState({
+    currentPassword: "",
+    email: "",
+    emailConfirm: ""
+  });
+  const [emailMsg, setEmailMsg] = useState("");
 
   async function load() {
     const [data, tradeData] = await Promise.all([
@@ -153,6 +159,24 @@ export default function ProfilePage() {
       setError(err.message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function changeEmail(e) {
+    e.preventDefault();
+    setEmailMsg("");
+    setError("");
+    try {
+      const data = await api("/api/me/email", {
+        method: "POST",
+        body: JSON.stringify(emailForm)
+      });
+      setEmailForm({ currentPassword: "", email: "", emailConfirm: "" });
+      setEmailMsg("Email updated.");
+      if (data.user) setUser(data.user);
+      await load();
+    } catch (err) {
+      setError(err.message);
     }
   }
 
@@ -254,6 +278,42 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
+      ) : null}
+
+      {mine ? (
+        <form className="panel stack" onSubmit={changeEmail}>
+          <strong>Change email</strong>
+          <p className="muted">Current email: {profile.email || "—"}</p>
+          <label>
+            Current password
+            <input
+              type="password"
+              value={emailForm.currentPassword}
+              onChange={(e) => setEmailForm((p) => ({ ...p, currentPassword: e.target.value }))}
+              required
+            />
+          </label>
+          <label>
+            New email
+            <input
+              type="email"
+              value={emailForm.email}
+              onChange={(e) => setEmailForm((p) => ({ ...p, email: e.target.value }))}
+              required
+            />
+          </label>
+          <label>
+            Confirm new email
+            <input
+              type="email"
+              value={emailForm.emailConfirm}
+              onChange={(e) => setEmailForm((p) => ({ ...p, emailConfirm: e.target.value }))}
+              required
+            />
+          </label>
+          {emailMsg ? <p className="muted">{emailMsg}</p> : null}
+          <button className="btn" type="submit">Update email</button>
+        </form>
       ) : null}
 
       {mine ? (

@@ -543,3 +543,13 @@ test("strip Chad of Consistency from collections and decks", async () => {
   assert.deepEqual(users[0].collection, ["e_unit_071"]);
   assert.equal(users[0].avatarCardId, null);
 });
+
+test("one account per email treats plus tags and Gmail dots as the same address", () => {
+  const { emailKey, emailsMatch, isValidEmail } = require("../lib/email");
+  assert.equal(isValidEmail("a@b.com"), true);
+  assert.equal(isValidEmail("nope"), false);
+  assert.equal(emailKey("Name+alt@Gmail.com"), "name@gmail.com");
+  assert.equal(emailKey("n.a.me@gmail.com"), "name@gmail.com");
+  assert.equal(emailKey("a+1@example.com"), emailKey("a+2@example.com"));
+  assert.equal(emailsMatch("A@x.com", "a@x.com"), true);
+});

@@ -21,7 +21,7 @@ const adminRoutes = require("./routes/admin");
 const { assertCleanUsername } = require("./utils/moderation");
 const { safeMe, publicProfile } = require("./lib/publicUser");
 const { uniqueOwnedIds } = require("./lib/inventory");
-const { normalizeEmail, emailsMatch, emailQuery } = require("./lib/email");
+const { normalizeEmail, emailsMatch, isValidEmail, emailKey, emailQuery, emailTakenQuery } = require("./lib/email");
 const retention = require("./lib/retention");
 const { PACKS, packOnSale, packSaleState } = require("./lib/packs");
 const tradeRoutes = require("./routes/trades");
@@ -126,8 +126,11 @@ app.post("/api/register", async (req, res) => {
 
     assertCleanUsername(username);
 
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Enter a valid email address" });
+    }
     const emailNorm = normalizeEmail(email);
-    if (await User.findOne(emailQuery(emailNorm))) {
+    if (await User.findOne(emailTakenQuery(emailNorm))) {
       return res.status(400).json({ error: "Email already in use" });
     }
     if (await User.findOne({ username })) {
@@ -138,6 +141,7 @@ app.post("/api/register", async (req, res) => {
 
     const user = await User.create({
       email: emailNorm,
+      emailKey: emailKey(emailNorm),
       username,
       passwordHash,
       currency: { reps: 0 },
@@ -161,6 +165,9 @@ app.post("/api/register", async (req, res) => {
     });
   } catch (err) {
     console.error("Register error:", err);
+    if (err && err.code === 11000) {
+      return res.status(400).json({ error: "Email or username already in use" });
+    }
     res.status(err.status || 500).json({ error: err.message || "Server error" });
   }
 });
@@ -283,6 +290,41 @@ app.post("/api/me/password", requireAuth, async (req, res) => {
   }
 });
 
+app.post("/api/me/email", requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, email, emailConfirm } = req.body || {};
+    if (!currentPassword || !email) {
+      return res.status(400).json({ error: "Current password and new email are required" });
+    }
+    if (!emailsMatch(email, emailConfirm)) {
+      return res.status(400).json({ error: "Email addresses do not match" });
+    }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Enter a valid email address" });
+    }
+    const emailNorm = normalizeEmail(email);
+    const user = await User.findById(req.user._id);
+    const ok = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!ok) return res.status(400).json({ error: "Current password is incorrect" });
+    if (emailKey(emailNorm) === emailKey(user.email) && emailNorm === normalizeEmail(user.email)) {
+      return res.status(400).json({ error: "That is already your email" });
+    }
+    if (await User.findOne(emailTakenQuery(emailNorm, user._id))) {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+    user.email = emailNorm;
+    user.emailKey = emailKey(emailNorm);
+    await user.save();
+    res.json({ message: "Email updated", user: safeMe(user) });
+  } catch (err) {
+    if (err && err.code === 11000) {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 app.get("/api/users/:username", requireAuth, async (req, res) => {
   try {
     const username = String(req.params.username || "").trim();
@@ -306,6 +348,7 @@ app.get("/api/users/:username", requireAuth, async (req, res) => {
         .sort((a, b) => a.name.localeCompare(b.name));
     }
     if (mine) {
+      payload.email = user.email;
       payload.ownedAvatars = uniqueOwnedIds(user.collection).map((id) => {
         const card = registry.getById(id);
         return { cardId: id, name: card.name, art: card.art };

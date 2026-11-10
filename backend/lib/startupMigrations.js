@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Migration = require("../models/Migration");
+const { normalizeEmail, emailKey } = require("./email");
 
 const CYBER_CHAD_ID = "cyber_chad_226";
 const MIGRATION_ID = "cyber_chad_grant_v1";
@@ -8,6 +9,7 @@ const PERSONAL_GRANT_USER = "alrightninja";
 const PERSONAL_GRANT_CARDS = ["sir_kensworth_185", "john_wickthrop_221"];
 const STRIP_CONSISTENCY_ID = "strip_chad_of_consistency_v1";
 const STRIP_CARD_ID = "chad_of_consistency_033";
+const EMAIL_KEY_ID = "email_key_backfill_v1";
 const CRK_PREFIX = /^Crk/;
 
 async function applyGrantOnce(store) {
@@ -130,6 +132,28 @@ function mongoStore() {
     },
     async saveResult(id, result) {
       await Migration.updateOne({ _id: id }, { $set: { result, appliedAt: new Date() } });
+    },
+    async backfillEmailKeys() {
+      const users = await User.find({}, { email: 1, emailKey: 1 });
+      const used = new Set();
+      let updated = 0;
+      let collisions = 0;
+      for (const user of users) {
+        const email = normalizeEmail(user.email);
+        const key = emailKey(email);
+        if (used.has(key)) {
+          collisions += 1;
+          continue;
+        }
+        used.add(key);
+        if (user.email !== email || user.emailKey !== key) {
+          user.email = email;
+          user.emailKey = key;
+          await user.save();
+          updated += 1;
+        }
+      }
+      return { updated, collisions, users: users.length };
     }
   };
 }
@@ -159,7 +183,23 @@ async function runStartupMigrations() {
       `Migration ${STRIP_CONSISTENCY_ID}: removed ${stripped.cardId} from ${stripped.usersTouched} users`
     );
   }
-  return { cyberChad: result, personal, stripped };
+  const emails = await backfillEmailKeysOnce(store);
+  if (emails.ran) {
+    console.log(
+      `Migration ${EMAIL_KEY_ID}: updated ${emails.updated} emails (${emails.collisions || 0} collisions)`
+    );
+  }
+  return { cyberChad: result, personal, stripped, emails };
+}
+
+async function backfillEmailKeysOnce(store) {
+  const claimed = await store.claim(EMAIL_KEY_ID);
+  if (!claimed) {
+    return { ran: false, reason: "already-applied" };
+  }
+  const result = await store.backfillEmailKeys();
+  await store.saveResult(EMAIL_KEY_ID, result);
+  return { ran: true, ...result };
 }
 
 module.exports = {
@@ -174,5 +214,7 @@ module.exports = {
   stripRemovedCardsOnce,
   STRIP_CONSISTENCY_ID,
   STRIP_CARD_ID,
+  EMAIL_KEY_ID,
+  backfillEmailKeysOnce,
   runStartupMigrations
 };
