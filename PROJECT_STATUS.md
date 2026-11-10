@@ -22,7 +22,7 @@ Turn-based multiplayer TCG. Current engine (`RULEBOOK.md` v4.4):
 - Unit **HP = 2× printed Power**; damage = attack total minus Armor; KO at 0 HP (no decay, no suicide into bigger cards)
 - Trait wheel **Lead only, +6 / −6** (defender +8 Armor on a bad matchup): Mind → Muscle → Mystic → Machina → Mayhem → Mind
 - Loss reps only if the match reached **turn 5**; forfeits pay the quitter **0**
-- **First to 5 KOs** wins (friend matches can set 3–10); empty Active + Bench is still a loss (hand does not save you after opening)
+- **Vs AI is first to 3 KOs**; friend matches default to 5 (can set 3–10); empty Active + Bench is still a loss (hand does not save you after opening)
 
 ---
 

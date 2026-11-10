@@ -193,7 +193,7 @@ export default function PlayPage() {
       <button className="btn" disabled={busy || !deckName || !!live || !deckLegal} onClick={startAi}>
         Battle vs AI
       </button>
-      <p className="muted">Vs AI is first to 5 KOs.</p>
+      <p className="muted">Vs AI is first to 3 KOs.</p>
 
       <div className="panel stack">
         <strong>Challenge a friend</strong>

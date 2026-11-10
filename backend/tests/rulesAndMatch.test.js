@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { DECK_SIZE, MAX_ACTIVE, HAND_LIMIT, KO_LIMIT_DEFAULT, clampKoLimit } = require("../engine/rules");
+const { DECK_SIZE, MAX_ACTIVE, HAND_LIMIT, KO_LIMIT_DEFAULT, KO_LIMIT_AI, clampKoLimit } = require("../engine/rules");
 const { createInitialGameState } = require("../engine/gameState");
 const { applyAction } = require("../engine/applyAction");
 const { playUnit, attack, swapActive, promoteFromBench } = require("../engine/actions");
@@ -90,6 +90,7 @@ test("5. empty active and bench loses even with a hand", () => {
 
 test("first to 5 KOs wins while the opponent still has a board", () => {
   assert.equal(KO_LIMIT_DEFAULT, 5);
+  assert.equal(KO_LIMIT_AI, 3);
   assert.equal(clampKoLimit(2), 3);
   assert.equal(clampKoLimit(11), 10);
   const state = createInitialGameState([], [], { koLimit: 5 });

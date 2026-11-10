@@ -8,7 +8,7 @@ Numbers live in `backend/engine/rules.js`.
 
 ## 1. Goal
 
-Knock out the other player’s units. **First to 5 KOs wins** (friend matches may set 3–10). You also **lose** when you have:
+Knock out the other player’s units. **Vs AI is first to 3 KOs.** Friend matches default to **5** and may set **3–10**. You also **lose** when you have:
 
 - no Active units, **and**
 - no Bench units.
@@ -163,7 +163,7 @@ Live friend matches update both players over the match socket. Challenge a frien
 
 ## 10. Winning
 
-**First to 5 KOs wins** (vs AI always 5). Friend live or correspondence challenges may set the goal anywhere from **3 to 10**.
+**First to 5 KOs wins** in friend matches unless the challenge sets another goal (**3 to 10**). **Vs AI is first to 3 KOs**.
 
 You also lose when Active and Bench are empty, or your health hits 0.
 

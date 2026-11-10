@@ -825,7 +825,7 @@ export default function BattlePage() {
               <li>Attack: first click is the Lead. You may add one Common or Uncommon Assist from Active. Rares and Legendaries fight alone. Attackers take a Rest Day.</li>
               <li>If they have a Guard (blue), you must attack that unit. After the fight you cannot play more cards.</li>
               <li>Only the Lead’s type counts: +6 if it beats the defender, −6 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type. Units have HP equal to twice their Power.</li>
-              <li>You go first and skip a draw. Hand limit 5. First to 5 KOs wins (friend matches can set 3–10). Empty Active and Bench still loses.</li>
+              <li>You go first and skip a draw. Hand limit 5. First to {match.state?.koLimit || 5} KOs wins (vs AI is 3; friend matches can set 3–10). Empty Active and Bench still loses.</li>
             </ol>
           </div>
         ) : null}

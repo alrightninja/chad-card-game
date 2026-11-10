@@ -16,7 +16,7 @@ const {
   deckToUnits,
   randomAiDeckIds
 } = require("../engine/cardRegistry");
-const { DECK_SIZE, clampKoLimit, KO_LIMIT_DEFAULT } = require("../engine/rules");
+const { DECK_SIZE, clampKoLimit, KO_LIMIT_DEFAULT, KO_LIMIT_AI } = require("../engine/rules");
 const { deckIllegalReason } = require("../lib/deck");
 const {
   LIVE_TURN_MS,
@@ -214,7 +214,7 @@ async function startPveMatch(user, deckName, options = {}) {
 
   const playerUnits = shuffle(deckToUnits(deck.cards));
   const aiUnits = shuffle(deckToUnits(randomAiDeckIds(DECK_SIZE)));
-  const state = createInitialGameState(playerUnits, aiUnits, { koLimit: KO_LIMIT_DEFAULT });
+  const state = createInitialGameState(playerUnits, aiUnits, { koLimit: KO_LIMIT_AI });
 
   const match = await Match.create({
     playerId: user._id,

@@ -6,6 +6,7 @@ const MAX_ACTIVE = 3;
 const MAX_BENCH = 3;
 const DECK_SIZE = 20;
 const KO_LIMIT_DEFAULT = 5;
+const KO_LIMIT_AI = 3;
 const KO_LIMIT_MIN = 3;
 const KO_LIMIT_MAX = 10;
 const DECAY_RATE = 0.2;
@@ -52,6 +53,7 @@ module.exports = {
   MAX_BENCH,
   DECK_SIZE,
   KO_LIMIT_DEFAULT,
+  KO_LIMIT_AI,
   KO_LIMIT_MIN,
   KO_LIMIT_MAX,
   clampKoLimit,
