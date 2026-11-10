@@ -38,6 +38,17 @@ export function SocialInboxProvider({ children }) {
     socket.on("direct_message", () => {
       bump({ text: "New message from a friend.", href: "/friends" });
     });
+    socket.on("trade_update", (payload) => {
+      if (payload?.kind === "incoming") {
+        bump({ text: "New trade offer.", href: "/friends" });
+      } else if (payload?.kind === "accepted") {
+        bump({ text: "A trade was accepted.", href: "/friends" });
+      } else if (payload?.kind === "counter") {
+        bump({ text: "A friend sent a counter-offer.", href: "/friends" });
+      } else {
+        bump({ text: "Trade update.", href: "/friends" });
+      }
+    });
     return () => socket.disconnect();
   }, []);
 

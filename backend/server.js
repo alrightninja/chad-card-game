@@ -19,10 +19,12 @@ const { attachMatchSockets, broadcastMatch } = require("./sockets/matchSocket");
 const socialRoutes = require("./routes/social");
 const adminRoutes = require("./routes/admin");
 const { assertCleanUsername } = require("./utils/moderation");
-const { safeMe } = require("./lib/publicUser");
+const { safeMe, publicProfile } = require("./lib/publicUser");
+const { uniqueOwnedIds } = require("./lib/inventory");
 const { normalizeEmail, emailsMatch, emailQuery } = require("./lib/email");
 const retention = require("./lib/retention");
-const { PACKS, packOnSale } = require("./lib/packs");
+const { PACKS, packOnSale, packSaleState } = require("./lib/packs");
+const tradeRoutes = require("./routes/trades");
 const { isLegalDeckList, deckIllegalReason, deckLimits, DECK_SIZE } = require("./lib/deck");
 
 const app = express();
@@ -107,10 +109,13 @@ app.get("/api/trait/:trait", (req, res) => {
 
 app.post("/api/register", async (req, res) => {
   try {
-    const { email, emailConfirm, username, password, termsAccepted } = req.body;
+    const { email, emailConfirm, username, password, passwordConfirm, termsAccepted } = req.body;
 
     if (!email || !username || !password) {
       return res.status(400).json({ error: "Missing required fields" });
+    }
+    if (password !== passwordConfirm) {
+      return res.status(400).json({ error: "Passwords do not match" });
     }
     if (!emailsMatch(email, emailConfirm)) {
       return res.status(400).json({ error: "Email addresses do not match" });
@@ -231,7 +236,90 @@ app.get("/api/me", requireAuth, (req, res) => {
   res.json({ user: safeMe(req.user) });
 });
 
+app.patch("/api/me", requireAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    const avatarCardId = req.body.avatarCardId;
+    if (avatarCardId != null && avatarCardId !== "") {
+      if (!registry.getById(avatarCardId)) {
+        return res.status(400).json({ error: "Unknown card" });
+      }
+      if (!(user.collection || []).includes(avatarCardId)) {
+        return res.status(400).json({ error: "You can only use a card you own as your picture" });
+      }
+      user.avatarCardId = avatarCardId;
+    } else if (avatarCardId === "" || avatarCardId === null) {
+      user.avatarCardId = null;
+    }
+    await user.save();
+    res.json({ user: safeMe(user) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.post("/api/me/password", requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword, newPasswordConfirm } = req.body || {};
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current and new password are required" });
+    }
+    if (newPassword !== newPasswordConfirm) {
+      return res.status(400).json({ error: "New passwords do not match" });
+    }
+    if (String(newPassword).length < 6) {
+      return res.status(400).json({ error: "New password must be at least 6 characters" });
+    }
+    const user = await User.findById(req.user._id);
+    const ok = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!ok) return res.status(400).json({ error: "Current password is incorrect" });
+    user.passwordHash = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ message: "Password updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/api/users/:username", requireAuth, async (req, res) => {
+  try {
+    const username = String(req.params.username || "").trim();
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    const mine = String(user._id) === String(req.user._id);
+    const friend = (req.user.friends || []).some((id) => String(id) === String(user._id));
+    const payload = publicProfile(user);
+    payload.mine = mine;
+    payload.friend = friend || mine;
+    if (mine || friend) {
+      const counts = {};
+      for (const id of user.collection || []) counts[id] = (counts[id] || 0) + 1;
+      payload.collection = Object.keys(counts)
+        .map((id) => {
+          const card = registry.getById(id);
+          if (!card) return null;
+          return { ...card, quantity: counts[id] };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (mine) {
+      payload.ownedAvatars = uniqueOwnedIds(user.collection).map((id) => {
+        const card = registry.getById(id);
+        return { cardId: id, name: card.name, art: card.art };
+      });
+    }
+    res.json({ user: payload });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 app.use("/api", socialRoutes);
+app.use("/api", tradeRoutes);
 app.use("/api/admin", adminRoutes);
 
 /* ============================================================
@@ -564,7 +652,10 @@ app.post("/api/shop/buy-pack", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "Invalid pack type" });
     }
     if (!packOnSale(pack)) {
-      return res.status(400).json({ error: "This pack is not available yet" });
+      const ended = pack.availableUntil && new Date() >= new Date(pack.availableUntil);
+      return res.status(400).json({
+        error: ended ? "This pack is no longer for sale" : "This pack is not available yet"
+      });
     }
 
     if (user.currency.reps < pack.cost) {
@@ -590,15 +681,7 @@ app.post("/api/shop/buy-pack", requireAuth, async (req, res) => {
 
 app.get("/api/shop/packs", requireAuth, (req, res) => {
   res.json({
-    packs: packs.filter((pack) => packOnSale(pack)).map((pack) => ({
-      id: pack.id,
-      name: pack.name,
-      cost: pack.cost,
-      cards: pack.cards,
-      set: pack.set,
-      art: pack.art,
-      onSale: true
-    }))
+    packs: packs.map((pack) => packSaleState(pack))
   });
 });
 

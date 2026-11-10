@@ -77,12 +77,10 @@ function toBattleUnit(card, instanceId) {
 }
 
 function deckToUnits(cardIds) {
-  return cardIds.map((cardId, index) => {
+  return cardIds.flatMap((cardId, index) => {
     const card = getById(cardId);
-    if (!card) {
-      throw new Error(`Unknown cardId: ${cardId}`);
-    }
-    return toBattleUnit(card, `${cardId}:${index}:${instanceSeq + 1}`);
+    if (!card) return [];
+    return [toBattleUnit(card, `${cardId}:${index}:${instanceSeq + 1}`)];
   });
 }
 

@@ -1150,3 +1150,182 @@ button.tcg {
 .inspect-flavor {
   font-style: italic;
 }
+
+.collection-grid {
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+}
+
+.collection-grid .card-fit.small {
+  --s: 0.72;
+}
+
+@media (max-width: 720px) {
+  .collection-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+  .collection-grid .card-fit.small {
+    --s: 0.52;
+  }
+}
+
+@media (max-width: 380px) {
+  .collection-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .collection-grid .card-fit.small {
+    --s: 0.7;
+  }
+}
+
+.back-to-top {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  box-shadow: 0 8px 18px rgba(28, 26, 23, 0.18);
+}
+
+.pack-offer.ended {
+  filter: grayscale(0.85);
+  opacity: 0.62;
+}
+
+.pack-offer.ended .pack-art {
+  filter: grayscale(1);
+}
+
+.user-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.user-link:hover {
+  text-decoration: underline;
+}
+
+.avatar-sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #d8d0c4;
+  flex-shrink: 0;
+}
+
+.avatar-lg {
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: #d8d0c4;
+}
+
+.avatar-empty {
+  display: inline-block;
+}
+
+.profile-hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.xp-bar {
+  height: 10px;
+  background: #e7e0d4;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 0.45rem;
+}
+
+.xp-fill {
+  height: 100%;
+  background: #c45c26;
+}
+
+.profile-avatars {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.profile-avatars button {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+}
+
+.profile-avatars button.selected {
+  border-color: var(--accent);
+}
+
+.profile-avatars img {
+  width: 100%;
+  aspect-ratio: 5 / 8;
+  object-fit: cover;
+  display: block;
+}
+
+.trade-pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.trade-pick-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.7rem;
+}
+
+.trade-pick-card.selected {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+}
+
+.trade-pick-card img {
+  width: 100%;
+  aspect-ratio: 5 / 8;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.card-badge.tired {
+  letter-spacing: 0.02em;
+  font-size: 0.46rem;
+  padding: 0.08rem 0.2rem;
+}
+
+@media (min-width: 900px) {
+  .table {
+    grid-template-columns: 108px minmax(0, 1fr) 108px;
+    padding: 0.5rem 0.85rem;
+  }
+
+  .you-dock {
+    grid-template-columns: minmax(200px, 0.85fr) minmax(260px, 1.25fr);
+    padding: 0 0.35rem;
+    gap: 1.1rem;
+  }
+
+  .field {
+    width: min(88%, 480px);
+  }
+}

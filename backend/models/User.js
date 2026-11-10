@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema(
       reps: { type: Number, default: 0 }
     },
 
+    xp: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
+    avatarCardId: { type: String, default: null },
+
     tutorialCompleted: { type: Boolean, default: false },
     verified: { type: Boolean, default: false },
     verifiedAt: { type: Date, default: null },

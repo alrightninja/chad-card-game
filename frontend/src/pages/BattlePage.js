@@ -13,7 +13,7 @@ import "../battle-mobile.css";
 
 const ACTIVE_SLOTS = 3;
 const BENCH_SLOTS = 3;
-const HAND_SLOTS = 7;
+const HAND_SLOTS = 5;
 const DRAG_PX = 8;
 
 function pad(list, size) {
@@ -439,7 +439,7 @@ export default function BattlePage() {
   function combatBadges(card, index, side, zone) {
     if (!card) return [];
     const list = [];
-    if (card.tired || card.tiredTurns > 0) list.push({ kind: "tired", text: "Tired" });
+    if (card.tired || card.tiredTurns > 0) list.push({ kind: "tired", text: "Rest Day" });
     if (zone === "active" && card.guarding) list.push({ kind: "guard", text: "Guard" });
     if (zone === "active") {
       const picks = side === "opp" && lunge.from === "opp" ? lunge.attackers : side === "you" ? attackers : [];
@@ -576,7 +576,7 @@ export default function BattlePage() {
       return match.winner === match.yourSeat ? "You won." : match.winner === "draw" ? "Draw." : "Defeat.";
     }
     if (!yourTurn) return "Opponent’s turn.";
-    if (phase === "end") return "You already attacked. End turn (hand limit 7).";
+    if (phase === "end") return "You already attacked. End turn (hand limit 5).";
     if (phase === "battle" && attackers.length) return "You may attack again, or End turn.";
     if (guardMode) return "Click YOUR Active unit to make it Guard. The opponent must attack that unit.";
     if (ghost) return "Drop on Active or Bench.";
@@ -649,7 +649,7 @@ export default function BattlePage() {
     }
     if ((card.tired || card.tiredTurns > 0) && !attackers.includes(i)) {
       audio?.playSfx("error");
-      setError(`${card.name} is Tired and cannot attack this turn.`);
+      setError(`${card.name} is on Rest Day and cannot attack this turn.`);
       return;
     }
     setSelectedHand(null);
@@ -816,10 +816,10 @@ export default function BattlePage() {
             <strong>Coach</strong>
             <ol>
               <li>Main Phase: play to Active (3) or Bench (3), one Bench-to-Active move, or press Guard then click an Active unit.</li>
-              <li>Attack: first click is the Lead. You may add one Common or Uncommon Assist from Active. Rares and Legendaries fight alone. Attackers become Tired.</li>
+              <li>Attack: first click is the Lead. You may add one Common or Uncommon Assist from Active. Rares and Legendaries fight alone. Attackers take a Rest Day.</li>
               <li>If they have a Guard (blue), you must attack that unit. After the fight you cannot play more cards.</li>
               <li>Only the Lead’s type counts: +6 if it beats the defender, −6 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type. Units have HP equal to twice their Power.</li>
-              <li>You go first and skip a draw. Hand limit 7. First to 5 KOs wins (friend matches can set 3–10). Empty Active and Bench still loses.</li>
+              <li>You go first and skip a draw. Hand limit 5. First to 5 KOs wins (friend matches can set 3–10). Empty Active and Bench still loses.</li>
             </ol>
           </div>
         ) : null}
@@ -831,7 +831,7 @@ export default function BattlePage() {
 
           <div className="table-main">
             <div className="hand-backs">
-              {Array.from({ length: Math.min(foe?.handCount || 0, 8) }).map((_, i) => (
+              {Array.from({ length: Math.min(foe?.handCount || 0, 6) }).map((_, i) => (
                 <CardBack key={i} />
               ))}
             </div>
@@ -1031,7 +1031,7 @@ export default function BattlePage() {
                   {inspect.rarity ? ` · ${inspect.rarity}` : ""}
                 </p>
                 {inspect.abilityText ? <p>{inspect.abilityText}</p> : null}
-                {inspect.tired || inspect.tiredTurns > 0 ? <p>Tired — cannot attack this turn.</p> : null}
+                {inspect.tired || inspect.tiredTurns > 0 ? <p>Rest Day — cannot attack this turn.</p> : null}
                 {inspect.guarding ? <p>Guard — must be the attack target.</p> : null}
                 {inspect.flavorLine ? <p className="muted inspect-flavor">{inspect.flavorLine}</p> : null}
                 <p className="muted">Double-click a card to inspect. Click outside or press Esc to close.</p>

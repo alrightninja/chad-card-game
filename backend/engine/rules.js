@@ -1,7 +1,7 @@
 /** Living rules numbers — keep in sync with RULEBOOK.md */
 
 const OPENING_HAND = 5;
-const HAND_LIMIT = 7;
+const HAND_LIMIT = 5;
 const MAX_ACTIVE = 3;
 const MAX_BENCH = 3;
 const DECK_SIZE = 20;

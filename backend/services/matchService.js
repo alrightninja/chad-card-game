@@ -29,6 +29,7 @@ const {
   nextLiveDeadline,
   finishReps
 } = require("../lib/matchLogic");
+const { applyWinXp } = require("../lib/xp");
 
 function validateDeck(deck) {
   if (!deck) {
@@ -119,6 +120,7 @@ async function awardAndFinish(match, options = {}) {
   const player = await User.findById(match.playerId);
   if (player) {
     player.currency.reps = (player.currency.reps || 0) + playerReps;
+    if (!match.tutorial && match.winner === "player") applyWinXp(player);
     await player.save();
   }
 
@@ -126,6 +128,7 @@ async function awardAndFinish(match, options = {}) {
     const opponent = await User.findById(match.opponentUserId);
     if (opponent) {
       opponent.currency.reps = (opponent.currency.reps || 0) + opponentReps;
+      if (!match.tutorial && match.winner === "opponent") applyWinXp(opponent);
       await opponent.save();
     }
   }

@@ -12,6 +12,7 @@ import FriendsPage from "./pages/FriendsPage";
 import BattlePage from "./pages/BattlePage";
 import TutorialPage from "./pages/TutorialPage";
 import DeckBuilderPage from "./pages/DeckBuilderPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function Guard({ children }) {
   const { user, ready } = useAuth();
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="decks" element={<DeckBuilderPage />} />
         <Route path="shop" element={<ShopPage />} />
         <Route path="friends" element={<FriendsPage />} />
+        <Route path="u/:username" element={<ProfilePage />} />
         <Route path="battle/:matchId" element={<BattlePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

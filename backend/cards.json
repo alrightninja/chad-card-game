@@ -480,21 +480,6 @@
     "version": 1
   },
   {
-    "cardId": "chad_of_consistency_033",
-    "set": 4,
-    "name": "Chad of Consistency",
-    "trait": "Mind",
-    "power": 33,
-    "rarity": "U",
-    "abilityCategory": "Play",
-    "abilityKeyword": "Draw",
-    "abilityValue": 1,
-    "abilityText": "On Play: Draw 1 card.",
-    "flavorLine": "A steady thinker whose plans never falter.",
-    "art": "chad_of_consistency.png",
-    "version": 1
-  },
-  {
     "cardId": "chad_of_pizzazz_034",
     "set": 1,
     "name": "Chad of Pizzazz",
@@ -603,7 +588,7 @@
     "cardId": "chaos_kettlebell_041",
     "set": 4,
     "name": "Chaos Kettlebell",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 34,
     "rarity": "U",
     "abilityCategory": "Attack",
@@ -612,7 +597,7 @@
     "abilityText": "On Attack: Flip a coin. If heads, instantly KO the enemy.",
     "flavorLine": "Swings wildly. Decides fate.",
     "art": "chaos_kettlebell.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "chaotic_good_roomba_042",
@@ -768,7 +753,7 @@
     "cardId": "cosplay_knight_toaster_052",
     "set": 4,
     "name": "Cosplay Knight Toaster",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 38,
     "rarity": "U",
     "abilityCategory": "Passive",
@@ -777,7 +762,7 @@
     "abilityText": "Passive: Starts with 1 Power Shield.",
     "flavorLine": "For breakfast and for glory.",
     "art": "cosplay_knight_toaster.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "cowboy_chad_053",
@@ -798,7 +783,7 @@
     "cardId": "crying_fire_hydrant_054",
     "set": 4,
     "name": "Crying Fire Hydrant",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 38,
     "rarity": "U",
     "abilityCategory": "Defeat",
@@ -807,7 +792,7 @@
     "abilityText": "On Defeat: Deal 9 damage to the enemy unit that KO'd this.",
     "flavorLine": "It's just under a lot of pressure.",
     "art": "crying_fire_hydrant.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "cryptid_substitute_teacher_055",
@@ -858,7 +843,7 @@
     "cardId": "cursed_parking_meter_057",
     "set": 4,
     "name": "Cursed Parking Meter",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 38,
     "rarity": "U",
     "abilityCategory": "Passive",
@@ -867,7 +852,7 @@
     "abilityText": "Passive: Mill 1 card from the opponent's deck at the start of your turn.",
     "flavorLine": "It's still charging you.",
     "art": "cursed_parking_meter.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "cursed_duct_tape_058",
@@ -888,7 +873,7 @@
     "cardId": "depressed_balloon_animal_059",
     "set": 4,
     "name": "Depressed Balloon Animal",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 27,
     "rarity": "C",
     "abilityCategory": "Play",
@@ -897,7 +882,7 @@
     "abilityText": "On Play: Look at the top card of your deck. You may put it on the bottom.",
     "flavorLine": "Squeaky on the outside. Hollow on the inside.",
     "art": "depressed_balloon_animal.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "dictator_chad_060",
@@ -1069,7 +1054,7 @@
     "set": 1,
     "name": "E Unit",
     "trait": "Mind",
-    "power": 26,
+    "power": 27,
     "rarity": "C",
     "abilityCategory": "Play",
     "abilityKeyword": "Draw",
@@ -1077,7 +1062,7 @@
     "abilityText": "On Play: Draw 1 card.",
     "flavorLine": "A compact thinker with surprising tactical depth.",
     "art": "e_unit.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "ego_boosted_refrigerator_072",
@@ -1143,7 +1128,7 @@
     "cardId": "enthusiastic_fog_machine_076",
     "set": 4,
     "name": "Enthusiastic Fog Machine",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 33,
     "rarity": "U",
     "abilityCategory": "Passive",
@@ -1152,7 +1137,7 @@
     "abilityText": "Passive: This unit treats its weaknesses as strengths.",
     "flavorLine": "Stage presence: deadly.",
     "art": "enthusiastic_fog_machine.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "exploding_corn_dog_077",
@@ -1324,7 +1309,7 @@
     "set": 3,
     "name": "Gigachad",
     "trait": "Muscle",
-    "power": 51,
+    "power": 55,
     "rarity": "L",
     "abilityCategory": "Attack",
     "abilityKeyword": "PowerUp",
@@ -1332,7 +1317,7 @@
     "abilityText": "On Attack: Gain +13 Power for this battle.",
     "flavorLine": "The final form of strength itself.",
     "art": "gigachad.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "glow_in_the_dark_taxidermist_089",
@@ -1383,7 +1368,7 @@
     "cardId": "gossiping_garden_gnome_092",
     "set": 4,
     "name": "Gossiping Garden Gnome",
-    "trait": "Mind",
+    "trait": "Machina",
     "power": 31,
     "rarity": "C",
     "abilityCategory": "Play",
@@ -1392,7 +1377,7 @@
     "abilityText": "On Play: Peek at the top card of your deck.",
     "flavorLine": "Knows everything. Tells everyone.",
     "art": "gossiping_garden_gnome.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "goth_squirrel_nunchucks_093",
@@ -1443,7 +1428,7 @@
     "cardId": "groaning_girdle_096",
     "set": 3,
     "name": "Groaning Girdle",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 33,
     "rarity": "U",
     "abilityCategory": "Attack",
@@ -1452,7 +1437,7 @@
     "abilityText": "On Attack: Reduce all enemy units' Power by 9 this turn.",
     "flavorLine": "A shrill bathroom ghost whose groans unsettle even the swole.",
     "art": "groaning_girdle.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "gym_bro_centaur_097",
@@ -1488,7 +1473,7 @@
     "cardId": "haunted_blender_099",
     "set": 4,
     "name": "Haunted Blender",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 44,
     "rarity": "R",
     "abilityCategory": "Passive",
@@ -1497,13 +1482,13 @@
     "abilityText": "Passive: When this unit is KO'd, KO the enemy that defeated it.",
     "flavorLine": "It screams. So do the ingredients.",
     "art": "haunted_blender.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "haunted_fidget_spinner_100",
     "set": 4,
     "name": "Haunted Fidget Spinner",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 27,
     "rarity": "C",
     "abilityCategory": "Play",
@@ -1512,13 +1497,13 @@
     "abilityText": "On Play: Restore 5 Power to all friendly units.",
     "flavorLine": "It never stopped. Neither did the screaming.",
     "art": "haunted_fidget_spinner.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "haunted_printer_101",
     "set": 4,
     "name": "Haunted Printer",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 31,
     "rarity": "C",
     "abilityCategory": "Defeat",
@@ -1527,7 +1512,7 @@
     "abilityText": "On Defeat: Mill 1 card from the opponent's deck.",
     "flavorLine": "Still printing that spreadsheet from 2008.",
     "art": "haunted_printer.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "hermione_gainger_102",
@@ -1548,7 +1533,7 @@
     "cardId": "hovering_business_card_103",
     "set": 4,
     "name": "Hovering Business Card",
-    "trait": "Mind",
+    "trait": "Machina",
     "power": 27,
     "rarity": "C",
     "abilityCategory": "Play",
@@ -1557,7 +1542,7 @@
     "abilityText": "On Play: Choose to draw 1 card or force the opponent to discard 1 at random.",
     "flavorLine": "Floating its résumé into battle.",
     "art": "hovering_business_card.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "hovering_support_anvil_104",
@@ -1654,7 +1639,7 @@
     "set": 2,
     "name": "J Walker",
     "trait": "Mind",
-    "power": 35,
+    "power": 31,
     "rarity": "U",
     "abilityCategory": "Play",
     "abilityKeyword": "Draw",
@@ -1662,7 +1647,7 @@
     "abilityText": "On Play: Draw 1 card.",
     "flavorLine": "Moves with quiet purpose and careful planning.",
     "art": "j_walker.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "jack_steele_111",
@@ -1758,7 +1743,7 @@
     "cardId": "king_inflatable_tube_people_117",
     "set": 4,
     "name": "King of the Inflatable Tube People",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 44,
     "rarity": "R",
     "abilityCategory": "Passive",
@@ -1767,7 +1752,7 @@
     "abilityText": "Passive: This unit cannot be blocked or prevented from attacking.",
     "flavorLine": "All hail the flail.",
     "art": "king_inflatable_tube_people.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "knight_rusty_yoga_pants_118",
@@ -1833,7 +1818,7 @@
     "cardId": "living_pile_homework_122",
     "set": 4,
     "name": "Living Pile of Homework",
-    "trait": "Mind",
+    "trait": "Machina",
     "power": 31,
     "rarity": "C",
     "abilityCategory": "Attack",
@@ -1842,7 +1827,7 @@
     "abilityText": "On Attack: Gain +8 Power if your last unit was KO'd.",
     "flavorLine": "Somewhere in here is a permission slip from 2009.",
     "art": "living_pile_homework.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "loaf_bread_wifi_123",
@@ -1938,7 +1923,7 @@
     "cardId": "microwave_lawyer_129",
     "set": 4,
     "name": "Microwave That's Also a Lawyer",
-    "trait": "Mind",
+    "trait": "Machina",
     "power": 38,
     "rarity": "R",
     "abilityCategory": "Play",
@@ -1947,7 +1932,7 @@
     "abilityText": "On Play: Silence the enemy for 1 turn.",
     "flavorLine": "He's got legal grounds. And popcorn.",
     "art": "microwave_lawyer.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "microwaved_sock_golem_130",
@@ -2148,7 +2133,7 @@
     "cardId": "mystic_gym_bag_holding_143",
     "set": 4,
     "name": "Mystic Gym Bag of Holding",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 34,
     "rarity": "U",
     "abilityCategory": "Play",
@@ -2157,7 +2142,7 @@
     "abilityText": "On Play: Restore 6 Power to all friendly units.",
     "flavorLine": "Contains infinite towels. And secrets.",
     "art": "mystic_gym_bag_holding.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "ninja_chad_144",
@@ -2478,7 +2463,7 @@
     "cardId": "rage_fueled_foam_sword_165",
     "set": 4,
     "name": "Rage-Fueled Foam Sword",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 31,
     "rarity": "C",
     "abilityCategory": "Attack",
@@ -2487,7 +2472,7 @@
     "abilityText": "On Attack: Deal a wildly variable Power swing of ±2.",
     "flavorLine": "Soft weapon. Hard feelings.",
     "art": "rage_fueled_foam_sword.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "rebellious_marshmallow_166",
@@ -2538,7 +2523,7 @@
     "cardId": "retired_arcade_machine_169",
     "set": 4,
     "name": "Retired Arcade Machine",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 36,
     "rarity": "U",
     "abilityCategory": "Play",
@@ -2547,7 +2532,7 @@
     "abilityText": "On Play: Force the opponent to discard 1 random card.",
     "flavorLine": "Still running on caffeine and spite.",
     "art": "retired_arcade_machine.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "retired_pirate_therapist_170",
@@ -2598,7 +2583,7 @@
     "cardId": "rogue_jump_rope_173",
     "set": 4,
     "name": "Rogue Jump Rope",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 27,
     "rarity": "C",
     "abilityCategory": "Attack",
@@ -2607,7 +2592,7 @@
     "abilityText": "On Attack: Deal 8 damage to the enemy before battle.",
     "flavorLine": "Whips with chaotic precision.",
     "art": "rogue_jump_rope.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "sad_vampire_magician_174",
@@ -2688,7 +2673,7 @@
     "cardId": "screaming_pinata_179",
     "set": 4,
     "name": "Screaming Pinata",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 34,
     "rarity": "U",
     "abilityCategory": "Defeat",
@@ -2697,13 +2682,13 @@
     "abilityText": "On Defeat: Reduce all enemy units' Power by 9 this turn.",
     "flavorLine": "It's filled with candy. And vengeance.",
     "art": "screaming_pinata.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "self_driving_lawn_mower_180",
     "set": 4,
     "name": "Self-Driving Lawn Mower",
-    "trait": "Mind",
+    "trait": "Machina",
     "power": 38,
     "rarity": "R",
     "abilityCategory": "Play",
@@ -2712,7 +2697,7 @@
     "abilityText": "On Play: Instantly KO an enemy with 4 or less Power.",
     "flavorLine": "Mows lawns. And morals.",
     "art": "self_driving_lawn_mower.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "sentient_cactus_poncho_181",
@@ -2792,7 +2777,7 @@
   {
     "cardId": "skibidi_chad_186",
     "set": 2,
-    "name": "Skibidi Chad",
+    "name": "Fake Brazilian Chad",
     "trait": "Mayhem",
     "power": 26,
     "rarity": "C",
@@ -2802,7 +2787,7 @@
     "abilityText": "On Attack: Deal a wildly variable Power swing of ±7.",
     "flavorLine": "A chaotic bruiser powered by meme-energy.",
     "art": "skibidi_chad.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "sleeper_chad_187",
@@ -2823,7 +2808,7 @@
     "cardId": "self_aware_sock_188",
     "set": 4,
     "name": "Sock That's Become Self-Aware",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 27,
     "rarity": "C",
     "abilityCategory": "Defeat",
@@ -2832,7 +2817,7 @@
     "abilityText": "On Defeat: Deal 8 damage to the enemy before battle.",
     "flavorLine": "You left it in the dryer. Now it's back.",
     "art": "self_aware_sock.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "space_suit_goldfish_189",
@@ -3018,7 +3003,7 @@
     "cardId": "toaster_daddy_issues_201",
     "set": 4,
     "name": "Toaster with Daddy Issues",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 30,
     "rarity": "C",
     "abilityCategory": "Defeat",
@@ -3027,7 +3012,7 @@
     "abilityText": "On Defeat: Reduce the enemy's Power by 8 this battle.",
     "flavorLine": "He just wants to burn something meaningful.",
     "art": "toaster_daddy_issues.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "tom_diddle_202",
@@ -3063,7 +3048,7 @@
     "cardId": "sentient_bagpipe_204",
     "set": 4,
     "name": "Uncomfortably Sentient Bagpipe",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 30,
     "rarity": "C",
     "abilityCategory": "Defeat",
@@ -3072,7 +3057,7 @@
     "abilityText": "On Defeat: Silence the enemy for 1 turn.",
     "flavorLine": "Whining its way into your soul.",
     "art": "sentient_bagpipe.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "therapist_dolphin_205",
@@ -3123,7 +3108,7 @@
     "cardId": "unstoppable_grandma_scooter_208",
     "set": 4,
     "name": "Unstoppable Grandma Scooter",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 38,
     "rarity": "R",
     "abilityCategory": "Play",
@@ -3132,7 +3117,7 @@
     "abilityText": "On Play: Instantly KO an enemy with 1 or less Power.",
     "flavorLine": "You hear the horn. But never fast enough.",
     "art": "unstoppable_grandma_scooter.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "veindeer_209",
@@ -3153,7 +3138,7 @@
     "cardId": "waffle_iron_ninja_210",
     "set": 4,
     "name": "Waffle Iron Ninja",
-    "trait": "Mayhem",
+    "trait": "Machina",
     "power": 33,
     "rarity": "U",
     "abilityCategory": "Defeat",
@@ -3162,13 +3147,13 @@
     "abilityText": "On Defeat: Flip a coin. If heads, instantly KO the enemy.",
     "flavorLine": "Deadly at breakfast. Deadlier at brunch.",
     "art": "waffle_iron_ninja.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "weather_balloon_trust_issues_211",
     "set": 4,
     "name": "Weather Balloon with Trust Issues",
-    "trait": "Mystic",
+    "trait": "Machina",
     "power": 34,
     "rarity": "U",
     "abilityCategory": "Play",
@@ -3177,7 +3162,7 @@
     "abilityText": "On Play: Reveal the top 2 cards of your deck.",
     "flavorLine": "Never forgets. Or descends.",
     "art": "weather_balloon_trust_issues.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "windy_grandma_212",
@@ -3198,7 +3183,7 @@
     "cardId": "wizard_vending_machine_213",
     "set": 4,
     "name": "Wizard Trapped in a Vending Machine",
-    "trait": "Mind",
+    "trait": "Machina",
     "power": 36,
     "rarity": "U",
     "abilityCategory": "Play",
@@ -3207,7 +3192,7 @@
     "abilityText": "On Play: Flip a coin. If heads, instantly KO an enemy unit.",
     "flavorLine": "Snacks are a secondary service.",
     "art": "wizard_vending_machine.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "wobble_wizard_214",
@@ -3319,7 +3304,7 @@
     "set": 3,
     "name": "John Wickthrop",
     "trait": "Mayhem",
-    "power": 55,
+    "power": 50,
     "rarity": "L",
     "abilityCategory": "Attack",
     "abilityKeyword": "Stun",
@@ -3327,7 +3312,7 @@
     "abilityText": "On Attack: Stun the enemy, preventing their next action.",
     "flavorLine": "He asked nicely. Once.",
     "art": "john_wickthrop.jpg",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "marlene_222",
@@ -3364,15 +3349,15 @@
     "set": 1,
     "name": "The Chadministrator",
     "trait": "Muscle",
-    "power": 60,
+    "power": 50,
     "rarity": "L",
     "abilityCategory": "Attack",
     "abilityKeyword": "PowerUp",
-    "abilityValue": 18,
-    "abilityText": "On Attack: Gain +18 Power for this battle.",
+    "abilityValue": 15,
+    "abilityText": "On Attack: Gain +15 Power for this battle.",
     "flavorLine": "All other Chads report to him.",
     "art": "the_chadministrator.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "thimple_chad_225",

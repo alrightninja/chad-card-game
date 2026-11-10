@@ -11,6 +11,7 @@ export default function AuthPage() {
     emailConfirm: "",
     username: "",
     password: "",
+    passwordConfirm: "",
     termsAccepted: false
   });
 
@@ -28,11 +29,15 @@ export default function AuthPage() {
         if (form.email.trim().toLowerCase() !== form.emailConfirm.trim().toLowerCase()) {
           throw new Error("Email addresses do not match. Check the spelling.");
         }
+        if (form.password !== form.passwordConfirm) {
+          throw new Error("Passwords do not match.");
+        }
         await register({
           email: form.email,
           emailConfirm: form.emailConfirm,
           username: form.username,
           password: form.password,
+          passwordConfirm: form.passwordConfirm,
           termsAccepted: form.termsAccepted
         });
       }
@@ -80,6 +85,18 @@ export default function AuthPage() {
           Password
           <input value={form.password} onChange={(e) => update("password", e.target.value)} type="password" required />
         </label>
+        {mode === "register" ? (
+          <label>
+            Confirm password
+            <input
+              value={form.passwordConfirm}
+              onChange={(e) => update("passwordConfirm", e.target.value)}
+              type="password"
+              required
+              autoComplete="new-password"
+            />
+          </label>
+        ) : null}
         {mode === "register" ? (
           <>
             <div>

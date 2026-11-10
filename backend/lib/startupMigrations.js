@@ -6,6 +6,8 @@ const MIGRATION_ID = "cyber_chad_grant_v1";
 const PERSONAL_GRANT_ID = "alrightninja_kensworth_wickthrop_v1";
 const PERSONAL_GRANT_USER = "alrightninja";
 const PERSONAL_GRANT_CARDS = ["sir_kensworth_185", "john_wickthrop_221"];
+const STRIP_CONSISTENCY_ID = "strip_chad_of_consistency_v1";
+const STRIP_CARD_ID = "chad_of_consistency_033";
 const CRK_PREFIX = /^Crk/;
 
 async function applyGrantOnce(store) {
@@ -44,6 +46,17 @@ async function applyGrantOnce(store) {
     crkMatches: crkNames
   };
   await store.saveResult(MIGRATION_ID, result);
+  return result;
+}
+
+async function stripRemovedCardsOnce(store) {
+  const claimed = await store.claim(STRIP_CONSISTENCY_ID);
+  if (!claimed) {
+    return { ran: false, reason: "already-applied" };
+  }
+  const stripped = await store.pullCardEverywhere(STRIP_CARD_ID);
+  const result = { ran: true, cardId: STRIP_CARD_ID, usersTouched: stripped };
+  await store.saveResult(STRIP_CONSISTENCY_ID, result);
   return result;
 }
 
@@ -97,6 +110,24 @@ function mongoStore() {
     async addRepsByUsername(username, amount) {
       await User.updateOne({ username }, { $inc: { "currency.reps": amount } });
     },
+    async pullCardEverywhere(cardId) {
+      const users = await User.find({
+        $or: [
+          { collection: cardId },
+          { "decks.cards": cardId },
+          { avatarCardId: cardId }
+        ]
+      });
+      for (const user of users) {
+        user.collection = (user.collection || []).filter((id) => id !== cardId);
+        for (const deck of user.decks || []) {
+          deck.cards = (deck.cards || []).filter((id) => id !== cardId);
+        }
+        if (user.avatarCardId === cardId) user.avatarCardId = null;
+        await user.save();
+      }
+      return users.length;
+    },
     async saveResult(id, result) {
       await Migration.updateOne({ _id: id }, { $set: { result, appliedAt: new Date() } });
     }
@@ -122,7 +153,13 @@ async function runStartupMigrations() {
       `Migration ${PERSONAL_GRANT_ID}: granted ${personal.granted.join(", ") || "nothing"} to ${personal.username}`
     );
   }
-  return { cyberChad: result, personal };
+  const stripped = await stripRemovedCardsOnce(store);
+  if (stripped.ran) {
+    console.log(
+      `Migration ${STRIP_CONSISTENCY_ID}: removed ${stripped.cardId} from ${stripped.usersTouched} users`
+    );
+  }
+  return { cyberChad: result, personal, stripped };
 }
 
 module.exports = {
@@ -134,5 +171,8 @@ module.exports = {
   CRK_PREFIX,
   applyGrantOnce,
   applyPersonalCardsOnce,
+  stripRemovedCardsOnce,
+  STRIP_CONSISTENCY_ID,
+  STRIP_CARD_ID,
   runStartupMigrations
 };

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { useAudio } from "../audio/AudioProvider";
 import { useSocialInbox } from "../context/SocialInbox";
-import VerifiedBadge from "../components/VerifiedBadge";
+import UserLink from "../components/UserLink";
 
 export default function FriendsPage() {
   const audio = useAudio();
@@ -24,19 +24,22 @@ export default function FriendsPage() {
   });
   const [acceptDeck, setAcceptDeck] = useState("");
   const [active, setActive] = useState(null);
+  const [trades, setTrades] = useState([]);
   const [error, setError] = useState("");
 
   async function load() {
-    const [f, c, d, m] = await Promise.all([
+    const [f, c, d, m, t] = await Promise.all([
       api("/api/friends"),
       api("/api/challenges"),
       api("/api/decks"),
-      api("/api/matches/active")
+      api("/api/matches/active"),
+      api("/api/trades")
     ]);
     setFriends(f);
     setChallenges(c.challenges || []);
     setDecks(d.decks || []);
     setActive(m.match || null);
+    setTrades(t.trades || []);
     if (d.decks?.[0] && !challenge.deckName) {
       setChallenge((ch) => ({ ...ch, deckName: d.decks[0].name }));
       setAcceptDeck(d.decks[0].name);
@@ -125,6 +128,16 @@ export default function FriendsPage() {
     }
   }
 
+  async function actTrade(id, action) {
+    setError("");
+    try {
+      await api(`/api/trades/${id}/${action}`, { method: "POST", body: JSON.stringify({}) });
+      await load();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function answerChallenge(id, accept) {
     setError("");
     try {
@@ -164,8 +177,7 @@ export default function FriendsPage() {
         {(friends.incoming || []).map((u) => (
           <div className="row" key={u.id} style={{ marginTop: 8 }}>
             <span>
-              {u.username}
-              <VerifiedBadge verified={u.verified} />
+              <UserLink user={u} />
             </span>
             <button className="btn" type="button" onClick={() => respond(u.id, true)}>Accept</button>
             <button className="btn secondary" type="button" onClick={() => respond(u.id, false)}>Decline</button>
@@ -177,7 +189,7 @@ export default function FriendsPage() {
       <div className="panel">
         <strong>Sent requests</strong>
         {(friends.outgoing || []).map((u) => (
-          <div key={u.id} style={{ marginTop: 8 }}>{u.username}</div>
+          <div key={u.id} style={{ marginTop: 8 }}><UserLink user={u} /></div>
         ))}
         {!friends.outgoing?.length ? <p className="muted">None</p> : null}
       </div>
@@ -187,8 +199,7 @@ export default function FriendsPage() {
         {(friends.friends || []).map((u) => (
           <div className="row" key={u.id} style={{ marginTop: 8 }}>
             <span>
-              {u.username}
-              <VerifiedBadge verified={u.verified} />
+              <UserLink user={u} />
             </span>
             <button className="btn secondary" type="button" onClick={() => openChat(u)}>Message</button>
             <button
@@ -273,6 +284,33 @@ export default function FriendsPage() {
           ) : null}
           <button className="btn" type="submit">Send challenge</button>
         </form>
+      </div>
+
+      <div className="panel">
+        <strong>Trades</strong>
+        {(trades || []).filter((tr) => tr.status === "pending").map((tr) => (
+          <div key={tr.id} className="stack" style={{ marginTop: 12 }}>
+            <div>
+              {tr.fromUsername} offers {tr.giveCards.map((c) => `${c.name}×${c.quantity}`).join(", ")}
+              {" for "}
+              {tr.wantCards.map((c) => `${c.name}×${c.quantity}`).join(", ")}
+              {" from "}
+              {tr.toUsername}
+            </div>
+            {tr.incoming ? (
+              <div className="row">
+                <Link className="btn secondary" to={`/u/${encodeURIComponent(tr.fromUsername)}`}>Counter on profile</Link>
+                <button className="btn" type="button" onClick={() => actTrade(tr.id, "accept")}>Accept</button>
+                <button className="btn secondary" type="button" onClick={() => actTrade(tr.id, "reject")}>Reject</button>
+              </div>
+            ) : (
+              <button className="btn secondary" type="button" onClick={() => actTrade(tr.id, "cancel")}>Cancel</button>
+            )}
+          </div>
+        ))}
+        {!(trades || []).some((tr) => tr.status === "pending") ? (
+          <p className="muted">No pending trades. Open a friend’s profile to offer cards.</p>
+        ) : null}
       </div>
 
       <div className="panel">

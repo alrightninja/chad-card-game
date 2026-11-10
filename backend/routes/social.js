@@ -23,9 +23,9 @@ function isFriend(user, otherId) {
 router.get("/friends", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate("friends", "username verified")
-      .populate("friendRequests", "username verified")
-      .populate("sentRequests", "username verified");
+      .populate("friends", "username verified level avatarCardId")
+      .populate("friendRequests", "username verified level avatarCardId")
+      .populate("sentRequests", "username verified level avatarCardId");
 
     res.json({
       friends: (user.friends || []).map(publicUser),

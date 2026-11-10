@@ -20,7 +20,7 @@ function CardGrid({ cards, picked, onPick, audio }) {
     return <p className="muted">No cards in this pack yet.</p>;
   }
   return (
-    <div className="card-grid">
+    <div className="card-grid collection-grid">
       {cards.map((card) => (
         <div key={card.cardId}>
           <CardView
@@ -50,6 +50,7 @@ export default function CollectionPage() {
   const [ownedOnly, setOwnedOnly] = useState(true);
   const [error, setError] = useState("");
   const [picked, setPicked] = useState(null);
+  const [showTop, setShowTop] = useState(false);
 
   const cards = useMemo(
     () => (ownedOnly ? owned : mergeCatalog(catalog, owned)),
@@ -66,6 +67,15 @@ export default function CollectionPage() {
       })
       .catch((err) => setError(err.message));
   }, [audio]);
+
+  useEffect(() => {
+    function onScroll() {
+      setShowTop(window.scrollY > 480);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const ownedCount = owned.length;
   const shownCount = filtered.length;
@@ -149,6 +159,15 @@ export default function CollectionPage() {
         ) : (
           <CardGrid cards={filtered} picked={picked} onPick={setPicked} audio={audio} />
         )}
+        {showTop ? (
+          <button
+            className="btn back-to-top"
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          >
+            Back to top
+          </button>
+        ) : null}
       </div>
     </LayoutGroup>
   );

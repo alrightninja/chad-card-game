@@ -1,6 +1,6 @@
 # Gigachad TCG — Living Rulebook (v4.8)
 
-This is the rules the **engine actually runs** (v4.8). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
+This is the rules the **engine actually runs** (v4.9). If it disagrees with `OFFICIAL RULEBOOK.docx`, this file wins until we merge them.
 
 Numbers live in `backend/engine/rules.js`.
 
@@ -124,7 +124,7 @@ If you skip Battle, nothing fights.
 8. A Power Shield on the defender absorbs that hit (no HP lost) and is then spent.
 9. If the defender’s HP hits 0, it is KO’d. Attackers are not KO’d for attacking a tougher card.
 
-**Tired:** every unit that attacked (Lead and Assists) becomes **Tired** and cannot attack on its controller’s **next** turn.
+**Rest Day (Tired):** every unit that attacked (Lead and Assists) takes a **Rest Day** and cannot attack on its controller’s **next** turn.
 
 **Guard:** in Main Phase, mark one Active unit. The opponent must target that unit. Guard ends at the start of your next turn, or if the unit leaves Active.
 
@@ -216,6 +216,6 @@ You also lose when Active and Bench are empty, or your health hits 0.
 - Trait bonus **+5 / −5** (was ±20)
 - Second player’s start-of-turn draw is the first-player compensation
 - Main Phase, then Battle; no playing after you attack
-- Hand limit **7**
+- Hand limit **5**
 - Opening is played from hand over turns (not a pre-game dump onto the board)
 - Catalog ability keywords are wired in the engine instead of no-op logging

@@ -18,7 +18,7 @@ const STEPS = [
   },
   {
     title: "How to attack",
-    body: "1. Click YOUR Active unit first — that is the Lead and uses full Power plus its type.\n2. Optionally click one other Active unit to Assist (half Power, no type). Only Commons and Uncommons can Assist or receive an Assist. Rares and Legendaries always fight alone. Bench units cannot Assist. Every unit that attacks becomes Tired and cannot attack next turn.\n3. Click one enemy Active unit. The fight happens immediately.\n\nIf the enemy has a Guard (blue badge), you must attack that unit.\n\nEach unit has HP equal to twice its printed Power. Your attack total is dealt as damage (minus Armor). When HP hits 0, that unit is KO'd. Punching a bigger card no longer deletes your attackers.\n\nOnly the Lead’s type counts. Advantage is +6 Power. Disadvantage is −6, and that defender also gains +8 Armor for the fight.\nMind beats Muscle → Muscle beats Mystic → Mystic beats Machina → Machina beats Mayhem → Mayhem beats Mind.\n\nEach type has a colored glow so you can read the wheel at a glance. Active cards also show a short ability name.\n\nYou get one battle per turn (unless a card says it may attack twice)."
+    body: "1. Click YOUR Active unit first — that is the Lead and uses full Power plus its type.\n2. Optionally click one other Active unit to Assist (half Power, no type). Only Commons and Uncommons can Assist or receive an Assist. Rares and Legendaries always fight alone. Bench units cannot Assist. Every unit that attacks takes a Rest Day and cannot attack next turn.\n3. Click one enemy Active unit. The fight happens immediately.\n\nIf the enemy has a Guard (blue badge), you must attack that unit.\n\nEach unit has HP equal to twice its printed Power. Your attack total is dealt as damage (minus Armor). When HP hits 0, that unit is KO'd. Punching a bigger card no longer deletes your attackers.\n\nOnly the Lead’s type counts. Advantage is +6 Power. Disadvantage is −6, and that defender also gains +8 Armor for the fight.\nMind beats Muscle → Muscle beats Mystic → Mystic beats Machina → Machina beats Mayhem → Mayhem beats Mind.\n\nEach type has a colored glow so you can read the wheel at a glance. Active cards also show a short ability name.\n\nYou get one battle per turn (unless a card says it may attack twice)."
   },
   {
     title: "Guard",
@@ -26,7 +26,7 @@ const STEPS = [
   },
   {
     title: "Bench, swaps, and ending your turn",
-    body: "Still in Main Phase: click a Bench unit, then an empty Active slot to promote, or an Active unit to swap. Drag works too. You may only move one Bench unit into Active per turn.\n\nWhen an Active unit is KO’d, a Bench unit is promoted automatically only if you have no Active units left.\n\nEnd turn when you are done. If your hand is over 7, extras discard automatically.\n\nYou lose if you have no Active and no Bench."
+    body: "Still in Main Phase: click a Bench unit, then an empty Active slot to promote, or an Active unit to swap. Drag works too. You may only move one Bench unit into Active per turn.\n\nWhen an Active unit is KO’d, a Bench unit is promoted automatically only if you have no Active units left.\n\nEnd turn when you are done. If your hand is over 5, extras discard automatically.\n\nYou lose if you have no Active and no Bench."
   }
 ];
 

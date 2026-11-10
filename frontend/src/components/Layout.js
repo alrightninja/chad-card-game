@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useAudio } from "../audio/AudioProvider";
 import { useSocialInbox } from "../context/SocialInbox";
-import VerifiedBadge from "./VerifiedBadge";
+import UserLink from "./UserLink";
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -32,8 +32,7 @@ export default function Layout() {
         )}
         <div className="row">
           <span className="muted">
-            {user?.username}
-            <VerifiedBadge verified={user?.verified} />
+            {user ? <UserLink user={user} /> : null}
             {" · "}
             {user?.currency?.reps ?? 0} reps
           </span>

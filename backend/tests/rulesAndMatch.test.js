@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { DECK_SIZE, MAX_ACTIVE, KO_LIMIT_DEFAULT, clampKoLimit } = require("../engine/rules");
+const { DECK_SIZE, MAX_ACTIVE, HAND_LIMIT, KO_LIMIT_DEFAULT, clampKoLimit } = require("../engine/rules");
 const { createInitialGameState } = require("../engine/gameState");
 const { applyAction } = require("../engine/applyAction");
 const { playUnit, attack, swapActive, promoteFromBench } = require("../engine/actions");
@@ -10,7 +10,9 @@ const { checkWin, sideEliminated } = require("../engine/checkWin");
 const { enforceBoardLimits } = require("../engine/board");
 const { deckToUnits, shuffle, getAll, getById } = require("../engine/cardRegistry");
 const generateStarterDeck = require("../utils/generateStarterDeck");
-const { releasedSetNumbers } = require("../lib/packs");
+const { releasedSetNumbers, packOnSale, PACKS } = require("../lib/packs");
+const { progressFromTotalXp, applyWinXp, xpForLevel, MAX_LEVEL, repsForReaching } = require("../lib/xp");
+const { assertOffer } = require("../lib/trade");
 const { isLegalDeckList, deckNeedsRebuild, deckIllegalReason } = require("../lib/deck");
 const {
   canStartMode,
@@ -22,10 +24,12 @@ const {
 const {
   applyGrantOnce,
   applyPersonalCardsOnce,
+  stripRemovedCardsOnce,
   CYBER_CHAD_ID,
   MIGRATION_ID,
   PERSONAL_GRANT_ID,
-  PERSONAL_GRANT_CARDS
+  PERSONAL_GRANT_CARDS,
+  STRIP_CARD_ID
 } = require("../lib/startupMigrations");
 
 function units(n) {
@@ -409,12 +413,12 @@ test("requested rarity and power retunes landed", () => {
     pastor_studson_152: { rarity: "R", power: 43 },
     pastor_chadrigo_151: { rarity: "R", power: 43 },
     dwayne_068: { rarity: "R", power: 43 },
-    j_walker_110: { rarity: "U", power: 35 },
+    j_walker_110: { rarity: "U", power: 31 },
     chadministrative_pastor_038: { rarity: "R", power: 43 },
     janitor_chad_112: { rarity: "R", power: 43 },
     bear_sized_goose_012: { rarity: "R", power: 43 },
     bigback_tony_014: { rarity: "C", power: 28 },
-    john_wickthrop_221: { rarity: "L", power: 55 }
+    john_wickthrop_221: { rarity: "L", power: 50 }
   };
   for (const [id, want] of Object.entries(expect)) {
     const card = getById(id);
@@ -447,4 +451,90 @@ test("personal kensworth/wickthrop grant cannot run twice", async () => {
   assert.equal(first.ran, true);
   assert.equal(second.ran, false);
   assert.deepEqual(cards.alrightninja, PERSONAL_GRANT_CARDS);
+});
+
+test("hand limit is 5 and catalog retunes for v4.9", () => {
+  assert.equal(HAND_LIMIT, 5);
+  assert.equal(getById("chad_of_consistency_033"), null);
+  assert.equal(getById("skibidi_chad_186").name, "Fake Brazilian Chad");
+  assert.equal(getById("e_unit_071").power, 27);
+  assert.equal(getById("gigachad_088").power, 55);
+  assert.equal(getById("the_chadministrator_224").power, 50);
+  assert.equal(getById("the_chadministrator_224").abilityValue, 15);
+  assert.equal(getById("cheesed_off_vacuum_cleaner_043").trait, "Machina");
+  assert.equal(getById("chaos_kettlebell_041").trait, "Machina");
+});
+
+test("Ordo leaves the shop on Dec 1 but set 1 stays legal", () => {
+  const ordo = PACKS.find((p) => p.id === "ordo_chadorum");
+  assert.equal(packOnSale(ordo, new Date("2026-11-30T12:00:00.000Z")), true);
+  assert.equal(packOnSale(ordo, new Date("2026-12-01T05:00:00.000Z")), false);
+  const after = releasedSetNumbers(new Date("2026-12-02T12:00:00.000Z"));
+  assert.equal(after.has(1), true);
+});
+
+test("XP curve awards increasing reps through level 100", () => {
+  assert.equal(xpForLevel(1), 100);
+  assert.ok(xpForLevel(2) > xpForLevel(1));
+  const p = progressFromTotalXp(100);
+  assert.equal(p.level, 2);
+  const user = { xp: 0, level: 1, currency: { reps: 0 } };
+  applyWinXp(user);
+  assert.equal(user.xp, 40);
+  assert.equal(user.level, 1);
+  user.xp = 90;
+  applyWinXp(user);
+  assert.equal(user.level, 2);
+  assert.equal(user.currency.reps, repsForReaching(2));
+  let total = 0;
+  for (let lv = 1; lv < MAX_LEVEL; lv += 1) total += xpForLevel(lv);
+  const maxed = progressFromTotalXp(total);
+  assert.equal(maxed.level, 100);
+  assert.equal(maxed.xpForNext, 0);
+});
+
+test("trades require 1-5 owned cards each way", () => {
+  const mine = ["e_unit_071", "e_unit_071", "gigachad_088"];
+  const theirs = ["j_walker_110", "john_wickthrop_221"];
+  assert.throws(() => assertOffer([], ["j_walker_110"], mine, theirs));
+  const ok = assertOffer(["e_unit_071"], ["j_walker_110"], mine, theirs);
+  assert.equal(ok.give.length, 1);
+  assert.throws(() => assertOffer(["missing_card"], ["j_walker_110"], mine, theirs));
+});
+
+test("strip Chad of Consistency from collections and decks", async () => {
+  let claimed = false;
+  const users = [
+    {
+      collection: [STRIP_CARD_ID, "e_unit_071"],
+      decks: [{ cards: [STRIP_CARD_ID, "e_unit_071"] }],
+      avatarCardId: STRIP_CARD_ID
+    }
+  ];
+  const store = {
+    async claim() {
+      if (claimed) return false;
+      claimed = true;
+      return true;
+    },
+    async pullCardEverywhere(cardId) {
+      let n = 0;
+      for (const user of users) {
+        user.collection = user.collection.filter((id) => id !== cardId);
+        for (const deck of user.decks) {
+          deck.cards = deck.cards.filter((id) => id !== cardId);
+        }
+        if (user.avatarCardId === cardId) user.avatarCardId = null;
+        n += 1;
+      }
+      return n;
+    },
+    async saveResult() {}
+  };
+  const first = await stripRemovedCardsOnce(store);
+  const second = await stripRemovedCardsOnce(store);
+  assert.equal(first.ran, true);
+  assert.equal(second.ran, false);
+  assert.deepEqual(users[0].collection, ["e_unit_071"]);
+  assert.equal(users[0].avatarCardId, null);
 });

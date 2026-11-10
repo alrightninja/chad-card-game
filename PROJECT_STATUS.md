@@ -1,6 +1,6 @@
 # Gigachad TCG — project status
 
-Last updated: 4 November 2026 (rules v4.8).  
+Last updated: 9 November 2026 (rules v4.9).  
 Workspace: `C:\Users\coleb\OneDrive\Documents\Projects\Apps\chad-card-game`
 
 Use this file if a chat runs out of context. The game is **playable locally** vs AI. It is **not deployed**. Do **not** commit `.env`.
@@ -13,7 +13,7 @@ Use this file if a chat runs out of context. The game is **playable locally** vs
 
 Turn-based multiplayer TCG. Current engine (`RULEBOOK.md` v4.4):
 
-- 20-card decks, 5-card opening hand, **hand limit 7**
+- 20-card decks, 5-card opening hand, **hand limit 5**
 - Active **3** / Bench **3** (hand is not 5 slots)
 - First player skips the turn-1 draw; second player draws on their first Start Phase
 - Main Phase (play/swap/Guard) then Battle; **no plays after you attack**
@@ -160,20 +160,20 @@ Friend DMs: from, to, body (max 500), moderated in `backend/utils/moderation.js`
 
 ## Card packs / sets
 
-Packs are defined in `backend/server.js`. Shop `GET /api/shop/packs` only returns packs that `packOnSale()` says are live. Odds per slot: C 70% / U 20% / R 9% / L 1% (`backend/utils/openPack.js`). Each pack is **5 cards, 100 reps**.
+Packs are defined in `backend/lib/packs.js`. Shop `GET /api/shop/packs` lists every pack; `onSale` / `sale` (`live` | `soon` | `ended`) control whether you can buy. Off-sale packs stay visible and grayed. Odds per slot: C 70% / U 20% / R 9% / L 1% (`backend/utils/openPack.js`). Each pack is **5 cards, 100 reps**. Set legality uses `releasedSetNumbers` (window started, even after a pack leaves the shop).
 
 | Pack | Set | Shop | Release |
 | --- | --- | --- | --- |
-| **Ordo Chadorum** `ordo_chadorum` | 1 (29 cards) | Live | now |
+| **Ordo Chadorum** `ordo_chadorum` | 1 | Live until **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`); then grayed “until further notice” | now |
 | **Ultra Nightmare Mode** `ultra_nightmare_mode` | 2 (25 cards, includes Cyber Chad) | Hidden until date | **16 Nov 2026, midnight Eastern** (`2026-11-16T05:00:00.000Z`) |
 | **To the Hilt** `to_the_hilt` | 3 (45 cards) | Hidden until date | **1 Dec 2026, midnight Eastern** (`2026-12-01T05:00:00.000Z`) |
 | **Chaos** `chaos` | 4 (127 cards) | Hidden until date | **1 Feb 2027, midnight Eastern** (`2027-02-01T05:00:00.000Z`) |
 
 Old shop id `starter_pump` still maps to Ordo Chadorum on buy.
 
-**Set 1 (Ordo):** Aviator Chad, Baller Chad, Chad Numero Uno, Chad of Pizzazz, Dictator Chad, Donut Chad, E Dog, E Money, E Unit, Fashion Chad, Father Chad, Fresh Chad, Hungry Hippo Chad, J Snizzle, Joey Mac, Manager Chad, Ninja Chad, Pastor Chadenbach, Pastor Chadrigo (Jorge art), Pastor Studson, Samurai Chad, Samwise Chadenbach, Sir Kensworth, Sleeper Chad, Stereotypical Chadette, Supreme Leader Chadenbach, The Chadministrator (L 60, strongest), Thimple Chad, Yapper Chad.
+**Set 1 (Ordo):** Aviator Chad, Baller Chad, Chad Numero Uno, Chad of Pizzazz, Dictator Chad, Donut Chad, E Dog, E Money, E Unit (C 27), Fashion Chad, Father Chad, Fresh Chad, Hungry Hippo Chad, J Snizzle, Joey Mac, Manager Chad, Ninja Chad, Pastor Chadenbach, Pastor Chadrigo (Jorge art), Pastor Studson, Samurai Chad, Samwise Chadenbach, Sir Kensworth, Sleeper Chad, Stereotypical Chadette, Supreme Leader Chadenbach, The Chadministrator (L 50, +15 PowerUp), Thimple Chad, Yapper Chad. **Chad of Consistency removed.**
 
-**Set 2 (Ultra Nightmare):** Apple, Blitzkrueger, Bobby J, Brodito, Chad Kroeger, Chad Vader, Cheyennomaly, Chadministrative Pastor, Cyber Chad (R 44), Filius Automobilius, Hand-Me-Down Howard, Ice Knight, J Walker (U 31), Janitor Chad, Jerome, Jerry Bag-o-Donuts, Joc Boc, K-Pop, Leahnidas, Leif Erikson, Meemow (L 50), Micycle, Saint Chad of Mercia, Sassy Chad, Skibidi Chad.
+**Set 2 (Ultra Nightmare):** Apple, Blitzkrueger, Bobby J, Brodito, Chad Kroeger, Chad Vader, Cheyennomaly, Chadministrative Pastor, Cyber Chad (R 44), Filius Automobilius, Hand-Me-Down Howard, Ice Knight, J Walker (U 31), Janitor Chad, Jerome, Jerry Bag-o-Donuts, Joc Boc, K-Pop, Leahnidas, Leif Erikson, Meemow (L 50), Micycle, Saint Chad of Mercia, Sassy Chad, Fake Brazilian Chad (was Skibidi Chad).
 
 **Set 3 (To the Hilt):** Anime Chad, Archon Strivemax, Astro Samurai, Bat Jeong-Eun, Bear-Sized Goose, Beowulf, Bigback Tony, Bradford Pitt, Branos, Brawn Weasley, Brick Thunderbulk, Brodir Doomgrip, Brofessor Rumbledore, Chad, Chad Danforth, Chad Knight, Chad Lee, Chad Marine, Chad Pitt, Chadiator, Chadly Squatter, Chadvald the Shredded, Coach Rumble, Cowboy Chad, Dwayne, Filch McNoreps, Flexecutioner, Gigachad, Goose-Sized Bear, Grilled Cheese Sandwich, Groaning Girdle, Hermione Gainger, Jack Steele, John Wickthrop, Marlene, Mr. Sniffles, Mrs. NoRizz, Orange Dragon Dude, Peregrine Vale, Professor Gainsworth, Robot Overlord, Sharawrrk, Super Case-Oh, Taco, Tom Diddle.
 
