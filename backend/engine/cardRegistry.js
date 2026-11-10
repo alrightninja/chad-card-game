@@ -1,5 +1,10 @@
 const catalog = require("../cards.json");
-const { DECK_SIZE, HP_MULT } = require("./rules");
+const { DECK_SIZE, HP_MULT, rarityBucket } = require("./rules");
+const { releasedSetNumbers } = require("../lib/packs");
+
+const AI_MAX_COPIES = 2;
+const AI_MAX_RARES = 6;
+const AI_MAX_LEGENDARIES = 2;
 
 const byId = new Map(catalog.map((card) => [card.cardId, card]));
 const byName = new Map(catalog.map((card) => [card.name.toLowerCase(), card]));
@@ -84,9 +89,51 @@ function deckToUnits(cardIds) {
   });
 }
 
-function randomAiDeckIds(size = DECK_SIZE) {
-  const ids = catalog.map((c) => c.cardId);
-  return shuffle(ids).slice(0, size);
+function randomAiDeckIds(size = DECK_SIZE, now = new Date()) {
+  const released = releasedSetNumbers(now);
+  const pool = shuffle(catalog.filter((c) => released.has(c.set)));
+  if (!pool.length) {
+    throw new Error("No released cards available for the AI deck");
+  }
+
+  const deck = [];
+  const copies = {};
+  let rares = 0;
+  let legendaries = 0;
+
+  function tryAdd(card) {
+    if (deck.length >= size) return false;
+    const n = copies[card.cardId] || 0;
+    if (n >= AI_MAX_COPIES) return false;
+    const bucket = rarityBucket(card.rarity);
+    if (bucket === "R" && rares >= AI_MAX_RARES) return false;
+    if (bucket === "L" && legendaries >= AI_MAX_LEGENDARIES) return false;
+    copies[card.cardId] = n + 1;
+    if (bucket === "R") rares += 1;
+    if (bucket === "L") legendaries += 1;
+    deck.push(card.cardId);
+    return true;
+  }
+
+  for (const card of pool) tryAdd(card);
+  for (const card of pool) {
+    if (deck.length >= size) break;
+    tryAdd(card);
+  }
+  if (deck.length < size) {
+    const fillers = shuffle(pool.filter((c) => {
+      const bucket = rarityBucket(c.rarity);
+      return bucket !== "R" && bucket !== "L";
+    }));
+    for (const card of fillers) {
+      if (deck.length >= size) break;
+      tryAdd(card);
+    }
+  }
+  if (deck.length !== size) {
+    throw new Error(`AI deck expected ${size} released cards, built ${deck.length}`);
+  }
+  return deck;
 }
 
 module.exports = {

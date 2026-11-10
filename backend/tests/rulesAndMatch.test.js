@@ -8,7 +8,7 @@ const { playUnit, attack, swapActive, promoteFromBench } = require("../engine/ac
 const { resolveBattle } = require("../engine/battle");
 const { checkWin, sideEliminated } = require("../engine/checkWin");
 const { enforceBoardLimits } = require("../engine/board");
-const { deckToUnits, shuffle, getAll, getById } = require("../engine/cardRegistry");
+const { deckToUnits, shuffle, getAll, getById, randomAiDeckIds } = require("../engine/cardRegistry");
 const generateStarterDeck = require("../utils/generateStarterDeck");
 const { releasedSetNumbers, packOnSale, PACKS } = require("../lib/packs");
 const { progressFromTotalXp, applyWinXp, xpForLevel, MAX_LEVEL, repsForReaching } = require("../lib/xp");
@@ -217,6 +217,26 @@ test("10. live turn clock restarts when the turn changes, including PvE wrap", (
   const sameTurn = nextLiveDeadline(match, before, { turn: 1, turnPlayer: "player" }, Date.now());
   assert.equal(sameTurn, match.moveDeadlineAt);
   assert.equal(clockKey(before), "1:player");
+});
+
+test("AI decks use only released sets and stay legal", () => {
+  const now = new Date("2026-11-10T18:00:00.000Z");
+  const released = releasedSetNumbers(now);
+  const deck = randomAiDeckIds(DECK_SIZE, now);
+  assert.equal(isLegalDeckList(deck), true);
+  for (const id of deck) {
+    const card = getById(id);
+    assert.ok(card, id);
+    assert.equal(released.has(card.set), true, `${id} set ${card.set} is not released`);
+  }
+  const afterUltra = new Date("2026-11-16T12:00:00.000Z");
+  const laterReleased = releasedSetNumbers(afterUltra);
+  assert.equal(laterReleased.has(2), true);
+  const laterDeck = randomAiDeckIds(DECK_SIZE, afterUltra);
+  assert.equal(isLegalDeckList(laterDeck), true);
+  for (const id of laterDeck) {
+    assert.equal(laterReleased.has(getById(id).set), true);
+  }
 });
 
 test("11. starter deck uses only released sets", () => {
