@@ -1,16 +1,23 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { getToken } from "../api/client";
+import { api, getToken } from "../api/client";
 import { WS_URL } from "../api/config";
 
 const SocialInboxContext = createContext({
   notice: null,
+  turnMatches: [],
   ping: 0,
   clearNotice: () => {}
 });
 
+function collectTurns(data) {
+  const corr = data?.correspondences || (data?.correspondence ? [data.correspondence] : []);
+  return corr.filter((m) => m.yourTurn);
+}
+
 export function SocialInboxProvider({ children }) {
   const [notice, setNotice] = useState(null);
+  const [turnMatches, setTurnMatches] = useState([]);
   const [ping, setPing] = useState(0);
 
   useEffect(() => {
@@ -21,6 +28,16 @@ export function SocialInboxProvider({ children }) {
       if (nextNotice) setNotice(nextNotice);
       setPing((n) => n + 1);
     };
+    async function refreshTurns() {
+      try {
+        const data = await api("/api/matches/active");
+        setTurnMatches(collectTurns(data));
+      } catch {
+        setTurnMatches([]);
+      }
+    }
+    refreshTurns();
+    const timer = window.setInterval(refreshTurns, 20000);
     socket.on("challenge_update", (payload) => {
       if (payload?.kind === "accepted" && payload.matchId) {
         bump({
@@ -28,12 +45,13 @@ export function SocialInboxProvider({ children }) {
           href: `/battle/${payload.matchId}`
         });
       } else if (payload?.kind === "incoming") {
-        bump({ text: "New battle challenge.", href: "/friends" });
+        bump({ text: "New battle challenge.", href: "/play" });
       } else if (payload?.kind === "declined") {
-        bump({ text: "A challenge was declined.", href: "/friends" });
+        bump({ text: "A challenge was declined.", href: "/play" });
       } else {
-        bump({ text: "Challenge update.", href: "/friends" });
+        bump({ text: "Challenge update.", href: "/play" });
       }
+      refreshTurns();
     });
     socket.on("direct_message", () => {
       bump({ text: "New message from a friend.", href: "/friends" });
@@ -49,11 +67,17 @@ export function SocialInboxProvider({ children }) {
         bump({ text: "Trade update.", href: "/friends" });
       }
     });
-    return () => socket.disconnect();
+    socket.on("your_turn", () => {
+      refreshTurns();
+    });
+    return () => {
+      window.clearInterval(timer);
+      socket.disconnect();
+    };
   }, []);
 
   return (
-    <SocialInboxContext.Provider value={{ notice, ping, clearNotice: () => setNotice(null) }}>
+    <SocialInboxContext.Provider value={{ notice, turnMatches, ping, clearNotice: () => setNotice(null) }}>
       {children}
     </SocialInboxContext.Provider>
   );

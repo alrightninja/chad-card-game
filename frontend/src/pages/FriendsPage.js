@@ -9,41 +9,27 @@ export default function FriendsPage() {
   const audio = useAudio();
   const { ping } = useSocialInbox();
   const [friends, setFriends] = useState({ friends: [], incoming: [], outgoing: [] });
-  const [challenges, setChallenges] = useState([]);
-  const [decks, setDecks] = useState([]);
   const [username, setUsername] = useState("");
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
-  const [challenge, setChallenge] = useState({
-    username: "",
-    deckName: "",
-    mode: "correspondence",
-    hoursPerMove: 24,
-    koLimit: 5
-  });
-  const [acceptDeck, setAcceptDeck] = useState("");
-  const [active, setActive] = useState(null);
+  const [matches, setMatches] = useState([]);
   const [trades, setTrades] = useState([]);
   const [error, setError] = useState("");
 
   async function load() {
-    const [f, c, d, m, t] = await Promise.all([
+    const [f, m, t] = await Promise.all([
       api("/api/friends"),
-      api("/api/challenges"),
-      api("/api/decks"),
       api("/api/matches/active"),
       api("/api/trades")
     ]);
     setFriends(f);
-    setChallenges(c.challenges || []);
-    setDecks(d.decks || []);
-    setActive(m.match || null);
+    const list = [
+      ...(m.live ? [m.live] : []),
+      ...(m.correspondences || (m.correspondence ? [m.correspondence] : []))
+    ];
+    setMatches(list);
     setTrades(t.trades || []);
-    if (d.decks?.[0] && !challenge.deckName) {
-      setChallenge((ch) => ({ ...ch, deckName: d.decks[0].name }));
-      setAcceptDeck(d.decks[0].name);
-    }
   }
 
   useEffect(() => {
@@ -114,20 +100,6 @@ export default function FriendsPage() {
     }
   }
 
-  async function sendChallenge(e) {
-    e.preventDefault();
-    setError("");
-    try {
-      await api("/api/challenges", {
-        method: "POST",
-        body: JSON.stringify(challenge)
-      });
-      await load();
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
   async function actTrade(id, action) {
     setError("");
     try {
@@ -138,30 +110,18 @@ export default function FriendsPage() {
     }
   }
 
-  async function answerChallenge(id, accept) {
-    setError("");
-    try {
-      const data = await api(`/api/challenges/${id}/respond`, {
-        method: "POST",
-        body: JSON.stringify({ accept, deckName: acceptDeck })
-      });
-      await load();
-      if (data.match?.id) window.location.assign(`/battle/${data.match.id}`);
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
   return (
     <div className="stack">
       <h1>Friends</h1>
       {error ? <div className="error">{error}</div> : null}
-      {active ? (
-        <div className="panel">
-          Active {active.mode} match —{" "}
-          <Link to={`/battle/${active.id}`}>Join now</Link>
+      {matches.map((match) => (
+        <div className="panel" key={match.id}>
+          {match.mode === "correspondence" ? "Correspondence" : "Live"} vs {match.opponentName || match.versus}
+          {match.yourTurn ? " — Your turn" : ""}
+          {" — "}
+          <Link to={`/battle/${match.id}`}>Join now</Link>
         </div>
-      ) : null}
+      ))}
 
       <form className="row" onSubmit={addFriend}>
         <input
@@ -202,16 +162,10 @@ export default function FriendsPage() {
               <UserLink user={u} />
             </span>
             <button className="btn secondary" type="button" onClick={() => openChat(u)}>Message</button>
-            <button
-              className="btn"
-              type="button"
-              onClick={() => setChallenge((ch) => ({ ...ch, username: u.username }))}
-            >
-              Challenge
-            </button>
+            <Link className="btn" to={`/play?friend=${encodeURIComponent(u.username)}`}>Play</Link>
           </div>
         ))}
-        {!friends.friends?.length ? <p className="muted">Add someone by username to challenge them.</p> : null}
+        {!friends.friends?.length ? <p className="muted">Add someone by username, then challenge them from Play.</p> : null}
       </div>
 
       {selectedFriend ? (
@@ -228,63 +182,6 @@ export default function FriendsPage() {
           </form>
         </div>
       ) : null}
-
-      <div className="panel stack">
-        <strong>Challenge a friend</strong>
-        <form className="stack" onSubmit={sendChallenge}>
-          <label>
-            Friend username
-            <input
-              value={challenge.username}
-              onChange={(e) => setChallenge({ ...challenge, username: e.target.value })}
-            />
-          </label>
-          <label>
-            Your deck
-            <select
-              value={challenge.deckName}
-              onChange={(e) => setChallenge({ ...challenge, deckName: e.target.value })}
-            >
-              {decks.map((d) => (
-                <option key={d.name} value={d.name}>{d.name}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Mode
-            <select
-              value={challenge.mode}
-              onChange={(e) => setChallenge({ ...challenge, mode: e.target.value })}
-            >
-              <option value="live">Live (both playing now)</option>
-              <option value="correspondence">Correspondence</option>
-            </select>
-          </label>
-          <label>
-            First to how many KOs
-            <select
-              value={challenge.koLimit}
-              onChange={(e) => setChallenge({ ...challenge, koLimit: Number(e.target.value) })}
-            >
-              {Array.from({ length: 8 }, (_, i) => i + 3).map((n) => (
-                <option key={n} value={n}>{n}{n === 5 ? " (default)" : ""}</option>
-              ))}
-            </select>
-          </label>
-          {challenge.mode === "correspondence" ? (
-            <label>
-              Hours per move
-              <input
-                type="number"
-                min="1"
-                value={challenge.hoursPerMove}
-                onChange={(e) => setChallenge({ ...challenge, hoursPerMove: Number(e.target.value) })}
-              />
-            </label>
-          ) : null}
-          <button className="btn" type="submit">Send challenge</button>
-        </form>
-      </div>
 
       <div className="panel">
         <strong>Trades</strong>
@@ -311,32 +208,6 @@ export default function FriendsPage() {
         {!(trades || []).some((tr) => tr.status === "pending") ? (
           <p className="muted">No pending trades. Open a friend’s profile to offer cards.</p>
         ) : null}
-      </div>
-
-      <div className="panel">
-        <strong>Open challenges</strong>
-        {challenges.map((c) => (
-          <div key={c.id} className="stack" style={{ marginTop: 12 }}>
-            <div>
-              {c.from.username} → {c.to.username} · {c.mode}
-              {c.mode === "correspondence" ? ` · ${c.hoursPerMove}h/move` : ""}
-              {` · first to ${c.koLimit || 5} KOs`}
-            </div>
-            {c.incoming ? (
-              <div className="row">
-                <select value={acceptDeck} onChange={(e) => setAcceptDeck(e.target.value)}>
-                  {decks.map((d) => (
-                    <option key={d.name} value={d.name}>{d.name}</option>
-                  ))}
-                </select>
-                <button className="btn" type="button" onClick={() => answerChallenge(c.id, true)}>Accept</button>
-                <button className="btn secondary" type="button" onClick={() => answerChallenge(c.id, false)}>Decline</button>
-              </div>
-            ) : (
-              <span className="muted">Waiting</span>
-            )}
-          </div>
-        ))}
       </div>
     </div>
   );

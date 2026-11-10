@@ -267,6 +267,15 @@ router.post("/challenges/:id/respond", requireAuth, async (req, res) => {
       kind: "accepted",
       matchId: String(match._id)
     });
+    if (challenge.mode === "correspondence") {
+      const first = matchService.toClient(match, challenge.fromUserId);
+      if (first.yourTurn) {
+        notifyUser(challenge.fromUserId, "your_turn", {
+          matchId: String(match._id),
+          opponentName: first.opponentName
+        });
+      }
+    }
 
     res.json({
       message: "Match started",

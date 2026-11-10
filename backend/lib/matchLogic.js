@@ -4,9 +4,17 @@ const LOSS_REPS = 20;
 const DRAW_REPS = 30;
 const MIN_TURNS_FOR_LOSS_REPS = 5;
 
+const MAX_LIVE = 1;
+const MAX_CORRESPONDENCE = 3;
+
+function modeCap(mode) {
+  return mode === "correspondence" ? MAX_CORRESPONDENCE : MAX_LIVE;
+}
+
 function canStartMode(existingModes, requestedMode) {
   const mode = requestedMode === "correspondence" ? "correspondence" : "live";
-  return !existingModes.includes(mode);
+  const count = (existingModes || []).filter((m) => (m || "live") === mode).length;
+  return count < modeCap(mode);
 }
 
 function clockKey(state) {
@@ -59,6 +67,9 @@ module.exports = {
   LOSS_REPS,
   DRAW_REPS,
   MIN_TURNS_FOR_LOSS_REPS,
+  MAX_LIVE,
+  MAX_CORRESPONDENCE,
+  modeCap,
   canStartMode,
   clockKey,
   isHumanTurn,

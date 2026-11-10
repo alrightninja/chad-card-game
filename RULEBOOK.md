@@ -155,7 +155,7 @@ Keywords the engine implements include Power Up/Down, Draw, Spike, Stun, Peek, S
 - **Guard:** the Guard button, then click your Active unit.
 - **End turn:** the button in the hint bar.
 
-Live friend matches update both players over the match socket. Challenge a friend from the Friends page (you must already be friends).
+Live friend matches update both players over the match socket. Challenge a friend from the Play page (you must already be friends).
 
 **Live turn timer:** each player has **3 minutes** to finish their turn. The clock **restarts at the start of every turn** for both players. If time runs out, the turn passes. If the same player times out **twice in a row**, they forfeit. Completing a turn clears that streak.
 
@@ -189,7 +189,7 @@ You also lose when Active and Bench are empty, or your health hits 0.
 - Decks are **20** cards
 - Empty Active + Bench is a loss even with cards in hand
 - Active is hard-capped at **3** (including KO promotions)
-- You may have **1 live** and **1 correspondence** match at once
+- You may have **1 live** and **up to 3 correspondence** matches at once
 - Forfeiting vs AI awards **0** reps
 - Starter decks only use **released** sets
 - Cyber Chad (Rare, Ultra Nightmare Mode)

@@ -165,11 +165,16 @@ test("6. never more than 3 active, including KO promote", () => {
   assert.throws(() => playUnit(playState, 0, "active"), /full/i);
 });
 
-test("7. one live and one correspondence at the same time", () => {
+test("7. one live and up to three correspondence matches at the same time", () => {
   assert.equal(canStartMode(["live"], "correspondence"), true);
   assert.equal(canStartMode(["live"], "live"), false);
   assert.equal(canStartMode(["correspondence"], "live"), true);
   assert.equal(canStartMode(["live", "correspondence"], "live"), false);
+  assert.equal(canStartMode(["correspondence", "correspondence"], "correspondence"), true);
+  assert.equal(
+    canStartMode(["correspondence", "correspondence", "correspondence"], "correspondence"),
+    false
+  );
 });
 
 test("9. AI forfeit awards 0 reps", () => {

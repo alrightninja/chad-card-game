@@ -194,7 +194,7 @@ Routes (auth-gated except login): Home, How to play, Play, Collection, Decks, Sh
 - **Shop:** lists on-sale packs only.
 - **Decks:** click collection to add, click deck list to remove, save at 20 (2 copies / 6 rares / 2 legendaries).
 
-Play: PvE vs AI. Friend challenges (live / correspondence) on Friends. Open matchmaking **not** built.
+Play: PvE vs AI plus friend challenges (live / correspondence). Up to **1 live** and **3 correspondence** matches. Open matchmaking **not** built.
 
 ---
 

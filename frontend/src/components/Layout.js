@@ -7,7 +7,7 @@ import UserLink from "./UserLink";
 export default function Layout() {
   const { user, logout } = useAuth();
   const audio = useAudio();
-  const { notice, clearNotice } = useSocialInbox();
+  const { notice, turnMatches, clearNotice } = useSocialInbox();
   const location = useLocation();
   const battle = location.pathname.startsWith("/battle");
 
@@ -46,6 +46,17 @@ export default function Layout() {
           ) : null}
         </div>
       </header>
+      {!battle && turnMatches?.length ? (
+        <div className="notice-bar your-turn">
+          {turnMatches.length === 1 ? (
+            <Link to={`/battle/${turnMatches[0].id}`}>
+              Your turn vs {turnMatches[0].opponentName || turnMatches[0].versus}
+            </Link>
+          ) : (
+            <Link to="/play">Your turn in {turnMatches.length} correspondence matches</Link>
+          )}
+        </div>
+      ) : null}
       {notice && !battle ? (
         <div className="notice-bar">
           <Link to={notice.href || "/friends"} onClick={clearNotice}>{notice.text}</Link>

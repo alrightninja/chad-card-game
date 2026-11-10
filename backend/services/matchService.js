@@ -24,6 +24,7 @@ const {
   LOSS_REPS,
   DRAW_REPS,
   canStartMode,
+  MAX_CORRESPONDENCE,
   clockKey,
   isHumanTurn,
   nextLiveDeadline,
@@ -85,8 +86,12 @@ function toClient(match, userId) {
     mode: match.mode || "live",
     hoursPerMove: match.hoursPerMove,
     moveDeadlineAt: match.moveDeadlineAt,
-    versus: match.opponentType === "ai" ? "AI" : "Friend",
+    versus:
+      match.opponentType === "ai"
+        ? "AI"
+        : (perspective === "opponent" ? match.playerUsername : match.opponentUsername) || "Friend",
     yourSeat: perspective,
+    yourTurn: match.status === "active" && state.turnPlayer === perspective,
     youName: perspective === "opponent" ? match.opponentUsername : match.playerUsername,
     opponentName:
       perspective === "opponent"
@@ -243,13 +248,16 @@ async function startPvpMatch({
   validateDeck(opponentDeck);
 
   for (const user of [playerUser, opponentUser]) {
-    const existing = await getActiveMatch(user._id, mode);
-    if (existing) {
+    const existing = await listActiveMatches(user._id);
+    const modes = existing.map((m) => m.mode || "live");
+    if (!canStartMode(modes, mode)) {
       const err = new Error(
-        `${user.username} already has an active ${mode} match. Resume or forfeit it first.`
+        mode === "correspondence"
+          ? `${user.username} already has ${MAX_CORRESPONDENCE} active correspondence matches. Resume or forfeit one first.`
+          : `${user.username} already has an active live match. Resume or forfeit it first.`
       );
       err.status = 409;
-      err.payload = { match: toClient(existing, user._id) };
+      err.payload = { match: toClient(existing.find((m) => (m.mode || "live") === mode) || existing[0], user._id) };
       throw err;
     }
   }
@@ -436,6 +444,8 @@ async function applyMatchAction(user, matchId, action) {
 
   if (winner) {
     await awardAndFinish(saved);
+  } else if (match.mode === "correspondence" && clockKey(state) !== beforeKey) {
+    notifyCorrespondenceTurn(saved, user._id);
   }
 
   const freshUser = await User.findById(user._id);
@@ -443,6 +453,20 @@ async function applyMatchAction(user, matchId, action) {
     payload: { ...toClient(saved, user._id), replay },
     user: freshUser
   };
+}
+
+function notifyCorrespondenceTurn(match, actorId) {
+  if (!match || match.mode !== "correspondence" || match.status !== "active") return;
+  const { notifyUser } = require("../sockets/matchSocket");
+  const waitingId =
+    hydrateState(match.state).turnPlayer === "player" ? match.playerId : match.opponentUserId;
+  if (!waitingId || String(waitingId) === String(actorId)) return;
+  const view = toClient(match, waitingId);
+  if (!view.yourTurn) return;
+  notifyUser(waitingId, "your_turn", {
+    matchId: String(match._id),
+    opponentName: view.opponentName
+  });
 }
 
 module.exports = {

@@ -1,45 +1,59 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useAudio } from "../audio/AudioProvider";
 import CardView, { cardArtSrc } from "../components/CardView";
+import SearchSelect from "../components/SearchSelect";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { rarityLabel } from "../lib/rarity";
 
-function cycleCopy(list, id, max, owned) {
-  const n = list.filter((x) => x === id).length;
-  if (n > 0 && (n >= owned || list.length >= max)) {
-    const next = [...list];
-    next.splice(next.lastIndexOf(id), 1);
-    return next;
-  }
-  if (list.length >= max || n >= owned) return list;
+function addCopy(list, id, max, owned) {
+  if (list.length >= max) return list;
+  if (list.filter((x) => x === id).length >= owned) return list;
   return [...list, id];
 }
 
-function TradePicker({ title, cards, picked, onToggle }) {
+function removeAt(list, index) {
+  return list.filter((_, i) => i !== index);
+}
+
+function TradeSide({ title, cards, picked, onAdd, onRemove }) {
+  const options = (cards || []).map((card) => ({
+    value: card.cardId,
+    label: card.name,
+    search: `${card.name} ${card.trait || ""} ${rarityLabel(card.rarity) || ""}`,
+    sublabel: `${rarityLabel(card.rarity) || card.rarity}${card.quantity > 1 ? ` · ×${card.quantity}` : ""}`,
+    art: cardArtSrc(card),
+    quantity: card.quantity || 1
+  }));
+  const byId = useMemo(() => new Map((cards || []).map((c) => [c.cardId, c])), [cards]);
+
   return (
     <div>
       <strong>{title}</strong>
       <p className="muted">{picked.length}/5 selected</p>
-      <div className="trade-pick">
-        {(cards || []).map((card) => {
-          const selected = picked.filter((id) => id === card.cardId).length;
-          const copies = card.quantity || 1;
+      <SearchSelect
+        placeholder="Search cards to add"
+        options={options}
+        value=""
+        onChange={(id) => {
+          const card = byId.get(id);
+          onAdd(id, card?.quantity || 1);
+        }}
+        emptyText="No cards match"
+      />
+      <div className="chip-row">
+        {picked.map((id, i) => {
+          const card = byId.get(id);
           return (
             <button
               type="button"
-              key={card.cardId}
-              className={`trade-pick-card ${selected ? "selected" : ""}`}
-              onClick={() => onToggle(card.cardId, copies)}
+              key={`${id}-${i}`}
+              className="chip"
+              onClick={() => onRemove(i)}
             >
-              <img src={cardArtSrc(card)} alt={card.name} />
-              <span>
-                {card.name}
-                {copies > 1 ? ` ×${copies}` : ""}
-                {selected ? ` · ${selected}` : ""}
-              </span>
+              {card?.name || id} ×
             </button>
           );
         })}
@@ -58,6 +72,8 @@ export default function ProfilePage() {
   const [give, setGive] = useState([]);
   const [want, setWant] = useState([]);
   const [pendingTrade, setPendingTrade] = useState(null);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [myCards, setMyCards] = useState([]);
   const [pass, setPass] = useState({
     currentPassword: "",
     newPassword: "",
@@ -81,11 +97,21 @@ export default function ProfilePage() {
     audio?.setTrack("menu");
     setGive([]);
     setWant([]);
+    setAvatarOpen(false);
     load().catch((err) => setError(err.message));
   }, [audio, username]);
 
   const mine = profile?.mine;
   const canTrade = profile?.friend && !mine;
+
+  useEffect(() => {
+    if (!canTrade) return undefined;
+    api("/api/collection")
+      .then((data) => setMyCards(data.collection || []))
+      .catch(() => setMyCards([]));
+    return undefined;
+  }, [canTrade, username]);
+
   async function setAvatar(cardId) {
     setBusy(true);
     setError("");
@@ -95,6 +121,7 @@ export default function ProfilePage() {
         body: JSON.stringify({ avatarCardId: cardId })
       });
       setUser(data.user);
+      setAvatarOpen(false);
       await load();
     } catch (err) {
       setError(err.message);
@@ -159,7 +186,16 @@ export default function ProfilePage() {
       <h1>Profile</h1>
       {error ? <div className="error">{error}</div> : null}
       <div className="panel profile-hero">
-        {src ? (
+        {mine ? (
+          <button
+            type="button"
+            className="avatar-btn"
+            onClick={() => setAvatarOpen(true)}
+            title="Change profile picture"
+          >
+            {src ? <img className="avatar-lg" src={src} alt="" /> : <div className="avatar-lg avatar-empty" />}
+          </button>
+        ) : src ? (
           <img className="avatar-lg" src={src} alt="" />
         ) : (
           <div className="avatar-lg avatar-empty" />
@@ -180,31 +216,42 @@ export default function ProfilePage() {
               ? "Max level"
               : `${profile.xpIntoLevel} / ${profile.xpForNext} XP to next level`}
           </p>
+          {mine ? <p className="muted">Click your picture to change it.</p> : null}
           {profile.friend && !mine ? (
             <p>
-              <Link to="/friends">Challenge or message from Friends</Link>
+              <Link to={`/play?friend=${encodeURIComponent(profile.username)}`}>Challenge on Play</Link>
             </p>
           ) : null}
         </div>
       </div>
 
-      {mine ? (
-        <div className="panel">
-          <strong>Profile picture</strong>
-          <p className="muted">Pick art from a card you own. No uploads.</p>
-          <div className="profile-avatars">
-            {(profile.ownedAvatars || []).map((card) => (
-              <button
-                type="button"
-                key={card.cardId}
-                className={profile.avatarCardId === card.cardId ? "selected" : ""}
-                disabled={busy}
-                onClick={() => setAvatar(card.cardId)}
-                title={card.name}
-              >
-                <img src={`/cards/${card.art}`} alt={card.name} />
-              </button>
-            ))}
+      {avatarOpen && mine ? (
+        <div className="scrim" onClick={() => setAvatarOpen(false)} role="presentation">
+          <div
+            className="panel avatar-modal"
+            role="dialog"
+            aria-label="Choose profile picture"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <strong>Profile picture</strong>
+            <p className="muted">Pick art from a card you own.</p>
+            <div className="profile-avatars">
+              {(profile.ownedAvatars || []).map((card) => (
+                <button
+                  type="button"
+                  key={card.cardId}
+                  className={profile.avatarCardId === card.cardId ? "selected" : ""}
+                  disabled={busy}
+                  onClick={() => setAvatar(card.cardId)}
+                  title={card.name}
+                >
+                  <img src={`/cards/${card.art}`} alt={card.name} />
+                </button>
+              ))}
+            </div>
+            <button className="btn secondary" type="button" onClick={() => setAvatarOpen(false)}>
+              Close
+            </button>
           </div>
         </div>
       ) : null}
@@ -249,15 +296,19 @@ export default function ProfilePage() {
         <form className="panel stack" onSubmit={sendTrade}>
           <strong>{pendingTrade ? "Counter-offer" : "Propose a trade"}</strong>
           <p className="muted">Offer 1 to 5 of your cards for 1 to 5 of theirs.</p>
-          <OwnTradeCards
+          <TradeSide
+            title="You give"
+            cards={myCards}
             picked={give}
-            onToggle={(id, owned) => setGive((list) => cycleCopy(list, id, 5, owned))}
+            onAdd={(id, owned) => setGive((list) => addCopy(list, id, 5, owned))}
+            onRemove={(i) => setGive((list) => removeAt(list, i))}
           />
-          <TradePicker
+          <TradeSide
             title="You want"
             cards={profile.collection}
             picked={want}
-            onToggle={(id, owned) => setWant((list) => cycleCopy(list, id, 5, owned))}
+            onAdd={(id, owned) => setWant((list) => addCopy(list, id, 5, owned))}
+            onRemove={(i) => setWant((list) => removeAt(list, i))}
           />
           <button className="btn" type="submit" disabled={busy || !give.length || !want.length}>
             {pendingTrade ? "Send counter" : "Send offer"}
@@ -281,17 +332,5 @@ export default function ProfilePage() {
         </div>
       ) : null}
     </div>
-  );
-}
-
-function OwnTradeCards({ picked, onToggle }) {
-  const [cards, setCards] = useState([]);
-  useEffect(() => {
-    api("/api/collection")
-      .then((data) => setCards(data.collection || []))
-      .catch(() => setCards([]));
-  }, []);
-  return (
-    <TradePicker title="You give" cards={cards} picked={picked} onToggle={onToggle} />
   );
 }

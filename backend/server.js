@@ -527,13 +527,15 @@ app.get("/api/matches/active", requireAuth, async (req, res) => {
   try {
     const active = await matchService.listActiveMatches(req.user._id);
     const liveDoc = active.find((m) => (m.mode || "live") === "live") || null;
-    const corrDoc = active.find((m) => m.mode === "correspondence") || null;
+    const corrDocs = active.filter((m) => m.mode === "correspondence");
     const live = liveDoc ? matchService.toClient(liveDoc, req.user._id) : null;
-    const correspondence = corrDoc ? matchService.toClient(corrDoc, req.user._id) : null;
+    const correspondences = corrDocs.map((m) => matchService.toClient(m, req.user._id));
+    const correspondence = correspondences[0] || null;
     res.json({
       match: live || correspondence || null,
       live,
-      correspondence
+      correspondence,
+      correspondences
     });
   } catch (err) {
     console.error("Error fetching match:", err);

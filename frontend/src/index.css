@@ -179,6 +179,127 @@ button, input, select, textarea {
 
 .notice-bar a { font-weight: 600; color: var(--accent); }
 
+.notice-bar.your-turn {
+  background: #e7f4ea;
+  border-color: #b7d7c0;
+}
+
+.search-select {
+  position: relative;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.search-select > span {
+  font-weight: 600;
+}
+
+.search-select-toggle,
+.search-select-menu input {
+  width: 100%;
+  text-align: left;
+}
+
+.search-select-toggle {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+}
+
+.search-select-current,
+.search-option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.search-select-current img,
+.search-option img {
+  width: 22px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.search-select-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.45rem;
+  box-shadow: 0 10px 24px rgba(28, 26, 23, 0.12);
+}
+
+.search-select-list {
+  max-height: 220px;
+  overflow: auto;
+  margin-top: 0.35rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.search-option {
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0.35rem 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.search-option:hover,
+.search-option.selected {
+  background: #f4eee4;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.avatar-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 16px;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 26, 23, 0.4);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.avatar-modal {
+  width: min(92vw, 520px);
+  max-height: 82vh;
+  overflow: auto;
+}
+
 .combat-log {
   max-height: 7.2rem;
   overflow: auto;
