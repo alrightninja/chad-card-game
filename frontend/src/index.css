@@ -114,18 +114,7 @@ button, input, select, textarea {
 
 .home-hero {
   display: grid;
-  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr);
-  gap: 1.2rem 1.5rem;
-  align-items: center;
-}
-
-.home-logo {
-  width: 100%;
-  max-width: 200px;
-  height: auto;
-  display: block;
-  border-radius: 10px;
-  background: #05060c;
+  gap: 0.35rem;
 }
 
 .home-kicker {
@@ -142,13 +131,6 @@ button, input, select, textarea {
   align-items: center;
   flex-wrap: wrap;
   font-size: 1.65rem;
-}
-
-.home-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.9rem;
 }
 
 .home-grid {
@@ -314,8 +296,7 @@ button, input, select, textarea {
 }
 
 @media (max-width: 640px) {
-  .home-hero { grid-template-columns: 1fr; }
-  .home-logo { max-width: 160px; }
+  .home-intro h1 { font-size: 1.4rem; }
 }
 
 .card-grid {

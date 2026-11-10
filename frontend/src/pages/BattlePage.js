@@ -22,6 +22,12 @@ function pad(list, size) {
   return next;
 }
 
+function padHand(list) {
+  const next = [...(list || [])];
+  while (next.length < HAND_SLOTS) next.push(null);
+  return next;
+}
+
 function CardBack() {
   return <div className="card-back" aria-hidden="true" />;
 }
@@ -949,7 +955,7 @@ export default function BattlePage() {
               <div>
                 <div className="zone-title">Hand</div>
                 <div className="lane hand-row">
-                  {pad(you?.hand, HAND_SLOTS).map((card, i) => (
+                  {padHand(you?.hand).map((card, i) => (
                     card ? (
                       <CardView
                         key={card.instanceId}

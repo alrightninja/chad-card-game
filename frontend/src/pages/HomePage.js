@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useAudio } from "../audio/AudioProvider";
@@ -44,26 +44,12 @@ export default function HomePage() {
   return (
     <div className="home">
       <section className="home-hero">
-        <img
-          className="home-logo"
-          src="/brand/gigachad-smackdown-logo.png"
-          alt="Gigachad Smackdown"
-        />
         <div className="home-intro">
           <p className="home-kicker">Trading card game</p>
           <h1>
             Welcome{user?.username ? `, ${user.username}` : ""}
             <VerifiedBadge verified={user?.verified} />
           </h1>
-          <p className="muted">
-            3 Active, 3 Bench. First to 5 KOs. HP is twice Power. One Assist (Commons/Uncommons only). One Bench swap per turn. The Lead’s type is +6 / −6. Guard forces the fight.
-          </p>
-          <div className="home-actions">
-            <Link className="btn" to="/play">Play</Link>
-            <Link className="btn secondary" to="/collection">Collection</Link>
-            <Link className="btn secondary" to="/shop">Shop</Link>
-            <Link className="btn secondary" to="/friends">Friends</Link>
-          </div>
         </div>
       </section>
 
@@ -90,28 +76,6 @@ export default function HomePage() {
           </div>
         </section>
       ))}
-
-      <section className="home-grid">
-        <div className="panel home-card stack">
-          <strong>{user?.tutorialCompleted ? "How to play" : "New here?"}</strong>
-          <p className="muted">
-            {user?.tutorialCompleted
-              ? "Open the lesson anytime. Practice still uses a coached AI fight."
-              : "A short lesson, then a coached practice fight with a starter deck."}
-          </p>
-          <Link className="btn" to="/tutorial">
-            {user?.tutorialCompleted ? "Review the rules" : "Learn how to play"}
-          </Link>
-        </div>
-        <div className="panel home-card stack">
-          <strong>Build and collect</strong>
-          <p className="muted">20-card decks. Packs are 5 cards for 100 reps.</p>
-          <div className="row">
-            <Link className="btn secondary" to="/decks">Decks</Link>
-            <Link className="btn secondary" to="/shop">Open a pack</Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
