@@ -1018,6 +1018,9 @@ export default function BattlePage() {
                     : `${match.opponentName || match.versus} wins.`}
               </p>
               <p className="result-reps">+{match.rewards?.reps ?? 0} reps</p>
+              {match.rewards?.capped ? (
+                <p className="muted">Daily AI reward limit reached. You can still play, but extra AI wins won’t grant XP or reps until tomorrow.</p>
+              ) : null}
               <button className="btn" type="button" onClick={() => navigate("/")}>
                 Continue
               </button>

@@ -28,6 +28,7 @@ const retention = require("./lib/retention");
 const { PACKS, packOnSale, packSaleState } = require("./lib/packs");
 const tradeRoutes = require("./routes/trades");
 const { isLegalDeckList, deckIllegalReason, deckLimits, DECK_SIZE } = require("./lib/deck");
+const { authLimited } = require("./lib/antiFarm");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -111,6 +112,9 @@ app.get("/api/trait/:trait", (req, res) => {
 
 app.post("/api/register", async (req, res) => {
   try {
+    if (authLimited(req)) {
+      return res.status(429).json({ error: "Too many tries. Wait a few minutes." });
+    }
     const { email, emailConfirm, username, password, passwordConfirm, termsAccepted } = req.body;
 
     if (!email || !username || !password) {
@@ -176,6 +180,9 @@ app.post("/api/register", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   try {
+    if (authLimited(req)) {
+      return res.status(429).json({ error: "Too many tries. Wait a few minutes." });
+    }
     const { email, password } = req.body;
 
     if (!email || !password) {

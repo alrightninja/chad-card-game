@@ -26,6 +26,9 @@ const UserSchema = new mongoose.Schema(
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
     avatarCardId: { type: String, default: null },
+    pveFarmDay: { type: String, default: null },
+    pveWinsToday: { type: Number, default: 0 },
+    lastPveStartAt: { type: Date, default: null },
 
     passwordResetTokenHash: { type: String, default: null, index: true },
     passwordResetExpires: { type: Date, default: null },

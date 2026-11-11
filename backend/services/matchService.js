@@ -31,6 +31,7 @@ const {
   finishReps
 } = require("../lib/matchLogic");
 const { applyWinXp } = require("../lib/xp");
+const antiFarm = require("../lib/antiFarm");
 
 function validateDeck(deck) {
   if (!deck) {
@@ -97,7 +98,10 @@ function toClient(match, userId) {
       perspective === "opponent"
         ? match.playerUsername
         : match.opponentUsername || (match.opponentType === "ai" ? "AI" : "Opponent"),
-    rewards: { reps: repsForSeat(match, perspective) },
+    rewards: {
+      reps: repsForSeat(match, perspective),
+      capped: !!(match.rewards && match.rewards.capped)
+    },
     tutorial: !!match.tutorial,
     state: publicMatchState(state, perspective)
   };
@@ -107,25 +111,43 @@ async function awardAndFinish(match, options = {}) {
   if (match.status === "finished") return;
 
   const turn = hydrateState(match.state)?.turn || 1;
-  const { player: playerReps, opponent: opponentReps } = finishReps({
+  let { player: playerReps, opponent: opponentReps } = finishReps({
     opponentType: match.opponentType,
     winner: match.winner,
     forfeit: !!options.forfeit,
     turn
   });
 
+  const player = await User.findById(match.playerId);
+  let capped = false;
+  if (
+    player &&
+    match.opponentType === "ai" &&
+    !match.tutorial &&
+    !options.forfeit &&
+    match.winner === "player" &&
+    antiFarm.pveCapReached(player)
+  ) {
+    playerReps = 0;
+    capped = true;
+  }
+
   match.status = "finished";
-  match.rewards = { reps: playerReps, player: playerReps, opponent: opponentReps };
+  match.rewards = { reps: playerReps, player: playerReps, opponent: opponentReps, capped };
   match.moveDeadlineAt = null;
   match.set("state", compactFinishedState(hydrateState(match.state)));
   match.markModified("state");
   match.purgeAt = new Date(Date.now() + FINISHED_KEEP_MS);
   await match.save();
 
-  const player = await User.findById(match.playerId);
   if (player) {
     player.currency.reps = (player.currency.reps || 0) + playerReps;
-    if (!match.tutorial && match.winner === "player") applyWinXp(player);
+    if (!match.tutorial && match.winner === "player" && !capped) {
+      applyWinXp(player);
+      if (match.opponentType === "ai" && !options.forfeit) {
+        antiFarm.consumePveWin(player);
+      }
+    }
     await player.save();
   }
 
@@ -204,6 +226,7 @@ async function startPveMatch(user, deckName, options = {}) {
   const deck = user.decks.find((d) => d.name === deckName);
   validateDeck(deck);
 
+  if (!options.tutorial) antiFarm.assertCanStartPve(user);
   const existing = await getActiveMatch(user._id, "live");
   if (existing) {
     const err = new Error("You already have an active live match. Resume or forfeit it first.");
@@ -215,6 +238,11 @@ async function startPveMatch(user, deckName, options = {}) {
   const playerUnits = shuffle(deckToUnits(deck.cards));
   const aiUnits = shuffle(deckToUnits(randomAiDeckIds(DECK_SIZE)));
   const state = createInitialGameState(playerUnits, aiUnits, { koLimit: KO_LIMIT_AI });
+
+  if (!options.tutorial) {
+    antiFarm.notePveStart(user);
+    await User.updateOne({ _id: user._id }, { $set: { lastPveStartAt: user.lastPveStartAt } });
+  }
 
   const match = await Match.create({
     playerId: user._id,
@@ -386,6 +414,9 @@ async function applyMatchAction(user, matchId, action) {
     err.status = 403;
     throw err;
   }
+
+  antiFarm.assertActionPace(match);
+  match.lastHumanActionAt = new Date();
 
   const state = hydrateState(match.state);
   const beforeClock = { turn: state.turn, turnPlayer: state.turnPlayer };

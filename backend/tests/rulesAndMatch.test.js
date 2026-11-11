@@ -241,6 +241,20 @@ test("pending challenges with a missing player are skipped instead of crashing",
   assert.equal(publicChallenge({ _id: "c3", fromUserId: null, toUserId: viewer }, viewer._id), null);
 });
 
+test("AI farming hits a daily win cap and a start cooldown", () => {
+  const antiFarm = require("../lib/antiFarm");
+  const user = { pveFarmDay: null, pveWinsToday: 0, lastPveStartAt: null };
+  assert.equal(antiFarm.pveCapReached(user), false);
+  for (let i = 0; i < antiFarm.PVE_DAILY_WIN_CAP; i += 1) antiFarm.consumePveWin(user);
+  assert.equal(antiFarm.pveCapReached(user), true);
+  antiFarm.notePveStart(user, new Date("2026-11-11T12:00:00.000Z"));
+  assert.throws(() => antiFarm.assertCanStartPve(user, new Date("2026-11-11T12:00:10.000Z")));
+  antiFarm.assertCanStartPve(user, new Date("2026-11-11T12:00:21.000Z"));
+  const match = { lastHumanActionAt: new Date("2026-11-11T12:00:00.000Z") };
+  assert.throws(() => antiFarm.assertActionPace(match, new Date("2026-11-11T12:00:00.100Z")));
+  antiFarm.assertActionPace(match, new Date("2026-11-11T12:00:00.400Z"));
+});
+
 test("pack odds keep mythics at 0.2 percent of slots", () => {
   const { weights } = require("../utils/openPack");
   const total = Object.values(weights).reduce((a, b) => a + b, 0);

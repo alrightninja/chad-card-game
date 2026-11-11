@@ -51,6 +51,7 @@ const MatchSchema = new mongoose.Schema(
       player: { type: Number, default: 0 },
       opponent: { type: Number, default: 0 }
     },
+    lastHumanActionAt: { type: Date, default: null },
     purgeAt: { type: Date, default: null }
   },
   { timestamps: true }
