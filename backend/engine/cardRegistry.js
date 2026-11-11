@@ -3,8 +3,10 @@ const { DECK_SIZE, HP_MULT, rarityBucket } = require("./rules");
 const { releasedSetNumbers } = require("../lib/packs");
 
 const AI_MAX_COPIES = 2;
+const AI_MAX_UNCOMMONS = 8;
 const AI_MAX_RARES = 6;
 const AI_MAX_LEGENDARIES = 2;
+const AI_MAX_MYTHICS = 1;
 
 const byId = new Map(catalog.map((card) => [card.cardId, card]));
 const byName = new Map(catalog.map((card) => [card.name.toLowerCase(), card]));
@@ -98,19 +100,25 @@ function randomAiDeckIds(size = DECK_SIZE, now = new Date()) {
 
   const deck = [];
   const copies = {};
+  let uncommons = 0;
   let rares = 0;
   let legendaries = 0;
+  let mythics = 0;
 
   function tryAdd(card) {
     if (deck.length >= size) return false;
     const n = copies[card.cardId] || 0;
     if (n >= AI_MAX_COPIES) return false;
     const bucket = rarityBucket(card.rarity);
+    if (bucket === "U" && uncommons >= AI_MAX_UNCOMMONS) return false;
     if (bucket === "R" && rares >= AI_MAX_RARES) return false;
-    if (bucket === "L" && legendaries >= AI_MAX_LEGENDARIES) return false;
+    if (bucket === "M" && (mythics >= AI_MAX_MYTHICS || legendaries > 0)) return false;
+    if (bucket === "L" && (legendaries >= AI_MAX_LEGENDARIES || mythics > 0)) return false;
     copies[card.cardId] = n + 1;
+    if (bucket === "U") uncommons += 1;
     if (bucket === "R") rares += 1;
     if (bucket === "L") legendaries += 1;
+    if (bucket === "M") mythics += 1;
     deck.push(card.cardId);
     return true;
   }
@@ -123,7 +131,7 @@ function randomAiDeckIds(size = DECK_SIZE, now = new Date()) {
   if (deck.length < size) {
     const fillers = shuffle(pool.filter((c) => {
       const bucket = rarityBucket(c.rarity);
-      return bucket !== "R" && bucket !== "L";
+      return bucket === "C" || bucket === "U";
     }));
     for (const card of fillers) {
       if (deck.length >= size) break;

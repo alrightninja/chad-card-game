@@ -634,15 +634,15 @@
     "set": 2,
     "name": "Cheyennomaly",
     "trait": "Mystic",
-    "power": 47,
-    "rarity": "L",
+    "power": 52,
+    "rarity": "M",
     "abilityCategory": "Attack",
     "abilityKeyword": "PowerDown",
     "abilityValue": 12,
     "abilityText": "On Attack: Reduce the enemy's Power by 12 this battle.",
     "flavorLine": "A quiet, vintage-styled enigma whose power defies explanation and obliterates expectations.",
     "art": "cheyennomaly.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "chiseled_thunder_barbarian_045",
@@ -1309,15 +1309,15 @@
     "set": 3,
     "name": "Gigachad",
     "trait": "Muscle",
-    "power": 55,
-    "rarity": "L",
+    "power": 60,
+    "rarity": "M",
     "abilityCategory": "Attack",
     "abilityKeyword": "PowerUp",
     "abilityValue": 13,
     "abilityText": "On Attack: Gain +13 Power for this battle.",
     "flavorLine": "The final form of strength itself.",
     "art": "gigachad.png",
-    "version": 2
+    "version": 3
   },
   {
     "cardId": "glow_in_the_dark_taxidermist_089",
@@ -1909,15 +1909,15 @@
     "set": 2,
     "name": "Meemow",
     "trait": "Mayhem",
-    "power": 50,
-    "rarity": "L",
+    "power": 54,
+    "rarity": "M",
     "abilityCategory": "Attack",
     "abilityKeyword": "Spike",
     "abilityValue": 12,
     "abilityText": "On Attack: Deal 12 damage to the enemy before battle.",
     "flavorLine": "A tiny cat with cosmic mischief in her eyes.",
     "art": "meemow.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "microwave_lawyer_129",
@@ -3004,15 +3004,15 @@
     "set": 4,
     "name": "Toaster with Daddy Issues",
     "trait": "Machina",
-    "power": 30,
-    "rarity": "C",
+    "power": 53,
+    "rarity": "M",
     "abilityCategory": "Defeat",
     "abilityKeyword": "PowerDown",
     "abilityValue": 8,
     "abilityText": "On Defeat: Reduce the enemy's Power by 8 this battle.",
     "flavorLine": "He just wants to burn something meaningful.",
     "art": "toaster_daddy_issues.png",
-    "version": 2
+    "version": 3
   },
   {
     "cardId": "tom_diddle_202",
@@ -3304,15 +3304,15 @@
     "set": 3,
     "name": "John Wickthrop",
     "trait": "Mayhem",
-    "power": 50,
-    "rarity": "L",
+    "power": 54,
+    "rarity": "M",
     "abilityCategory": "Attack",
     "abilityKeyword": "Stun",
     "abilityValue": 0,
     "abilityText": "On Attack: Stun the enemy, preventing their next action.",
     "flavorLine": "He asked nicely. Once.",
     "art": "john_wickthrop.jpg",
-    "version": 2
+    "version": 3
   },
   {
     "cardId": "marlene_222",
@@ -3349,15 +3349,15 @@
     "set": 1,
     "name": "The Chadministrator",
     "trait": "Muscle",
-    "power": 50,
-    "rarity": "L",
+    "power": 55,
+    "rarity": "M",
     "abilityCategory": "Attack",
     "abilityKeyword": "PowerUp",
     "abilityValue": 15,
     "abilityText": "On Attack: Gain +15 Power for this battle.",
     "flavorLine": "All other Chads report to him.",
     "art": "the_chadministrator.png",
-    "version": 2
+    "version": 3
   },
   {
     "cardId": "thimple_chad_225",

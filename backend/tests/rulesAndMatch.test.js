@@ -65,11 +65,19 @@ test("4. decks are 20 cards and old 40-card lists need rebuild", () => {
 
   const rares = getAll().filter((c) => c.rarity === "R").map((c) => c.cardId);
   const commons = getAll().filter((c) => c.rarity === "C").map((c) => c.cardId);
+  const uncommons = getAll().filter((c) => c.rarity === "U").map((c) => c.cardId);
   const legends = getAll().filter((c) => c.rarity === "L").map((c) => c.cardId);
+  const mythics = getAll().filter((c) => c.rarity === "M").map((c) => c.cardId);
   const sevenRares = rares.slice(0, 7).concat(commons.slice(0, 13));
   assert.match(deckIllegalReason(sevenRares) || "", /Rares/i);
   const threeLegends = legends.slice(0, 3).concat(commons.slice(0, 17));
   assert.match(deckIllegalReason(threeLegends) || "", /Legendaries/i);
+  const mixedChase = [mythics[0], legends[0]].concat(commons.slice(0, 18));
+  assert.match(deckIllegalReason(mixedChase) || "", /Mythic or up to 2 Legendaries/i);
+  const twoMythics = mythics.slice(0, 2).concat(commons.slice(0, 18));
+  assert.match(deckIllegalReason(twoMythics) || "", /Mythics/i);
+  const nineU = uncommons.slice(0, 9).concat(commons.slice(0, 11));
+  assert.match(deckIllegalReason(nineU) || "", /Uncommons/i);
 });
 
 test("5. empty active and bench loses even with a hand", () => {
@@ -231,6 +239,17 @@ test("pending challenges with a missing player are skipped instead of crashing",
   assert.equal(ok.from.username, "Rival");
   assert.equal(publicChallenge({ _id: "c2", fromUserId: from, toUserId: null }, viewer._id), null);
   assert.equal(publicChallenge({ _id: "c3", fromUserId: null, toUserId: viewer }, viewer._id), null);
+});
+
+test("pack odds keep mythics at 0.2 percent of slots", () => {
+  const { weights } = require("../utils/openPack");
+  const total = Object.values(weights).reduce((a, b) => a + b, 0);
+  assert.equal(total, 1000);
+  assert.equal(weights.C, 700);
+  assert.equal(weights.U, 200);
+  assert.equal(weights.R, 90);
+  assert.equal(weights.L, 8);
+  assert.equal(weights.M, 2);
 });
 
 test("AI decks use only released sets and stay legal", () => {
@@ -458,7 +477,12 @@ test("requested rarity and power retunes landed", () => {
     janitor_chad_112: { rarity: "R", power: 43 },
     bear_sized_goose_012: { rarity: "R", power: 43 },
     bigback_tony_014: { rarity: "C", power: 28 },
-    john_wickthrop_221: { rarity: "L", power: 50 }
+    john_wickthrop_221: { rarity: "M", power: 54 },
+    gigachad_088: { rarity: "M", power: 60 },
+    the_chadministrator_224: { rarity: "M", power: 55 },
+    cheyennomaly_044: { rarity: "M", power: 52 },
+    meemow_128: { rarity: "M", power: 54 },
+    toaster_daddy_issues_201: { rarity: "M", power: 53 }
   };
   for (const [id, want] of Object.entries(expect)) {
     const card = getById(id);
@@ -498,8 +522,8 @@ test("hand limit is 5 and catalog retunes for v4.9", () => {
   assert.equal(getById("chad_of_consistency_033"), null);
   assert.equal(getById("skibidi_chad_186").name, "Fake Brazilian Chad");
   assert.equal(getById("e_unit_071").power, 27);
-  assert.equal(getById("gigachad_088").power, 55);
-  assert.equal(getById("the_chadministrator_224").power, 50);
+  assert.equal(getById("gigachad_088").power, 60);
+  assert.equal(getById("the_chadministrator_224").power, 55);
   assert.equal(getById("the_chadministrator_224").abilityValue, 15);
   assert.equal(getById("cheesed_off_vacuum_cleaner_043").trait, "Machina");
   assert.equal(getById("chaos_kettlebell_041").trait, "Machina");

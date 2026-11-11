@@ -160,7 +160,7 @@ Friend DMs: from, to, body (max 500), moderated in `backend/utils/moderation.js`
 
 ## Card packs / sets
 
-Packs are defined in `backend/lib/packs.js`. Shop `GET /api/shop/packs` lists every pack; `onSale` / `sale` (`live` | `soon` | `ended`) control whether you can buy. Off-sale packs stay visible and grayed. Odds per slot: C 70% / U 20% / R 9% / L 1% (`backend/utils/openPack.js`). Each pack is **5 cards, 100 reps**. Set legality uses `releasedSetNumbers` (window started, even after a pack leaves the shop).
+Packs are defined in `backend/lib/packs.js`. Shop `GET /api/shop/packs` lists every pack; `onSale` / `sale` (`live` | `soon` | `ended`) control whether you can buy. Off-sale packs stay visible and grayed. Odds per slot: C 70% / U 20% / R 9% / L 0.8% / M 0.2% (`backend/utils/openPack.js`). Each pack is **5 cards, 100 reps**. Set legality uses `releasedSetNumbers` (window started, even after a pack leaves the shop).
 
 | Pack | Set | Shop | Release |
 | --- | --- | --- | --- |
@@ -192,7 +192,7 @@ Routes (auth-gated except login): Home, How to play, Play, Collection, Decks, Sh
 - **Battle:** compact one-screen table, two-click play/attack, AI replay with lunge/SFX, HP on units in combat.
 - **Cards:** fixed-size Pokémon-like layout; art `object-fit: cover`, square art corners; name/ability **shrink to fit** (`FitText` in `CardView.js`).
 - **Shop:** lists on-sale packs only.
-- **Decks:** click collection to add, click deck list to remove, save at 20 (2 copies / 6 rares / 2 legendaries).
+- **Decks:** click collection to add, click deck list to remove, save at 20 (2 copies / 8 uncommons / 6 rares / 1 mythic or 2 legendaries).
 
 Play: PvE vs AI plus friend challenges (live / correspondence). Up to **1 live** and **3 correspondence** matches. Open matchmaking **not** built.
 

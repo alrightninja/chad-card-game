@@ -1,14 +1,15 @@
 const cards = require("../cards.json");
 
-// Rarity weights
 const weights = {
-  C: 70,
-  U: 20,
-  R: 9,
-  L: 1
+  C: 700,
+  U: 200,
+  R: 90,
+  L: 8,
+  M: 2
 };
 
-// Helper: pick a rarity based on weight
+const FALLBACK = { M: "L", L: "R", R: "U", U: "C" };
+
 function rollRarity() {
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
   let roll = Math.random() * total;
@@ -18,7 +19,17 @@ function rollRarity() {
     roll -= weights[rarity];
   }
 
-  return "C"; // fallback
+  return "C";
+}
+
+function poolFor(setNumber, rarity) {
+  let want = rarity;
+  while (want) {
+    const pool = cards.filter((c) => c.rarity === want && c.set === setNumber);
+    if (pool.length) return pool;
+    want = FALLBACK[want];
+  }
+  return cards.filter((c) => c.set === setNumber);
 }
 
 function openPack(setNumber, packSize = 5) {
@@ -26,18 +37,8 @@ function openPack(setNumber, packSize = 5) {
 
   for (let i = 0; i < packSize; i++) {
     const rarity = rollRarity();
-
-    // Filter by rarity AND set
-    const pool = cards.filter(
-      c => c.rarity === rarity && c.set === setNumber
-    );
-
-    // If no cards of that rarity exist in this set, fallback to any card in the set
-    const finalPool = pool.length > 0
-      ? pool
-      : cards.filter(c => c.set === setNumber);
-
-    const randomCard = finalPool[Math.floor(Math.random() * finalPool.length)];
+    const pool = poolFor(setNumber, rarity);
+    const randomCard = pool[Math.floor(Math.random() * pool.length)];
     pulled.push(randomCard.cardId);
   }
 
@@ -45,3 +46,4 @@ function openPack(setNumber, packSize = 5) {
 }
 
 module.exports = openPack;
+module.exports.weights = weights;

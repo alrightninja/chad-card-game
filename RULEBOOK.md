@@ -28,7 +28,7 @@ Every card is a **Unit**. Printed on each card:
 - Power
 - Ability (timing + keyword + value)
 - Flavor
-- Rarity (C / U / R / L)
+- Rarity (C / U / R / L / M)
 
 ---
 
@@ -64,7 +64,7 @@ You do **not** dump your opening hand onto the board before turn 1. You play fro
 
 ## 5. Setup
 
-1. Shuffle a 20-card deck (max **2** copies of a card, max **6** Rares, max **2** Legendaries).
+1. Shuffle a 20-card deck (max **2** copies of a card, max **8** Uncommons, max **6** Rares, and either **1** Mythic **or** up to **2** Legendaries — not both).
 2. Both players draw **5**.
 3. **First player** takes the first turn and **does not draw**.
 4. **Second player** draws 1 at the start of their first turn.
@@ -97,7 +97,7 @@ Click-then-slot and drag-and-drop both work.
 
 - Choose **your** Active units that are not Tired or Stunned. Bench units cannot attack or Assist.
 - The **first** unit you choose is the **Lead** (full Power). You may add **one Assist** (half Power).
-- Rares and Legendaries cannot Assist and cannot receive an Assist. Commons and Uncommons can do both.
+- Rares, Legendaries, and Mythics cannot Assist and cannot receive an Assist. Commons and Uncommons can do both.
 - Choose **one** enemy Active unit. If they have a Guard, you must choose it.
 - Resolve immediately.
 - One battle per turn, unless a unit has Multi-Attack and attacked **alone**.
@@ -118,7 +118,7 @@ If you skip Battle, nothing fights.
 2. If a Cancel Battle effect is waiting, the fight fizzles.
 3. Unblockable attacks skip the defender and hit remaining health instead.
 4. **Lead:** Power + temp + trait bonus (**±6**, Lead only).
-5. **One Assist:** add **half** of that unit’s Power + temp, rounded down. Assists do **not** add type. Rares/Legendaries cannot Assist or be Assisted.
+5. **One Assist:** add **half** of that unit’s Power + temp, rounded down. Assists do **not** add type. Rares/Legendaries/Mythics cannot Assist or be Assisted.
 6. Defender Armor: printed Armor, plus **+8 Armor** if their type beats the Lead.
 7. Each unit has **HP equal to twice its printed Power**. Damage = attack total minus Armor (minimum 0).
 8. A Power Shield on the defender absorbs that hit (no HP lost) and is then spent.

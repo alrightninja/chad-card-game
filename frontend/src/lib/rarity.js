@@ -4,7 +4,8 @@ const LABELS = {
   R: "Rare",
   SR: "Rare",
   UR: "Rare",
-  L: "Legendary"
+  L: "Legendary",
+  M: "Mythic"
 };
 
 export function rarityLabel(rarity) {
@@ -13,6 +14,7 @@ export function rarityLabel(rarity) {
 }
 
 export function rarityBucket(rarity) {
+  if (rarity === "M") return "M";
   if (rarity === "L") return "L";
   if (rarity === "R" || rarity === "SR" || rarity === "UR") return "R";
   if (rarity === "U") return "U";

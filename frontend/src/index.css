@@ -558,6 +558,7 @@ label { font-size: 0.9rem; display: grid; gap: 0.35rem; }
 .tcg-rarity.rarity-U { background: #d3ead8; color: #1d5a32; }
 .tcg-rarity.rarity-R { background: #d5e4f8; color: #1c3f7a; }
 .tcg-rarity.rarity-L { background: #f4dfae; color: #7a4a08; }
+.tcg-rarity.rarity-M { background: #ead7f8; color: #5b1f78; }
 
 .card-slot-meta {
   font-size: 0.8rem;

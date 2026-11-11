@@ -672,12 +672,12 @@ export default function BattlePage() {
       const lead = you?.active?.[prev[0]];
       if (!canAssist(lead)) {
         audio?.playSfx("error");
-        setError(`${lead?.name || "That unit"} is Rare or Legendary and cannot receive an Assist.`);
+        setError(`${lead?.name || "That unit"} is Rare, Legendary, or Mythic and cannot receive an Assist.`);
         return prev;
       }
       if (!canAssist(card)) {
         audio?.playSfx("error");
-        setError(`${card.name} is Rare or Legendary and cannot Assist.`);
+        setError(`${card.name} is Rare, Legendary, or Mythic and cannot Assist.`);
         return prev;
       }
       if (prev.length >= 2) {
@@ -822,7 +822,7 @@ export default function BattlePage() {
             <strong>Coach</strong>
             <ol>
               <li>Main Phase: play to Active (3) or Bench (3), one Bench-to-Active move, or press Guard then click an Active unit.</li>
-              <li>Attack: first click is the Lead. You may add one Common or Uncommon Assist from Active. Rares and Legendaries fight alone. Attackers take a Rest Day.</li>
+              <li>Attack: first click is the Lead. You may add one Common or Uncommon Assist from Active. Rares, Legendaries, and Mythics fight alone. Attackers take a Rest Day.</li>
               <li>If they have a Guard (blue), you must attack that unit. After the fight you cannot play more cards.</li>
               <li>Only the Lead’s type counts: +6 if it beats the defender, −6 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type. Units have HP equal to twice their Power.</li>
               <li>You go first and skip a draw. Hand limit 5. First to {match.state?.koLimit || 5} KOs wins (vs AI is 3; friend matches can set 3–10). Empty Active and Bench still loses.</li>

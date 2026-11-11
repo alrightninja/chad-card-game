@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 const STEPS = [
   {
     title: "What you are trying to do",
-    body: "Knock out the other player’s units. Vs AI, first to 3 KOs wins. Friend matches default to 5 and can set 3 to 10. You also win if they have nothing left in Active or on the Bench (a hand is not enough).\n\nDecks are 20 cards (max 2 copies of a card, 6 rares, 2 legendaries). Every card is a unit with Power and a Trait: Muscle, Mind, Mayhem, Mystic, or Machina."
+    body: "Knock out the other player’s units. Vs AI, first to 3 KOs wins. Friend matches default to 5 and can set 3 to 10. You also win if they have nothing left in Active or on the Bench (a hand is not enough).\n\nDecks are 20 cards (max 2 copies of a card, 8 uncommons, 6 rares, and either 1 mythic or 2 legendaries). Every card is a unit with Power and a Trait: Muscle, Mind, Mayhem, Mystic, or Machina."
   },
   {
     title: "The board",

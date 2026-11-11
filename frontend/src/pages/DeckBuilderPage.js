@@ -8,7 +8,7 @@ import { rarityBucket, rarityLabel } from "../lib/rarity";
 
 const MAX_DECKS = 5;
 const DECK_SIZE = 20;
-const DEFAULT_LIMITS = { size: 20, copies: 2, rares: 6, legendaries: 2 };
+const DEFAULT_LIMITS = { size: 20, copies: 2, uncommons: 8, rares: 6, legendaries: 2, mythics: 1 };
 
 function nextDeckName(decks) {
   const used = new Set((decks || []).map((d) => d.name));
@@ -101,11 +101,24 @@ export default function DeckBuilderPage() {
     if (copiesInDeck(card.cardId) >= (card.quantity || 0)) {
       return "No extra copies owned";
     }
-    if (rarityBucket(card.rarity) === "L" && rarityCount("L") >= limits.legendaries) {
+    const bucket = rarityBucket(card.rarity);
+    if (bucket === "M" && rarityCount("M") >= (limits.mythics || 1)) {
+      return "Mythic cap reached";
+    }
+    if (bucket === "M" && rarityCount("L") > 0) {
+      return "Mythic or Legendaries, not both";
+    }
+    if (bucket === "L" && rarityCount("M") > 0) {
+      return "Mythic or Legendaries, not both";
+    }
+    if (bucket === "L" && rarityCount("L") >= limits.legendaries) {
       return "Legendary cap reached";
     }
-    if (rarityBucket(card.rarity) === "R" && rarityCount("R") >= limits.rares) {
+    if (bucket === "R" && rarityCount("R") >= limits.rares) {
       return "Rare cap reached";
+    }
+    if (bucket === "U" && rarityCount("U") >= (limits.uncommons || 8)) {
+      return "Uncommon cap reached";
     }
     if (list.length >= limits.size) return "Deck is full";
     return "";
@@ -226,8 +239,10 @@ export default function DeckBuilderPage() {
           {decks.length}/{MAX_DECKS} saved
           {savedName ? "" : " · unsaved draft"}
           {" · "}max {limits.copies} copies
+          {" · "}Uncommons {rarityCount("U")}/{limits.uncommons || 8}
           {" · "}Rares {rarityCount("R")}/{limits.rares}
           {" · "}Legendaries {rarityCount("L")}/{limits.legendaries}
+          {" · "}Mythics {rarityCount("M")}/{limits.mythics || 1}
         </p>
         <div className="row">
           {decks.map((d) => (
@@ -263,8 +278,9 @@ export default function DeckBuilderPage() {
         </div>
         {list.length !== DECK_SIZE ? (
           <p className="muted">
-            Legal decks are {DECK_SIZE} cards, max {limits.copies} copies, {limits.rares} rares,{" "}
-            {limits.legendaries} legendaries. Older lists stay until you save a legal deck — nothing
+            Legal decks are {DECK_SIZE} cards, max {limits.copies} copies, {limits.uncommons || 8}{" "}
+            uncommons, {limits.rares} rares, and either {limits.mythics || 1} Mythic or{" "}
+            {limits.legendaries} Legendaries. Older lists stay until you save a legal deck — nothing
             is removed from your collection.
           </p>
         ) : null}

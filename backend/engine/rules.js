@@ -27,6 +27,7 @@ const TRAIT_ADVANTAGE = {
 };
 
 function rarityBucket(rarity) {
+  if (rarity === "M") return "M";
   if (rarity === "L") return "L";
   if (rarity === "R" || rarity === "SR" || rarity === "UR") return "R";
   if (rarity === "U") return "U";
@@ -39,7 +40,7 @@ function clampKoLimit(value) {
   return Math.min(KO_LIMIT_MAX, Math.max(KO_LIMIT_MIN, n));
 }
 
-/** Commons and Uncommons may Assist or receive an Assist. Rares and Legendaries fight alone. */
+/** Commons and Uncommons may Assist or receive an Assist. Rares, Legendaries, and Mythics fight alone. */
 function canAssist(unit) {
   if (!unit) return false;
   const bucket = rarityBucket(unit.rarity);

@@ -3,8 +3,15 @@
 const { applyAbility } = require("./abilities");
 const { resolveBattle, resetCombatForPlay } = require("./battle");
 const { endPhase } = require("./phases");
-const { MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, MAX_BENCH_MOVES_PER_TURN, canAssist } = require("./rules");
+const { MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, MAX_BENCH_MOVES_PER_TURN, canAssist, rarityBucket } = require("./rules");
 const { addToActive } = require("./board");
+
+function fightAloneLabel(unit) {
+  const bucket = rarityBucket(unit.rarity);
+  if (bucket === "M") return "Mythic";
+  if (bucket === "L") return "Legendary";
+  return "Rare";
+}
 
 function enterPlay(state, playerState, cardIndex, destination) {
   const card = playerState.hand[cardIndex];
@@ -206,11 +213,11 @@ function attack(state, attackerIndices, defenderIndex = 0) {
   if (attackers.length > 1) {
     const lead = attackers[0];
     if (!canAssist(lead)) {
-      throw new Error(`${lead.name} is ${lead.rarity === "L" ? "Legendary" : "Rare"} and cannot receive an Assist.`);
+      throw new Error(`${lead.name} is ${fightAloneLabel(lead)} and cannot receive an Assist.`);
     }
     const helper = attackers[1];
     if (!canAssist(helper)) {
-      throw new Error(`${helper.name} is ${helper.rarity === "L" ? "Legendary" : "Rare"} and cannot Assist.`);
+      throw new Error(`${helper.name} is ${fightAloneLabel(helper)} and cannot Assist.`);
     }
   }
 
