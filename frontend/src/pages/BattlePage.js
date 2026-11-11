@@ -84,6 +84,24 @@ function sfxForAction(type) {
   return null;
 }
 
+function swapCap(you) {
+  return 1 + (you?.extraSwaps || 0);
+}
+
+function swapLocked(you) {
+  return (you?.benchMovesThisTurn || 0) >= swapCap(you);
+}
+
+function slashFromBattle(battle) {
+  if (!battle) return { trait: "none", tone: "hit" };
+  let tone = "hit";
+  if (battle.result === "ko") tone = "ko";
+  else if (battle.stunned || battle.abilityKeyword === "Stun") tone = "stun";
+  else if (battle.traitBonus > 0) tone = "adv";
+  else if (battle.traitBonus < 0) tone = "dis";
+  return { trait: battle.leadTrait || "none", tone };
+}
+
 function bannerText(battle) {
   if (!battle) return "";
   const parts = [`LEAD ${battle.leadName} ${battle.leadPower}`];
@@ -178,7 +196,7 @@ export default function BattlePage() {
   const [selectedBench, setSelectedBench] = useState(null);
   const [attackers, setAttackers] = useState([]);
   const [coachOpen, setCoachOpen] = useState(false);
-  const [slash, setSlash] = useState(false);
+  const [slash, setSlash] = useState(null);
   const [lunge, setLunge] = useState({ attackers: [], dir: 0, from: "you" });
   const [floats, setFloats] = useState([]);
   const [logOpen, setLogOpen] = useState(false);
@@ -339,7 +357,7 @@ export default function BattlePage() {
         return;
       }
       if (drop.kind === "active") {
-        if ((matchRef.current?.state?.you?.benchMovesThisTurn || 0) >= 1) {
+        if (swapLocked(matchRef.current?.state?.you)) {
           setError("You can only swap one Bench unit with Active per turn.");
           return;
         }
@@ -348,7 +366,7 @@ export default function BattlePage() {
       return;
     }
     if (drag.from === "active" && drop.kind === "bench") {
-      if ((matchRef.current?.state?.you?.benchMovesThisTurn || 0) >= 1) {
+      if (swapLocked(matchRef.current?.state?.you)) {
         setError("You can only swap one Bench unit with Active per turn.");
         return;
       }
@@ -448,6 +466,7 @@ export default function BattlePage() {
     if (!card) return [];
     const list = [];
     if (card.tired || card.tiredTurns > 0) list.push({ kind: "tired", text: "Rest Day" });
+    if (card.stunned) list.push({ kind: "stun", text: "Stunned" });
     if (zone === "active" && card.guarding) list.push({ kind: "guard", text: "Guard" });
     if (zone === "active") {
       const picks = side === "opp" && lunge.from === "opp" ? lunge.attackers : side === "you" ? attackers : [];
@@ -494,13 +513,13 @@ export default function BattlePage() {
               dir: from === "opp" ? 28 : -28,
               from
             });
-            setSlash(true);
+            setSlash(slashFromBattle(step.battle || step.state?.lastBattle));
             await new Promise((r) => setTimeout(r, 900));
             if (step.battle) {
               setBanner({ text: bannerText(step.battle), kind: step.battle.result || "" });
               await new Promise((r) => setTimeout(r, 1600));
             }
-            setSlash(false);
+            setSlash(null);
             setLunge({ attackers: [], dir: 0, from: "you" });
             const pops = battleFloats(
               prevState,
@@ -590,10 +609,10 @@ export default function BattlePage() {
     if (ghost) return "Drop on Active or Bench.";
     if (selectedHand) return "Click or drop on an Active slot, or a Bench slot.";
     if (selectedBench != null) {
-      if ((you?.benchMovesThisTurn || 0) >= 1) {
-        return "Click an empty Active slot to fill it (free). You already used your one Active swap this turn.";
+      if (swapLocked(you)) {
+        return "Click an empty Active slot to fill it (free). You already used your Bench swap(s) this turn.";
       }
-      return "Click an empty Active slot to move up (free), or an Active unit to swap (one swap per turn).";
+      return "Click an empty Active slot to move up (free), or an Active unit to swap (one swap per turn unless a card grants extra).";
     }
     if (attackers.length) {
       return attackers.length === 1
@@ -644,7 +663,7 @@ export default function BattlePage() {
     }
     if (selectedHand) return;
     if (selectedBench != null) {
-      if ((you?.benchMovesThisTurn || 0) >= 1) {
+      if (swapLocked(you)) {
         setError("You can only swap one Bench unit with Active per turn.");
         return;
       }
@@ -850,7 +869,9 @@ export default function BattlePage() {
             </div>
 
             <div className={`field ${slash ? "field-slash" : ""}`}>
-              {slash ? <div className="slash" /> : null}
+              {slash ? (
+                <div className={`slash slash-${slash.trait || "none"} slash-${slash.tone || "hit"}`} />
+              ) : null}
               <div className="lane field-row">
                 {pad(foe?.active, ACTIVE_SLOTS).map((card, i) => (
                   withPop("foe", i, card ? (
@@ -1039,6 +1060,13 @@ export default function BattlePage() {
                 </p>
                 {inspect.abilityText ? <p>{inspect.abilityText}</p> : null}
                 {inspect.tired || inspect.tiredTurns > 0 ? <p>Rest Day — cannot attack this turn.</p> : null}
+                {inspect.stunned ? <p>Stunned — cannot attack this turn.</p> : null}
+                {(inspect.tempPower || 0) !== 0 ? (
+                  <p>Attack {inspect.tempPower > 0 ? "boosted" : "weakened"} {inspect.tempPower > 0 ? "+" : ""}{inspect.tempPower}.</p>
+                ) : null}
+                {(inspect.armor || 0) + (inspect.tempArmor || 0) > 0 ? (
+                  <p>Defense +{(inspect.armor || 0) + (inspect.tempArmor || 0)} Armor.</p>
+                ) : null}
                 {inspect.guarding ? <p>Guard — must be the attack target.</p> : null}
                 {inspect.flavorLine ? <p className="muted inspect-flavor">{inspect.flavorLine}</p> : null}
                 <p className="muted">Double-click a card to inspect. Click outside or press Esc to close.</p>

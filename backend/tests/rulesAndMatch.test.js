@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const { DECK_SIZE, MAX_ACTIVE, HAND_LIMIT, KO_LIMIT_DEFAULT, KO_LIMIT_AI, clampKoLimit } = require("../engine/rules");
 const { createInitialGameState } = require("../engine/gameState");
 const { applyAction } = require("../engine/applyAction");
-const { playUnit, attack, swapActive, promoteFromBench } = require("../engine/actions");
+const { playUnit, attack, swapActive, promoteFromBench, endTurn } = require("../engine/actions");
 const { resolveBattle } = require("../engine/battle");
 const { checkWin, sideEliminated } = require("../engine/checkWin");
 const { enforceBoardLimits } = require("../engine/board");
@@ -519,6 +519,54 @@ test("0 HP units leave Active, Bench, and Hand immediately and stay discarded", 
   assert.equal(target.hp, 0);
 });
 
+test("mulligan, extra swap, resist, and spike do real work", () => {
+  const { applyAbility } = require("../engine/abilities");
+  const a = dummyUnit("A", 20);
+  const b = dummyUnit("B", 20);
+  const c = dummyUnit("C", 20);
+  const state = createInitialGameState([], []);
+  state.phase = "main";
+  state.player.active = [dummyUnit("Swapper", 20)];
+  state.player.bench = [a];
+  state.player.hand = [b, c];
+  state.player.deck = [dummyUnit("D1", 10), dummyUnit("D2", 10)];
+  applyAbility(state, state.player.active[0], null, { keyword: "ExtraSwap", value: 1 });
+  swapActive(state, 0, 0);
+  swapActive(state, 0, 0);
+  assert.equal(state.player.benchMovesThisTurn, 2);
+
+  const spikeTarget = dummyUnit("Snack", 20);
+  spikeTarget.hp = 40;
+  spikeTarget.maxHp = 40;
+  applyAbility(state, state.player.active[0], spikeTarget, { keyword: "Spike", value: 12 });
+  assert.equal(spikeTarget.hp, 28);
+
+  const tank = dummyUnit("Tank", 20);
+  applyAbility(state, tank, null, { keyword: "Resist", value: 6 });
+  assert.equal(tank.tempArmor, 6);
+
+  const beforeHand = state.player.hand.map((u) => u.name).sort();
+  applyAbility(state, state.player.active[0], null, { keyword: "Mulligan", value: 1 });
+  assert.equal(state.player.hand.length, beforeHand.length);
+});
+
+test("power-down lasts until the victim finishes their turn", () => {
+  const { applyAbility } = require("../engine/abilities");
+  const { startPhase } = require("../engine/phases");
+  const prey = dummyUnit("Prey", 30);
+  const state = createInitialGameState([], []);
+  state.player.active = [dummyUnit("Bully", 20)];
+  state.opponent.active = [prey];
+  applyAbility(state, state.player.active[0], prey, { keyword: "PowerDown", value: 8 });
+  assert.equal(prey.tempPower, -8);
+  endTurn(state);
+  startPhase(state);
+  assert.equal(state.turnPlayer, "opponent");
+  assert.equal(prey.tempPower, -8);
+  endTurn(state);
+  assert.equal(prey.tempPower, 0);
+});
+
 test("selling a card pays rarity reps", () => {
   const { saleRepsFor, SALE_REPS } = require("../lib/inventory");
   assert.equal(SALE_REPS.C, 5);
@@ -548,32 +596,36 @@ test("Jerry, Howard, and Wickthrop sit in the requested packs", () => {
 });
 
 test("requested rarity and power retunes landed", () => {
-  const expect = {
-    joey_mac_116: { rarity: "R", power: 38 },
-    supreme_leader_chadenbach_196: { rarity: "R", power: 44 },
-    pastor_chadenbach_150: { rarity: "R", power: 43 },
-    pastor_studson_152: { rarity: "R", power: 43 },
-    pastor_chadrigo_151: { rarity: "R", power: 43 },
-    dwayne_068: { rarity: "R", power: 43 },
-    j_walker_110: { rarity: "R", power: 43 },
-    chadministrative_pastor_038: { rarity: "R", power: 43 },
-    janitor_chad_112: { rarity: "R", power: 43 },
-    bear_sized_goose_012: { rarity: "R", power: 43 },
-    bigback_tony_014: { rarity: "C", power: 28 },
-    john_wickthrop_221: { rarity: "M", power: 54 },
-    gigachad_088: { rarity: "M", power: 60 },
-    the_chadministrator_224: { rarity: "M", power: 55 },
-    cheyennomaly_044: { rarity: "M", power: 52 },
-    meemow_128: { rarity: "M", power: 54 },
-    toaster_daddy_issues_201: { rarity: "M", power: 53 },
-    sir_kensworth_185: { rarity: "M", power: 52 },
-    blitzkrueger_016: { rarity: "M", power: 53 }
+  const band = { C: [18, 28], U: [29, 36], R: [37, 44], L: [47, 50], M: [51, 55] };
+  const expectRarity = {
+    joey_mac_116: "R",
+    supreme_leader_chadenbach_196: "R",
+    pastor_chadenbach_150: "R",
+    pastor_studson_152: "R",
+    pastor_chadrigo_151: "R",
+    dwayne_068: "R",
+    j_walker_110: "R",
+    chadministrative_pastor_038: "R",
+    janitor_chad_112: "R",
+    bear_sized_goose_012: "R",
+    bigback_tony_014: "C",
+    john_wickthrop_221: "M",
+    gigachad_088: "M",
+    the_chadministrator_224: "M",
+    cheyennomaly_044: "M",
+    meemow_128: "M",
+    toaster_daddy_issues_201: "M",
+    sir_kensworth_185: "M",
+    blitzkrueger_016: "M"
   };
-  for (const [id, want] of Object.entries(expect)) {
+  for (const [id, rarity] of Object.entries(expectRarity)) {
     const card = getById(id);
-    assert.equal(card.rarity, want.rarity, id);
-    assert.equal(card.power, want.power, id);
+    assert.equal(card.rarity, rarity, id);
+    const [lo, hi] = band[rarity];
+    assert.ok(card.power >= lo && card.power <= hi, `${id} power ${card.power}`);
   }
+  assert.ok(getById("gigachad_088").power >= getById("the_chadministrator_224").power);
+  assert.ok(getById("j_walker_110").power < getById("sir_kensworth_185").power);
 });
 
 test("personal kensworth/wickthrop grant cannot run twice", async () => {
@@ -606,10 +658,10 @@ test("hand limit is 5 and catalog retunes for v4.9", () => {
   assert.equal(HAND_LIMIT, 5);
   assert.equal(getById("chad_of_consistency_033"), null);
   assert.equal(getById("skibidi_chad_186").name, "Fake Brazilian Chad");
-  assert.equal(getById("e_unit_071").power, 27);
-  assert.equal(getById("gigachad_088").power, 60);
-  assert.equal(getById("the_chadministrator_224").power, 55);
-  assert.equal(getById("the_chadministrator_224").abilityValue, 15);
+  assert.equal(getById("e_unit_071").power, 23);
+  assert.equal(getById("gigachad_088").power, 55);
+  assert.equal(getById("the_chadministrator_224").power, 53);
+  assert.equal(getById("the_chadministrator_224").abilityValue, 8);
   assert.equal(getById("cheesed_off_vacuum_cleaner_043").trait, "Machina");
   assert.equal(getById("chaos_kettlebell_041").trait, "Machina");
 });

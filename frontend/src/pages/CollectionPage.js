@@ -58,6 +58,7 @@ export default function CollectionPage() {
   const [ownedOnly, setOwnedOnly] = useState(true);
   const [error, setError] = useState("");
   const [picked, setPicked] = useState(null);
+  const [sellQty, setSellQty] = useState(1);
   const [showTop, setShowTop] = useState(false);
 
   const cards = useMemo(
@@ -85,24 +86,30 @@ export default function CollectionPage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    setSellQty(1);
+  }, [picked?.cardId]);
+
   const ownedCount = owned.length;
 
   async function sellPicked() {
     if (!picked || picked.unowned || !picked.quantity) return;
-    const price = saleReps(picked);
-    if (!window.confirm(`Sell 1 ${picked.name} for ${price} reps? Copies in decks will be removed if you no longer have enough.`)) {
+    const qty = Math.min(Math.max(1, Number(sellQty) || 1), picked.quantity);
+    const price = saleReps(picked) * qty;
+    if (!window.confirm(`Sell ${qty} ${picked.name} for ${price} reps? Copies in decks will be removed if you no longer have enough.`)) {
       return;
     }
     setError("");
     try {
       await api("/api/collection/sell", {
         method: "POST",
-        body: JSON.stringify({ cardId: picked.cardId, quantity: 1 })
+        body: JSON.stringify({ cardId: picked.cardId, quantity: qty })
       });
       const [mine] = await Promise.all([api("/api/collection"), refresh()]);
       setOwned(mine.collection || []);
       const next = (mine.collection || []).find((c) => c.cardId === picked.cardId) || null;
       setPicked(next);
+      setSellQty(1);
     } catch (err) {
       setError(err.message);
     }
@@ -170,9 +177,21 @@ export default function CollectionPage() {
                     Power {picked.power} · {picked.trait} · {rarityLabel(picked.rarity) || picked.rarity}
                     {picked.quantity ? ` · ×${picked.quantity}` : ""}
                   </p>
-                  <button className="btn secondary" type="button" onClick={sellPicked}>
-                    Sell 1 for {saleReps(picked)} reps
-                  </button>
+                  <div className="sell-row">
+                    <label className="muted">
+                      Qty
+                      <input
+                        type="number"
+                        min={1}
+                        max={picked.quantity}
+                        value={Math.min(sellQty, picked.quantity)}
+                        onChange={(e) => setSellQty(Math.max(1, Number(e.target.value) || 1))}
+                      />
+                    </label>
+                    <button className="btn secondary" type="button" onClick={sellPicked}>
+                      Sell {Math.min(sellQty, picked.quantity)} for {saleReps(picked) * Math.min(sellQty, picked.quantity)} reps
+                    </button>
+                  </div>
                 </>
               )}
             </div>

@@ -927,6 +927,22 @@ button.tcg {
   z-index: 5;
 }
 
+.slash.slash-Mind { background: linear-gradient(115deg, transparent 42%, #c9b6ff88 46%, #7c5cff 50%, #c9b6ff88 54%, transparent 58%); }
+.slash.slash-Muscle { background: linear-gradient(115deg, transparent 42%, #ffb4b488 46%, #e23d3d 50%, #ffb4b488 54%, transparent 58%); }
+.slash.slash-Mystic { background: linear-gradient(115deg, transparent 42%, #b8fff088 46%, #2ec9a0 50%, #b8fff088 54%, transparent 58%); }
+.slash.slash-Machina { background: linear-gradient(115deg, transparent 42%, #b8d8ff88 46%, #3d8be2 50%, #b8d8ff88 54%, transparent 58%); }
+.slash.slash-Mayhem { background: linear-gradient(115deg, transparent 42%, #ffd9b088 46%, #f08a2a 50%, #ffd9b088 54%, transparent 58%); }
+.slash.slash-adv { filter: brightness(1.25) saturate(1.2); }
+.slash.slash-dis { filter: grayscale(0.45) brightness(0.85); }
+.slash.slash-stun { animation: slash-stun 0.85s ease-out forwards; }
+.slash.slash-ko { background: linear-gradient(115deg, transparent 40%, #fff 47%, #ff5a5a 50%, #fff 53%, transparent 60%); }
+
+@keyframes slash-stun {
+  0% { transform: scaleX(0.15) rotate(-18deg); opacity: 0; filter: hue-rotate(0deg); }
+  35% { opacity: 1; filter: hue-rotate(40deg) brightness(1.4); }
+  100% { transform: scaleX(1.1) rotate(-18deg); opacity: 0; }
+}
+
 @keyframes slash {
   0% { transform: scaleX(0.15) rotate(-18deg); opacity: 0; }
   35% { opacity: 1; }
@@ -1146,6 +1162,47 @@ button.tcg {
 .card-badge.assist { background: #2c6e49; }
 .card-badge.tired { background: #6b645c; }
 .card-badge.guard { background: #2c4c9b; }
+.card-badge.stun { background: #6b3ad6; }
+
+.tcg-mods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+  margin-top: 1px;
+  min-height: 0;
+}
+
+.tcg-mod {
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.04rem 0.22rem;
+  border-radius: 3px;
+  color: #fffdf8;
+  line-height: 1.2;
+}
+
+.tcg-mod.buff { background: #2c6e49; }
+.tcg-mod.nerf { background: #a33b3b; }
+.tcg-mod.armor { background: #2c4c9b; }
+.tcg-mod.stun { background: #6b3ad6; }
+.tcg-mod.root { background: #5c4a2e; }
+.tcg-mod.shield { background: #3a7ca5; }
+.tcg-mod.pierce { background: #7a3b6e; }
+
+.sell-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.sell-row input {
+  width: 4.2rem;
+  margin-left: 0.35rem;
+}
 
 .battle-banner {
   text-align: center;

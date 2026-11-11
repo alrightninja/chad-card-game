@@ -12,6 +12,7 @@ function emptySide() {
     silencedTurns: 0,
     guardInstanceId: null,
     benchMovesThisTurn: 0,
+    extraSwaps: 0,
     kos: 0
   };
 }

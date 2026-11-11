@@ -45,6 +45,25 @@ function currentPower(card) {
   return Math.max(0, (card.power || 0) + (card.tempPower || 0));
 }
 
+function signed(n) {
+  if (!n) return "";
+  return n > 0 ? `+${n}` : String(n);
+}
+
+function combatMods(card) {
+  if (!card || card.hp == null) return [];
+  const mods = [];
+  const atk = card.tempPower || 0;
+  if (atk) mods.push({ kind: atk > 0 ? "buff" : "nerf", text: `ATK ${signed(atk)}` });
+  const def = (card.armor || 0) + (card.tempArmor || 0);
+  if (def) mods.push({ kind: "armor", text: `DEF +${def}` });
+  if (card.stunned) mods.push({ kind: "stun", text: "STUN" });
+  if (card.rooted) mods.push({ kind: "root", text: "ROOT" });
+  if (card.shield) mods.push({ kind: "shield", text: `SHIELD ${card.shield}` });
+  if (card.unblockable) mods.push({ kind: "pierce", text: "IGN. GUARD" });
+  return mods;
+}
+
 export default function CardView({
   card,
   size = "small",
@@ -72,6 +91,7 @@ export default function CardView({
   const hpNow = inCombat ? card.hp : null;
   const wounded = inCombat && maxHp != null && hpNow < maxHp;
   const temp = card.tempPower || 0;
+  const mods = combatMods(card);
   const compact = size === "bench" || size === "board" || size === "tiny" || size === "active" || size === "hand";
   const sizeClass = size === "board" ? "bench" : size;
   const cls = [
@@ -127,6 +147,13 @@ export default function CardView({
       <div className="tcg-was">
         {!unowned && inCombat ? `HP ${hpNow}/${maxHp}` : !unowned && printed != null && (card.power || 0) < printed ? `was ${printed}` : "\u00a0"}
       </div>
+      {!unowned && mods.length ? (
+        <div className="tcg-mods">
+          {mods.map((m) => (
+            <span key={m.kind} className={`tcg-mod ${m.kind}`}>{m.text}</span>
+          ))}
+        </div>
+      ) : null}
     </>
   );
 

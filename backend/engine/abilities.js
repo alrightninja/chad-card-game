@@ -99,9 +99,37 @@ const AbilityHandlers = {
 
   Spike: (state, source, target, value) => {
     if (target) {
-      target.tempPower = (target.tempPower || 0) - value;
-      state.log.push(`${target.name} takes ${value} Spike damage.`);
+      const printed = target.printedPower ?? target.power ?? 0;
+      if (target.maxHp == null) target.maxHp = printed * 2;
+      if (target.hp == null) target.hp = target.maxHp;
+      const before = target.hp;
+      target.hp = Math.max(0, target.hp - (value || 0));
+      state.log.push(`${target.name} takes ${value} Spike damage (${before} → ${target.hp} HP).`);
     }
+    return state;
+  },
+
+  Mulligan: (state, source) => {
+    const mine = friendSide(state, source);
+    const n = (mine.hand || []).length;
+    mine.deck.push(...mine.hand);
+    mine.hand = [];
+    mine.deck = shuffle(mine.deck);
+    const drawn = drawCard(state, getOwner(state, source), n);
+    state.log.push(`${source.name} mulligans ${drawn} card(s).`);
+    return state;
+  },
+
+  ExtraSwap: (state, source) => {
+    const mine = friendSide(state, source);
+    mine.extraSwaps = (mine.extraSwaps || 0) + 1;
+    state.log.push(`${source.name} allows one extra Bench swap this turn.`);
+    return state;
+  },
+
+  Resist: (state, source, target, value) => {
+    source.tempArmor = (source.tempArmor || 0) + (value || 0);
+    state.log.push(`${source.name} gains +${value} Armor until their next turn.`);
     return state;
   },
 
@@ -226,7 +254,7 @@ const AbilityHandlers = {
 
   Unblockable: (state, source) => {
     source.unblockable = true;
-    state.log.push(`${source.name} is Unblockable.`);
+    state.log.push(`${source.name} ignores Guard.`);
     return state;
   },
 

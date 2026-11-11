@@ -73,6 +73,7 @@ function toBattleUnit(card, instanceId) {
     tiredTurns: 0,
     shield: 0,
     armor: 0,
+    tempArmor: 0,
     rooted: false,
     retreatFree: false,
     unblockable: false,

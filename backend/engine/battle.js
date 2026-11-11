@@ -66,7 +66,7 @@ function computeBattlePower(unit, opponent, isDefender = false, opts = {}) {
   const applyTrait = opts.applyTrait !== false;
   const base = unit.power || 0;
   const temp = unit.tempPower || 0;
-  const printedArmor = isDefender ? (unit.armor || 0) : 0;
+  const printedArmor = isDefender ? (unit.armor || 0) + (unit.tempArmor || 0) : 0;
   let traitBonus = 0;
   let traitArmor = 0;
   if (isDefender) {
@@ -116,7 +116,7 @@ function computeTeamBattlePower(attackers, defender) {
   return {
     total,
     breakdown,
-    lead: { name: lead.name, total: leadStats.total },
+    lead: { name: lead.name, trait: lead.trait, total: leadStats.total },
     assists
   };
 }
@@ -236,7 +236,10 @@ function resolveBattle(state, attackersParam, defender) {
     defenderName: defender.name,
     result,
     traitBonus: getTraitBonus(attackers[0], defender),
-    traitArmor: defStats.traitArmor
+    traitArmor: defStats.traitArmor,
+    leadTrait: teamStats.lead.trait || attackers[0].trait || null,
+    stunned: Boolean(defender.stunned),
+    abilityKeyword: attackers[0].abilityKeyword || null
   };
 
   if (defender.hp <= 0) {

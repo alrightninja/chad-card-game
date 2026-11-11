@@ -13,6 +13,7 @@ function startPhase(state) {
     state.turnPlayer === "player" ? state.player : state.opponent;
 
   playerState.benchMovesThisTurn = 0;
+  playerState.extraSwaps = 0;
 
   if (playerState.silencedTurns && playerState.silencedTurns > 0) {
     playerState.silencedTurns -= 1;
@@ -38,13 +39,9 @@ function startPhase(state) {
     state.log.push(`${who} cannot draw — deck is empty.`);
   }
 
-  // Clear tempPower on all units
-  playerState.active.forEach(unit => {
-    unit.tempPower = 0;
-  });
-
-  playerState.bench.forEach(unit => {
-    unit.tempPower = 0;
+  // Armor buffs last through the opponent's turn, then expire here.
+  [...(playerState.active || []), ...(playerState.bench || [])].forEach((unit) => {
+    unit.tempArmor = 0;
   });
 
   // Trigger start-timing passive abilities

@@ -74,6 +74,8 @@ function hydrateState(raw) {
   if (!state.opponent.guardInstanceId) state.opponent.guardInstanceId = null;
   if (state.player.benchMovesThisTurn == null) state.player.benchMovesThisTurn = 0;
   if (state.opponent.benchMovesThisTurn == null) state.opponent.benchMovesThisTurn = 0;
+  if (state.player.extraSwaps == null) state.player.extraSwaps = 0;
+  if (state.opponent.extraSwaps == null) state.opponent.extraSwaps = 0;
   if (state.player.kos == null) state.player.kos = 0;
   if (state.opponent.kos == null) state.opponent.kos = 0;
   if (state.koLimit == null) state.koLimit = KO_LIMIT_DEFAULT;
@@ -126,6 +128,7 @@ function publicMatchState(state, perspective = "player") {
       silencedTurns: you.silencedTurns || 0,
       guardInstanceId: you.guardInstanceId || null,
       benchMovesThisTurn: you.benchMovesThisTurn || 0,
+      extraSwaps: you.extraSwaps || 0,
       kos: you.kos || 0,
       hand: you.hand,
       active: you.active,

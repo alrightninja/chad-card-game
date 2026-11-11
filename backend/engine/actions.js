@@ -73,9 +73,13 @@ function playUnit(state, cardIndex, zone) {
 /**
  * Move a benched unit into an empty Active slot.
  */
+function swapLimit(playerState) {
+  return MAX_BENCH_MOVES_PER_TURN + (playerState.extraSwaps || 0);
+}
+
 function consumeBenchMove(playerState) {
-  if ((playerState.benchMovesThisTurn || 0) >= MAX_BENCH_MOVES_PER_TURN) {
-    throw new Error("You can only move one Bench unit into Active per turn.");
+  if ((playerState.benchMovesThisTurn || 0) >= swapLimit(playerState)) {
+    throw new Error("You can only swap one Bench unit with Active per turn.");
   }
   playerState.benchMovesThisTurn = (playerState.benchMovesThisTurn || 0) + 1;
 }
@@ -231,7 +235,8 @@ function attack(state, attackerIndices, defenderIndex = 0) {
     return state;
   }
 
-  if (enemyState.guardInstanceId) {
+  const unblockable = attackers.some((a) => a.unblockable);
+  if (enemyState.guardInstanceId && !unblockable) {
     const guardIndex = enemyState.active.findIndex(
       (u) => u && u.instanceId === enemyState.guardInstanceId
     );
@@ -241,6 +246,11 @@ function attack(state, attackerIndices, defenderIndex = 0) {
       );
     }
   }
+  if (unblockable && enemyState.guardInstanceId) {
+    state.log.push(
+      `${attackers.map((a) => a.name).join(", ")} ignore Guard.`
+    );
+  }
 
   // Check silence
   if (playerState.silencedTurns && playerState.silencedTurns > 0) {
@@ -249,9 +259,6 @@ function attack(state, attackerIndices, defenderIndex = 0) {
     );
     return state;
   }
-
-  // Check unblockable (if any attacker has it)
-  const unblockable = attackers.some(a => a.unblockable);
 
   if (state.phase === "main") state.phase = "battle";
 
@@ -264,19 +271,6 @@ function attack(state, attackerIndices, defenderIndex = 0) {
   if (state.cancelNextBattle) {
     state.cancelNextBattle = false;
     state.log.push("The battle is cancelled.");
-    state.phase = "end";
-    return state;
-  }
-
-  if (unblockable) {
-    state.log.push(
-      `${attackers.map(a => a.name).join(", ")} attack directly (Unblockable)!`
-    );
-    enemyState.health -= attackers.reduce((sum, a) => sum + a.power, 0);
-    attackers.forEach((unit) => {
-      unit.tiredTurns = 2;
-      state.log.push(`${unit.name} is Tired and cannot attack next turn.`);
-    });
     state.phase = "end";
     return state;
   }
