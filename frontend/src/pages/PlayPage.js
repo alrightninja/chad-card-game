@@ -51,8 +51,8 @@ export default function PlayPage() {
     const [d, m, f, c] = await Promise.all([
       api("/api/decks"),
       api("/api/matches/active"),
-      api("/api/friends"),
-      api("/api/challenges")
+      api("/api/friends").catch(() => ({ friends: [] })),
+      api("/api/challenges").catch(() => ({ challenges: [] }))
     ]);
     const list = d.decks || [];
     setDecks(list);

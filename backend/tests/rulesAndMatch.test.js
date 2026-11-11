@@ -219,6 +219,20 @@ test("10. live turn clock restarts when the turn changes, including PvE wrap", (
   assert.equal(clockKey(before), "1:player");
 });
 
+test("pending challenges with a missing player are skipped instead of crashing", () => {
+  const { publicChallenge } = require("../lib/challengeView");
+  const viewer = { _id: "me" };
+  const from = { _id: "them", username: "Rival", verified: false, level: 2 };
+  const ok = publicChallenge(
+    { _id: "c1", mode: "live", hoursPerMove: 24, koLimit: 3, fromDeckName: "Starter Deck", fromUserId: from, toUserId: viewer },
+    viewer._id
+  );
+  assert.equal(ok.incoming, true);
+  assert.equal(ok.from.username, "Rival");
+  assert.equal(publicChallenge({ _id: "c2", fromUserId: from, toUserId: null }, viewer._id), null);
+  assert.equal(publicChallenge({ _id: "c3", fromUserId: null, toUserId: viewer }, viewer._id), null);
+});
+
 test("AI decks use only released sets and stay legal", () => {
   const now = new Date("2026-11-10T18:00:00.000Z");
   const released = releasedSetNumbers(now);

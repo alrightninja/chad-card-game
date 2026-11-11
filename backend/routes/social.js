@@ -9,12 +9,9 @@ const matchService = require("../services/matchService");
 const { notifyUser } = require("../sockets/matchSocket");
 const { trimMessageThread } = require("../lib/retention");
 const { clampKoLimit } = require("../engine/rules");
+const { idsEqual, publicChallenge } = require("../lib/challengeView");
 
 const router = express.Router();
-
-function idsEqual(a, b) {
-  return String(a) === String(b);
-}
 
 function isFriend(user, otherId) {
   return (user.friends || []).some((id) => idsEqual(id, otherId));
@@ -28,9 +25,9 @@ router.get("/friends", requireAuth, async (req, res) => {
       .populate("sentRequests", "username verified level avatarCardId");
 
     res.json({
-      friends: (user.friends || []).map(publicUser),
-      incoming: (user.friendRequests || []).map(publicUser),
-      outgoing: (user.sentRequests || []).map(publicUser)
+      friends: (user.friends || []).filter(Boolean).map(publicUser).filter(Boolean),
+      incoming: (user.friendRequests || []).filter(Boolean).map(publicUser).filter(Boolean),
+      outgoing: (user.sentRequests || []).filter(Boolean).map(publicUser).filter(Boolean)
     });
   } catch (err) {
     console.error(err);
@@ -181,17 +178,14 @@ router.get("/challenges", requireAuth, async (req, res) => {
       .populate("toUserId", "username verified")
       .sort({ createdAt: -1 });
 
+    const orphans = list.filter((c) => !c.fromUserId || !c.toUserId);
+    if (orphans.length) {
+      Challenge.deleteMany({ _id: { $in: orphans.map((c) => c._id) } }).catch((err) =>
+        console.error("Failed to drop orphaned challenges", err)
+      );
+    }
     res.json({
-      challenges: list.map((c) => ({
-        id: c._id,
-        mode: c.mode,
-        hoursPerMove: c.hoursPerMove,
-        koLimit: c.koLimit || 5,
-        fromDeckName: c.fromDeckName,
-        from: publicUser(c.fromUserId),
-        to: publicUser(c.toUserId),
-        incoming: idsEqual(c.toUserId._id || c.toUserId, req.user._id)
-      }))
+      challenges: list.map((c) => publicChallenge(c, req.user._id)).filter(Boolean)
     });
   } catch (err) {
     console.error(err);
@@ -250,6 +244,10 @@ router.post("/challenges/:id/respond", requireAuth, async (req, res) => {
 
     const fromUser = await User.findById(challenge.fromUserId);
     const toUser = await User.findById(req.user._id);
+    if (!fromUser) {
+      await Challenge.deleteOne({ _id: challenge._id });
+      return res.status(400).json({ error: "That player no longer has an account" });
+    }
     const match = await matchService.startPvpMatch({
       playerUser: fromUser,
       opponentUser: toUser,
