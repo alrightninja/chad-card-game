@@ -1,7 +1,7 @@
 // battle.js
 const { triggerDefeatAbilities } = require("./abilities");
 const { ASSIST_RATE, HP_MULT, TRAIT_BONUS, TRAIT_ARMOR, TRAIT_ADVANTAGE } = require("./rules");
-const { addToActive } = require("./board");
+const { addToActive, unitIsDown } = require("./board");
 
 function ensureCombatStats(unit) {
   if (!unit) return unit;
@@ -122,8 +122,15 @@ function computeTeamBattlePower(attackers, defender) {
 }
 
 function knockOut(state, unit, owner) {
-  const idx = owner.active.indexOf(unit);
-  if (idx !== -1) owner.active.splice(idx, 1);
+  if (!unit || !owner) return;
+  owner.discard = owner.discard || [];
+  if (owner.discard.includes(unit)) return;
+  for (const zone of ["active", "bench", "hand"]) {
+    const arr = owner[zone];
+    if (!arr) continue;
+    const idx = arr.indexOf(unit);
+    if (idx !== -1) arr.splice(idx, 1);
+  }
   owner.discard.push(unit);
   if (owner.guardInstanceId === unit.instanceId) {
     owner.guardInstanceId = null;
@@ -138,15 +145,37 @@ function knockOut(state, unit, owner) {
   }
   triggerDefeatAbilities(state, unit);
 
-  if (owner.active.length === 0 && owner.bench.length > 0) {
+  while (owner.active.length === 0 && (owner.bench || []).length > 0) {
     const promoted = owner.bench.shift();
+    if (unitIsDown(promoted)) {
+      knockOut(state, promoted, owner);
+      continue;
+    }
     addToActive(owner, promoted);
     state.log.push(`${promoted.name} is promoted from the Bench to Active.`);
-  } else if (owner.active.length === 0 && !owner.bench.length) {
+    break;
+  }
+  if (owner.active.length === 0 && !(owner.bench || []).length) {
     state.log.push(
       `${owner === state.player ? "Player" : "Opponent"} has no Bench units to promote.`
     );
   }
+}
+
+function sweepDeadUnits(state) {
+  if (!state) return state;
+  for (const who of ["player", "opponent"]) {
+    const owner = state[who];
+    if (!owner) continue;
+    const dead = [];
+    for (const zone of ["active", "bench", "hand"]) {
+      for (const unit of owner[zone] || []) {
+        if (unitIsDown(unit) && !dead.includes(unit)) dead.push(unit);
+      }
+    }
+    for (const unit of dead) knockOut(state, unit, owner);
+  }
+  return state;
 }
 
 /**
@@ -223,5 +252,7 @@ module.exports = {
   computeBattlePower,
   computeTeamBattlePower,
   ensureCombatStats,
-  resetCombatForPlay
+  resetCombatForPlay,
+  knockOut,
+  sweepDeadUnits
 };

@@ -26,7 +26,7 @@ const STEPS = [
   },
   {
     title: "Bench, swaps, and ending your turn",
-    body: "Still in Main Phase: click a Bench unit, then an empty Active slot to promote, or an Active unit to swap. Drag works too. You may only move one Bench unit into Active per turn.\n\nWhen an Active unit is KO’d, a Bench unit is promoted automatically only if you have no Active units left.\n\nEnd turn when you are done. If your hand is over 5, extras discard automatically.\n\nYou lose if you have no Active and no Bench."
+    body: "Still in Main Phase: click a Bench unit, then an empty Active slot to promote, or an Active unit to swap. Drag works too. Filling an empty Active slot from the Bench is free. Swapping with a unit that is already Active uses your one Bench swap for the turn.\n\nWhen an Active unit is KO’d, it is discarded. A Bench unit is promoted automatically only if you have no Active units left.\n\nEnd turn when you are done. If your hand is over 5, extras discard automatically.\n\nYou lose if you have no Active and no Bench."
   }
 ];
 

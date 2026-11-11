@@ -1,4 +1,12 @@
 const { getById } = require("../engine/cardRegistry");
+const { rarityBucket } = require("../engine/rules");
+
+const SALE_REPS = { C: 5, U: 10, R: 15, L: 20, M: 25 };
+
+function saleRepsFor(cardId) {
+  const bucket = rarityBucket(getById(cardId)?.rarity || "C");
+  return SALE_REPS[bucket] || SALE_REPS.C;
+}
 
 function countsOf(ids) {
   const counts = {};
@@ -52,5 +60,7 @@ module.exports = {
   hasCopies,
   takeCopies,
   pruneDecksToCollection,
-  uniqueOwnedIds
+  uniqueOwnedIds,
+  SALE_REPS,
+  saleRepsFor
 };

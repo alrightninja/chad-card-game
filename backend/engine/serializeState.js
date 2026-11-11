@@ -1,4 +1,4 @@
-const { resolveCoinFlip, ensureCombatStats } = require("./battle");
+const { resolveCoinFlip, ensureCombatStats, sweepDeadUnits } = require("./battle");
 const { getById } = require("./cardRegistry");
 const { HAND_LIMIT, TRAIT_BONUS, MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, MAX_BENCH_MOVES_PER_TURN, KO_LIMIT_DEFAULT } = require("./rules");
 const { enforceBoardLimits } = require("./board");
@@ -67,6 +67,7 @@ function hydrateState(raw) {
   if (!state.opponent) state.opponent = {};
   stampSide(state.player);
   stampSide(state.opponent);
+  sweepDeadUnits(state);
   enforceBoardLimits(state.player);
   enforceBoardLimits(state.opponent);
   if (!state.player.guardInstanceId) state.player.guardInstanceId = null;

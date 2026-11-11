@@ -414,14 +414,16 @@ test("assists are one Common/Uncommon from Active only", () => {
   assert.equal(ok.lastBattle.assists.length, 1);
 });
 
-test("one Bench-to-Active move per turn and KO fill only if Active is empty", () => {
+test("one Active swap per turn; filling empty Active from Bench is free; KO fill only if Active is empty", () => {
   const state = createInitialGameState([], []);
   state.phase = "main";
   state.player.active = [dummyUnit("A", 10)];
   state.player.bench = [dummyUnit("B", 10), dummyUnit("C", 10)];
   swapActive(state, 0, 0);
   assert.throws(() => swapActive(state, 0, 0), /one Bench unit/i);
-  assert.throws(() => promoteFromBench(state, 0), /one Bench unit/i);
+  promoteFromBench(state, 0);
+  assert.equal(state.player.active.length, 2);
+  assert.equal(state.player.benchMovesThisTurn, 1);
 
   const snack = dummyUnit("Snack", 5);
   const other = dummyUnit("Other", 10);
@@ -462,6 +464,73 @@ test("one Bench-to-Active move per turn and KO fill only if Active is empty", ()
   assert.equal(koEmpty.opponent.bench.length, 0);
 });
 
+test("0 HP units leave Active, Bench, and Hand immediately and stay discarded", () => {
+  const { applyAbility } = require("../engine/abilities");
+  const { sweepDeadUnits } = require("../engine/battle");
+  const corpse = dummyUnit("Corpse", 10);
+  corpse.hp = 0;
+  const leftover = dummyUnit("Leftover", 10);
+  leftover.hp = 0;
+  const pocket = dummyUnit("Pocket", 10);
+  pocket.hp = 0;
+  const alive = dummyUnit("Alive", 10);
+  const state = {
+    log: [],
+    player: {
+      active: [alive],
+      bench: [corpse],
+      hand: [pocket],
+      discard: []
+    },
+    opponent: {
+      active: [leftover],
+      bench: [dummyUnit("Benched", 10)],
+      hand: [],
+      discard: []
+    },
+    turnPlayer: "player",
+    phase: "main"
+  };
+  sweepDeadUnits(state);
+  assert.equal(state.player.active.length, 1);
+  assert.equal(state.player.active[0].name, "Alive");
+  assert.ok(state.player.bench.every((u) => u.hp > 0));
+  assert.ok(!state.player.hand.some((u) => u.hp <= 0));
+  assert.ok(state.player.discard.some((u) => u.name === "Corpse"));
+  assert.ok(state.player.discard.some((u) => u.name === "Pocket"));
+  assert.ok(state.opponent.discard.some((u) => u.name === "Leftover"));
+  assert.equal(state.opponent.active[0].name, "Benched");
+  assert.ok(!state.opponent.active.some((u) => u.hp <= 0));
+  assert.ok(!state.opponent.bench.some((u) => u.hp <= 0));
+
+  const target = dummyUnit("Snack", 8);
+  const flipState = {
+    log: [],
+    resolveCoinFlip: () => true,
+    player: { active: [dummyUnit("Flipper", 20)], bench: [], hand: [], discard: [], kos: 0 },
+    opponent: { active: [target], bench: [dummyUnit("Backup", 10)], hand: [], discard: [], kos: 0 },
+    turnPlayer: "player"
+  };
+  applyAbility(flipState, flipState.player.active[0], target, { keyword: "CoinFlipKO" });
+  assert.ok(flipState.opponent.discard.includes(target));
+  assert.ok(!flipState.opponent.active.includes(target));
+  assert.ok(!flipState.opponent.bench.includes(target));
+  assert.ok(!flipState.opponent.hand.includes(target));
+  assert.equal(target.hp, 0);
+});
+
+test("selling a card pays rarity reps", () => {
+  const { saleRepsFor, SALE_REPS } = require("../lib/inventory");
+  assert.equal(SALE_REPS.C, 5);
+  assert.equal(SALE_REPS.U, 10);
+  assert.equal(SALE_REPS.R, 15);
+  assert.equal(SALE_REPS.L, 20);
+  assert.equal(SALE_REPS.M, 25);
+  assert.equal(saleRepsFor("bigback_tony_014"), 5);
+  assert.equal(saleRepsFor("sir_kensworth_185"), 25);
+  assert.equal(saleRepsFor("blitzkrueger_016"), 25);
+});
+
 test("Lead becomes Tired after attacking", () => {
   const state = createInitialGameState(units(20), units(20));
   state.phase = "main";
@@ -496,7 +565,9 @@ test("requested rarity and power retunes landed", () => {
     the_chadministrator_224: { rarity: "M", power: 55 },
     cheyennomaly_044: { rarity: "M", power: 52 },
     meemow_128: { rarity: "M", power: 54 },
-    toaster_daddy_issues_201: { rarity: "M", power: 53 }
+    toaster_daddy_issues_201: { rarity: "M", power: 53 },
+    sir_kensworth_185: { rarity: "M", power: 52 },
+    blitzkrueger_016: { rarity: "M", power: 53 }
   };
   for (const [id, want] of Object.entries(expect)) {
     const card = getById(id);

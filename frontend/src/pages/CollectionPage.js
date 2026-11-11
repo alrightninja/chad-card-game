@@ -4,7 +4,14 @@ import { api } from "../api/client";
 import { useAudio } from "../audio/AudioProvider";
 import CardView from "../components/CardView";
 import SetFilterBar, { useSetFilter } from "../components/SetFilterBar";
-import { rarityLabel } from "../lib/rarity";
+import { rarityLabel, rarityBucket } from "../lib/rarity";
+import { useAuth } from "../context/AuthContext";
+
+const SALE_REPS = { C: 5, U: 10, R: 15, L: 20, M: 25 };
+
+function saleReps(card) {
+  return SALE_REPS[rarityBucket(card?.rarity)] || SALE_REPS.C;
+}
 
 function mergeCatalog(catalog, owned) {
   const have = new Map((owned || []).map((card) => [card.cardId, card]));
@@ -45,6 +52,7 @@ function CardGrid({ cards, picked, onPick, audio }) {
 
 export default function CollectionPage() {
   const audio = useAudio();
+  const { refresh } = useAuth();
   const [owned, setOwned] = useState([]);
   const [catalog, setCatalog] = useState([]);
   const [ownedOnly, setOwnedOnly] = useState(true);
@@ -78,6 +86,27 @@ export default function CollectionPage() {
   }, []);
 
   const ownedCount = owned.length;
+
+  async function sellPicked() {
+    if (!picked || picked.unowned || !picked.quantity) return;
+    const price = saleReps(picked);
+    if (!window.confirm(`Sell 1 ${picked.name} for ${price} reps? Copies in decks will be removed if you no longer have enough.`)) {
+      return;
+    }
+    setError("");
+    try {
+      await api("/api/collection/sell", {
+        method: "POST",
+        body: JSON.stringify({ cardId: picked.cardId, quantity: 1 })
+      });
+      const [mine] = await Promise.all([api("/api/collection"), refresh()]);
+      setOwned(mine.collection || []);
+      const next = (mine.collection || []).find((c) => c.cardId === picked.cardId) || null;
+      setPicked(next);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
   const shownCount = filtered.length;
 
   return (
@@ -141,6 +170,9 @@ export default function CollectionPage() {
                     Power {picked.power} · {picked.trait} · {rarityLabel(picked.rarity) || picked.rarity}
                     {picked.quantity ? ` · ×${picked.quantity}` : ""}
                   </p>
+                  <button className="btn secondary" type="button" onClick={sellPicked}>
+                    Sell 1 for {saleReps(picked)} reps
+                  </button>
                 </>
               )}
             </div>

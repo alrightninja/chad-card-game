@@ -333,23 +333,25 @@ export default function BattlePage() {
       }
       return;
     }
-    if (drag.from === "bench" || (drag.from === "active" && drop.kind === "bench")) {
-      if ((matchRef.current?.state?.you?.benchMovesThisTurn || 0) >= 1) {
-        setError("You can only move one Bench unit into Active per turn.");
-        return;
-      }
-    }
     if (drag.from === "bench") {
       if (drop.kind === "active-empty") {
         send({ type: "promote", benchIndex: drag.benchIndex });
         return;
       }
       if (drop.kind === "active") {
+        if ((matchRef.current?.state?.you?.benchMovesThisTurn || 0) >= 1) {
+          setError("You can only swap one Bench unit with Active per turn.");
+          return;
+        }
         send({ type: "swap", activeIndex: drop.index, benchIndex: drag.benchIndex });
       }
       return;
     }
     if (drag.from === "active" && drop.kind === "bench") {
+      if ((matchRef.current?.state?.you?.benchMovesThisTurn || 0) >= 1) {
+        setError("You can only swap one Bench unit with Active per turn.");
+        return;
+      }
       send({ type: "swap", activeIndex: drag.activeIndex, benchIndex: drop.index });
     }
   };
@@ -589,9 +591,9 @@ export default function BattlePage() {
     if (selectedHand) return "Click or drop on an Active slot, or a Bench slot.";
     if (selectedBench != null) {
       if ((you?.benchMovesThisTurn || 0) >= 1) {
-        return "You already moved a Bench unit into Active this turn.";
+        return "Click an empty Active slot to fill it (free). You already used your one Active swap this turn.";
       }
-      return "Click an empty Active slot to move up, or an Active unit to swap (one Bench move per turn).";
+      return "Click an empty Active slot to move up (free), or an Active unit to swap (one swap per turn).";
     }
     if (attackers.length) {
       return attackers.length === 1
@@ -636,10 +638,6 @@ export default function BattlePage() {
         return;
       }
       if (selectedBench != null) {
-        if ((you?.benchMovesThisTurn || 0) >= 1) {
-          setError("You can only move one Bench unit into Active per turn.");
-          return;
-        }
         send({ type: "promote", benchIndex: selectedBench });
       }
       return;
@@ -647,7 +645,7 @@ export default function BattlePage() {
     if (selectedHand) return;
     if (selectedBench != null) {
       if ((you?.benchMovesThisTurn || 0) >= 1) {
-        setError("You can only move one Bench unit into Active per turn.");
+        setError("You can only swap one Bench unit with Active per turn.");
         return;
       }
       send({ type: "swap", activeIndex: i, benchIndex: selectedBench });
@@ -821,7 +819,7 @@ export default function BattlePage() {
           <div className="coach coach-compact">
             <strong>Coach</strong>
             <ol>
-              <li>Main Phase: play to Active (3) or Bench (3), one Bench-to-Active move, or press Guard then click an Active unit.</li>
+              <li>Main Phase: play to Active (3) or Bench (3). Filling an empty Active slot from the Bench is free; swapping with an Active unit is once per turn. Guard: press Guard then click an Active unit.</li>
               <li>Attack: first click is the Lead. You may add one Common or Uncommon Assist from Active. Rares, Legendaries, and Mythics fight alone. Attackers take a Rest Day.</li>
               <li>If they have a Guard (blue), you must attack that unit. After the fight you cannot play more cards.</li>
               <li>Only the Lead’s type counts: +6 if it beats the defender, −6 if it loses. A defender that beats your Lead also gets +8 Armor. Assists add half Power with no type. Units have HP equal to twice their Power.</li>

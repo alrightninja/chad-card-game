@@ -2,6 +2,7 @@ const { playUnit, swapActive, attack, endTurn, promoteFromBench, setGuard } = re
 const { startPhase } = require("./phases");
 const { checkWin } = require("./checkWin");
 const { aiTakeFullTurn } = require("./ai");
+const { sweepDeadUnits } = require("./battle");
 
 function currentSide(state) {
   return state.turnPlayer === "player" ? state.player : state.opponent;
@@ -124,12 +125,14 @@ function applyAction(state, action, options = {}) {
       throw new Error(`Unknown action: ${action.type}`);
   }
 
+  sweepDeadUnits(state);
   checkWin(state);
 
   if (autoAi && !state.winner && state.turnPlayer === "opponent") {
     aiTakeFullTurn(state, notify);
   }
 
+  sweepDeadUnits(state);
   checkWin(state);
   return state;
 }

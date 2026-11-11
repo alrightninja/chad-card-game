@@ -20,7 +20,7 @@ const socialRoutes = require("./routes/social");
 const adminRoutes = require("./routes/admin");
 const { assertCleanUsername } = require("./utils/moderation");
 const { safeMe, publicProfile } = require("./lib/publicUser");
-const { uniqueOwnedIds } = require("./lib/inventory");
+const { uniqueOwnedIds, takeCopies, pruneDecksToCollection, saleRepsFor } = require("./lib/inventory");
 const { normalizeEmail, emailsMatch, isValidEmail, emailKey, emailQuery, emailTakenQuery } = require("./lib/email");
 const { createResetToken, hashResetToken, resetLink } = require("./lib/passwordReset");
 const { mailConfigured, sendPasswordResetEmail } = require("./lib/mail");
@@ -474,7 +474,7 @@ app.get("/api/collection", requireAuth, async (req, res) => {
       })
       .filter(Boolean);
 
-    const rarityOrder = { C: 1, U: 2, R: 3, SR: 4, UR: 5, L: 6 };
+    const rarityOrder = { C: 1, U: 2, R: 3, SR: 4, UR: 5, L: 6, M: 7 };
     unique.sort((a, b) => {
       if (rarityOrder[a.rarity] !== rarityOrder[b.rarity]) {
         return rarityOrder[a.rarity] - rarityOrder[b.rarity];
@@ -496,6 +496,42 @@ function deckNameTaken(user, name, except) {
   const n = String(name || "").trim();
   return user.decks.some((d) => d.name === n && d.name !== except);
 }
+
+app.post("/api/collection/sell", requireAuth, async (req, res) => {
+  try {
+    const cardId = String((req.body && req.body.cardId) || "").trim();
+    const quantity = Number(req.body && req.body.quantity != null ? req.body.quantity : 1);
+    if (!registry.getById(cardId)) {
+      return res.status(400).json({ error: "Unknown card" });
+    }
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      return res.status(400).json({ error: "Choose how many copies to sell" });
+    }
+    const user = await User.findById(req.user._id);
+    const owned = (user.collection || []).filter((id) => id === cardId).length;
+    if (owned < quantity) {
+      return res.status(400).json({ error: "You do not have that many copies" });
+    }
+    const sold = Array(quantity).fill(cardId);
+    const reps = saleRepsFor(cardId) * quantity;
+    user.collection = takeCopies(user.collection, sold);
+    user.currency = user.currency || { reps: 0 };
+    user.currency.reps = (user.currency.reps || 0) + reps;
+    pruneDecksToCollection(user);
+    if (user.avatarCardId === cardId && !(user.collection || []).includes(cardId)) {
+      user.avatarCardId = null;
+    }
+    await user.save();
+    res.json({
+      message: `Sold ${quantity} for ${reps} reps`,
+      repsGained: reps,
+      user: safeMe(user)
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message || "Server error" });
+  }
+});
 
 app.get("/api/decks", requireAuth, async (req, res) => {
   try {

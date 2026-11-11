@@ -229,15 +229,15 @@
     "set": 2,
     "name": "Blitzkrueger",
     "trait": "Machina",
-    "power": 48,
-    "rarity": "L",
+    "power": 53,
+    "rarity": "M",
     "abilityCategory": "Play",
     "abilityKeyword": "Recycle",
     "abilityValue": 2,
     "abilityText": "On Play: Recycle 2 cards from your discard pile into your deck.",
     "flavorLine": "A lightning-minded science master whose experiments strike faster than students can react.",
     "art": "blitzkrueger.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "bobby_j_017",
@@ -2765,14 +2765,14 @@
     "name": "Sir Kensworth",
     "trait": "Mind",
     "power": 52,
-    "rarity": "L",
+    "rarity": "M",
     "abilityCategory": "Attack",
     "abilityKeyword": "PowerDown",
     "abilityValue": 13,
     "abilityText": "On Attack: Reduce the enemy's Power by 13 this battle.",
     "flavorLine": "A noble mind guiding a noble blade.",
     "art": "sir_kensworth.png",
-    "version": 1
+    "version": 2
   },
   {
     "cardId": "skibidi_chad_186",

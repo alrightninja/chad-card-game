@@ -7,7 +7,10 @@ function applyAbility(state, source, target, ability) {
     state.log.push(`No handler for ability: ${ability.keyword}`);
     return state;
   }
-  return handler(state, source, target, ability.value);
+  handler(state, source, target, ability.value);
+  const { sweepDeadUnits } = require("./battle");
+  sweepDeadUnits(state);
+  return state;
 }
 
 function sideOf(state, who) {

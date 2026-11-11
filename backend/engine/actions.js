@@ -1,10 +1,10 @@
 // actions.js
 
 const { applyAbility } = require("./abilities");
-const { resolveBattle, resetCombatForPlay } = require("./battle");
+const { resolveBattle, resetCombatForPlay, knockOut } = require("./battle");
 const { endPhase } = require("./phases");
 const { MAX_ACTIVE, MAX_BENCH, MAX_ASSISTS, MAX_BENCH_MOVES_PER_TURN, canAssist, rarityBucket } = require("./rules");
-const { addToActive } = require("./board");
+const { addToActive, unitIsDown } = require("./board");
 
 function fightAloneLabel(unit) {
   const bucket = rarityBucket(unit.rarity);
@@ -91,8 +91,11 @@ function promoteFromBench(state, benchIndex) {
   if (!unit) {
     throw new Error("No unit on that Bench slot.");
   }
-  consumeBenchMove(playerState);
   playerState.bench.splice(benchIndex, 1);
+  if (unitIsDown(unit)) {
+    knockOut(state, unit, playerState);
+    return state;
+  }
   addToActive(playerState, unit);
   state.log.push(`${unit.name} moves from the Bench to Active.`);
   return state;

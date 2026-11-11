@@ -124,11 +124,14 @@ function aiTakeFullTurn(state, onStep = () => {}) {
     onStep({ kind: "play" });
   }
 
-  if (ai.active.length === 0 && ai.bench.length > 0) {
+  while (ai.active.length === 0 && ai.bench.length > 0) {
     const promoted = ai.bench.shift();
     addToActive(ai, promoted);
-    state.log.push(`Opponent promotes ${promoted.name} from the Bench.`);
-    onStep({ kind: "promote" });
+    if (ai.active.includes(promoted)) {
+      state.log.push(`Opponent promotes ${promoted.name} from the Bench.`);
+      onStep({ kind: "promote" });
+      break;
+    }
   }
 
   if (checkWin(state)) return state;
