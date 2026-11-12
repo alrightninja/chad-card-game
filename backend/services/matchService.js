@@ -17,7 +17,7 @@ const {
   randomAiDeckIds
 } = require("../engine/cardRegistry");
 const { DECK_SIZE, clampKoLimit, KO_LIMIT_DEFAULT, KO_LIMIT_AI } = require("../engine/rules");
-const { deckIllegalReason } = require("../lib/deck");
+const { deckIllegalReason, normalizeDeckIds } = require("../lib/deck");
 const {
   LIVE_TURN_MS,
   WIN_REPS,
@@ -39,7 +39,7 @@ function validateDeck(deck) {
     err.status = 404;
     throw err;
   }
-  const illegal = deckIllegalReason(deck.cards, DECK_SIZE);
+  const illegal = deckIllegalReason(normalizeDeckIds(deck.cards), DECK_SIZE);
   if (illegal) {
     const err = new Error(`${illegal}. Rebuild it in Decks.`);
     err.status = 400;

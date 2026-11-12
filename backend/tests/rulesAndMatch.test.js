@@ -78,6 +78,12 @@ test("4. decks are 20 cards and old 40-card lists need rebuild", () => {
   assert.match(deckIllegalReason(twoMythics) || "", /Mythics/i);
   const nineU = uncommons.slice(0, 9).concat(commons.slice(0, 11));
   assert.match(deckIllegalReason(nineU) || "", /Uncommons/i);
+  const eightUCopies = uncommons.slice(0, 4).flatMap((id) => [id, id]).concat(commons.slice(0, 12));
+  assert.equal(deckIllegalReason(eightUCopies), null);
+  const tenUCopies = uncommons.slice(0, 5).flatMap((id) => [id, id]).concat(commons.slice(0, 10));
+  assert.match(deckIllegalReason(tenUCopies) || "", /Uncommons/i);
+  const objectDeck = eightUCopies.map((id) => ({ cardId: id }));
+  assert.equal(deckIllegalReason(objectDeck), null);
 });
 
 test("5. empty active and bench loses even with a hand", () => {

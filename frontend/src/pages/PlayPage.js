@@ -179,14 +179,14 @@ export default function PlayPage() {
         <select value={deckName} onChange={(e) => setDeckName(e.target.value)}>
           {decks.map((d) => (
             <option key={d.name} value={d.name}>
-              {d.name} ({d.cards?.length || 0}{d.needsRebuild ? " — rebuild to 20" : ""})
+              {d.name} ({d.cards?.length || 0}{d.legal === false ? " — rebuild" : ""})
             </option>
           ))}
         </select>
       </label>
-      {selected?.needsRebuild ? (
+      {selected?.legal === false ? (
         <p className="muted">
-          This deck is not 20 cards yet. Open Decks and save a legal 20 — your collection is unchanged.
+          {selected.illegalReason || "This deck is not legal yet."} Open Decks and save a legal 20 — your collection is unchanged.
         </p>
       ) : null}
       {error ? <div className="error">{error}</div> : null}

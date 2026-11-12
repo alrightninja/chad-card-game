@@ -27,7 +27,7 @@ const { mailConfigured, sendPasswordResetEmail } = require("./lib/mail");
 const retention = require("./lib/retention");
 const { PACKS, packOnSale, packSaleState } = require("./lib/packs");
 const tradeRoutes = require("./routes/trades");
-const { isLegalDeckList, deckIllegalReason, deckLimits, DECK_SIZE } = require("./lib/deck");
+const { deckIllegalReason, deckLimits, describeDeck, normalizeDeckIds, DECK_SIZE } = require("./lib/deck");
 const { authLimited } = require("./lib/antiFarm");
 
 const app = express();
@@ -535,12 +535,17 @@ app.post("/api/collection/sell", requireAuth, async (req, res) => {
 
 app.get("/api/decks", requireAuth, async (req, res) => {
   try {
-    const allDecks = req.user.decks.map((deck) => ({
-      name: deck.name,
-      cards: expandCardIds(deck.cards),
-      legal: isLegalDeckList(deck.cards),
-      needsRebuild: !isLegalDeckList(deck.cards)
-    }));
+    const allDecks = req.user.decks.map((deck) => {
+      const info = describeDeck(deck);
+      return {
+        name: deck.name,
+        cards: expandCardIds(deck.cards),
+        legal: info.legal,
+        needsRebuild: info.needsRebuild,
+        illegalReason: info.illegalReason,
+        rarityCounts: info.rarityCounts
+      };
+    });
     res.json({ decks: allDecks, limits: deckLimits() });
   } catch (err) {
     console.error("Error fetching decks:", err);
@@ -566,13 +571,14 @@ app.post("/api/decks/create", requireAuth, async (req, res) => {
     if (!Array.isArray(cards)) {
       return res.status(400).json({ error: "Cards must be an array" });
     }
-    const illegal = deckIllegalReason(cards, DECK_SIZE);
+    const cardIds = normalizeDeckIds(cards);
+    const illegal = deckIllegalReason(cardIds, DECK_SIZE);
     if (illegal) {
       return res.status(400).json({ error: illegal });
     }
 
     const userCollection = [...user.collection];
-    for (const id of cards) {
+    for (const id of cardIds) {
       const index = userCollection.indexOf(id);
       if (index === -1) {
         return res.status(400).json({ error: `User does not own card: ${id}` });
@@ -580,12 +586,12 @@ app.post("/api/decks/create", requireAuth, async (req, res) => {
       userCollection.splice(index, 1);
     }
 
-    user.decks.push({ name, cards });
+    user.decks.push({ name, cards: cardIds });
     await user.save();
 
     res.json({
       message: "Deck created successfully",
-      deck: { name, cards }
+      deck: { name, cards: cardIds }
     });
   } catch (err) {
     console.error("Error creating deck:", err);
@@ -620,13 +626,14 @@ app.post("/api/decks/update", requireAuth, async (req, res) => {
       if (!Array.isArray(cards)) {
         return res.status(400).json({ error: "Cards must be an array" });
       }
-      const illegal = deckIllegalReason(cards, DECK_SIZE);
+      const cardIds = normalizeDeckIds(cards);
+      const illegal = deckIllegalReason(cardIds, DECK_SIZE);
       if (illegal) {
         return res.status(400).json({ error: illegal });
       }
 
       const userCollection = [...user.collection];
-      for (const id of cards) {
+      for (const id of cardIds) {
         const index = userCollection.indexOf(id);
         if (index === -1) {
           return res.status(400).json({ error: `User does not own card: ${id}` });
@@ -634,7 +641,7 @@ app.post("/api/decks/update", requireAuth, async (req, res) => {
         userCollection.splice(index, 1);
       }
 
-      deck.cards = cards;
+      deck.cards = cardIds;
     }
 
     await user.save();

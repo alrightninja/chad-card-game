@@ -10,6 +10,12 @@ const MAX_DECKS = 5;
 const DECK_SIZE = 20;
 const DEFAULT_LIMITS = { size: 20, copies: 2, uncommons: 8, rares: 6, legendaries: 2, mythics: 1 };
 
+function deckCardId(card) {
+  if (card == null) return "";
+  if (typeof card === "string" || typeof card === "number") return String(card).trim();
+  return String(card.cardId || card.id || "").trim();
+}
+
 function nextDeckName(decks) {
   const used = new Set((decks || []).map((d) => d.name));
   if (!used.has("New Deck")) return "New Deck";
@@ -57,12 +63,14 @@ export default function DeckBuilderPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [limits, setLimits] = useState(DEFAULT_LIMITS);
+  const [catalog, setCatalog] = useState([]);
 
   useEffect(() => {
     audio?.setTrack("menu");
-    Promise.all([api("/api/collection"), api("/api/decks")])
-      .then(([c, d]) => {
+    Promise.all([api("/api/collection"), api("/api/decks"), api("/api/catalog")])
+      .then(([c, d, cat]) => {
         setCollection(c.collection || []);
+        setCatalog(cat.cards || []);
         const deckList = d.decks || [];
         if (d.limits) setLimits({ ...DEFAULT_LIMITS, ...d.limits });
         setDecks(deckList);
@@ -70,7 +78,7 @@ export default function DeckBuilderPage() {
         if (current) {
           setSavedName(current.name);
           setName(current.name);
-          setList((current.cards || []).map((card) => card.cardId).filter(Boolean));
+          setList((current.cards || []).map(deckCardId).filter(Boolean));
         }
       })
       .catch((err) => setError(err.message));
@@ -78,11 +86,14 @@ export default function DeckBuilderPage() {
 
   const owned = useMemo(() => {
     const map = {};
+    catalog.forEach((c) => {
+      map[c.cardId] = c;
+    });
     collection.forEach((c) => {
       map[c.cardId] = c;
     });
     return map;
-  }, [collection]);
+  }, [catalog, collection]);
 
   const { layout, setLayout, setId, setSetId, filtered, groups } = useSetFilter(collection);
 
@@ -94,45 +105,50 @@ export default function DeckBuilderPage() {
     return list.filter((id) => rarityBucket(owned[id]?.rarity) === bucket).length;
   }
 
-  function capReason(card) {
-    if (copiesInDeck(card.cardId) >= limits.copies) {
+  function capReason(card, ids = list) {
+    const copies = ids.filter((id) => id === card.cardId).length;
+    if (copies >= limits.copies) {
       return `Max ${limits.copies} copies`;
     }
-    if (copiesInDeck(card.cardId) >= (card.quantity || 0)) {
+    if (copies >= (card.quantity || 0)) {
       return "No extra copies owned";
     }
     const bucket = rarityBucket(card.rarity);
-    if (bucket === "M" && rarityCount("M") >= (limits.mythics || 1)) {
+    const count = (code) => ids.filter((id) => rarityBucket(owned[id]?.rarity) === code).length;
+    if (bucket === "M" && count("M") >= (limits.mythics || 1)) {
       return "Mythic cap reached";
     }
-    if (bucket === "M" && rarityCount("L") > 0) {
+    if (bucket === "M" && count("L") > 0) {
       return "Mythic or Legendaries, not both";
     }
-    if (bucket === "L" && rarityCount("M") > 0) {
+    if (bucket === "L" && count("M") > 0) {
       return "Mythic or Legendaries, not both";
     }
-    if (bucket === "L" && rarityCount("L") >= limits.legendaries) {
+    if (bucket === "L" && count("L") >= limits.legendaries) {
       return "Legendary cap reached";
     }
-    if (bucket === "R" && rarityCount("R") >= limits.rares) {
+    if (bucket === "R" && count("R") >= limits.rares) {
       return "Rare cap reached";
     }
-    if (bucket === "U" && rarityCount("U") >= (limits.uncommons || 8)) {
+    if (bucket === "U" && count("U") >= (limits.uncommons || 8)) {
       return "Uncommon cap reached";
     }
-    if (list.length >= limits.size) return "Deck is full";
+    if (ids.length >= limits.size) return "Deck is full";
     return "";
   }
 
   function add(card) {
-    const blocked = capReason(card);
-    if (blocked) {
-      setError(blocked);
+    const blockedNow = capReason(card);
+    if (blockedNow) {
+      setError(blockedNow);
       return;
     }
     setError("");
     audio?.playSfx("select");
-    setList((ids) => [...ids, card.cardId]);
+    setList((ids) => {
+      if (capReason(card, ids)) return ids;
+      return [...ids, card.cardId];
+    });
   }
 
   function removeAt(index) {
@@ -145,7 +161,7 @@ export default function DeckBuilderPage() {
     setMessage("");
     setSavedName(deck.name);
     setName(deck.name);
-    setList((deck.cards || []).map((c) => c.cardId).filter(Boolean));
+    setList((deck.cards || []).map(deckCardId).filter(Boolean));
   }
 
   function startNewDeck() {
@@ -239,7 +255,7 @@ export default function DeckBuilderPage() {
           {decks.length}/{MAX_DECKS} saved
           {savedName ? "" : " · unsaved draft"}
           {" · "}max {limits.copies} copies
-          {" · "}Uncommons {rarityCount("U")}/{limits.uncommons || 8}
+          {" · "}Uncommons {rarityCount("U")}/{limits.uncommons || 8} copies
           {" · "}Rares {rarityCount("R")}/{limits.rares}
           {" · "}Legendaries {rarityCount("L")}/{limits.legendaries}
           {" · "}Mythics {rarityCount("M")}/{limits.mythics || 1}
@@ -278,10 +294,10 @@ export default function DeckBuilderPage() {
         </div>
         {list.length !== DECK_SIZE ? (
           <p className="muted">
-            Legal decks are {DECK_SIZE} cards, max {limits.copies} copies, {limits.uncommons || 8}{" "}
-            uncommons, {limits.rares} rares, and either {limits.mythics || 1} Mythic or{" "}
-            {limits.legendaries} Legendaries. Older lists stay until you save a legal deck — nothing
-            is removed from your collection.
+            Legal decks are {DECK_SIZE} cards, max {limits.copies} copies of a card, and at most{" "}
+            {limits.uncommons || 8} uncommon copies, {limits.rares} rare copies, and either{" "}
+            {limits.mythics || 1} Mythic or {limits.legendaries} Legendaries. Each copy counts.
+            Older lists stay until you save a legal deck — nothing is removed from your collection.
           </p>
         ) : null}
         {error ? <div className="error">{error}</div> : null}
