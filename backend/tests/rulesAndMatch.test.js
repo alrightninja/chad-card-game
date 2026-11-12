@@ -660,6 +660,27 @@ test("personal kensworth/wickthrop grant cannot run twice", async () => {
   assert.deepEqual(cards.alrightninja, PERSONAL_GRANT_CARDS);
 });
 
+test("a full hand skips the draw instead of discarding to make room", () => {
+  const { startPhase } = require("../engine/phases");
+  const { applyAbility } = require("../engine/abilities");
+  const extra = dummyUnit("Extra", 10);
+  const held = [dummyUnit("H1"), dummyUnit("H2"), dummyUnit("H3"), dummyUnit("H4"), dummyUnit("H5")];
+  const state = createInitialGameState([], []);
+  state.phase = "start";
+  state.turnPlayer = "player";
+  state.player.hand = held.slice();
+  state.player.deck = [extra, dummyUnit("Next")];
+  startPhase(state);
+  assert.equal(state.player.hand.length, HAND_LIMIT);
+  assert.equal(state.player.hand.includes(extra), false);
+  assert.equal(state.player.deck[0], extra);
+  assert.match(state.log.join("\n"), /hand is full/i);
+
+  applyAbility(state, dummyUnit("Drawer"), null, { keyword: "Draw", value: 2 });
+  assert.equal(state.player.hand.length, HAND_LIMIT);
+  assert.equal(state.player.deck[0], extra);
+});
+
 test("hand limit is 5 and catalog retunes for v4.9", () => {
   assert.equal(HAND_LIMIT, 5);
   assert.equal(getById("chad_of_consistency_033"), null);

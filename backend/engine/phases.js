@@ -29,14 +29,15 @@ function startPhase(state) {
     playerState.guardInstanceId = null;
   }
 
-  if ((playerState.deck || []).length > 0) {
+  const who = state.turnPlayer === "player" ? "Player" : "Opponent";
+  if ((playerState.hand || []).length >= HAND_LIMIT) {
+    state.log.push(`${who} does not draw — hand is full.`);
+  } else if (!(playerState.deck || []).length) {
+    state.log.push(`${who} cannot draw — deck is empty.`);
+  } else {
     const drawn = resetCombatForPlay(playerState.deck.shift());
     playerState.hand.push(drawn);
-    const who = state.turnPlayer === "player" ? "Player" : "Opponent";
     state.log.push(`${who} draws a card.`);
-  } else if (!(playerState.deck || []).length) {
-    const who = state.turnPlayer === "player" ? "Player" : "Opponent";
-    state.log.push(`${who} cannot draw — deck is empty.`);
   }
 
   // Armor buffs last through the opponent's turn, then expire here.

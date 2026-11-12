@@ -1,5 +1,5 @@
 const { resolveCoinFlip, resetCombatForPlay } = require("./battle");
-const { OPENING_HAND, clampKoLimit, KO_LIMIT_DEFAULT } = require("./rules");
+const { OPENING_HAND, HAND_LIMIT, clampKoLimit, KO_LIMIT_DEFAULT } = require("./rules");
 
 function emptySide() {
   return {
@@ -17,11 +17,19 @@ function emptySide() {
   };
 }
 
-function drawCards(side, count) {
+function tryDraw(side, count = 1) {
+  let drawn = 0;
   for (let i = 0; i < count; i++) {
-    if (!side.deck.length) break;
+    if ((side.hand || []).length >= HAND_LIMIT) break;
+    if (!(side.deck || []).length) break;
     side.hand.push(resetCombatForPlay(side.deck.shift()));
+    drawn += 1;
   }
+  return drawn;
+}
+
+function drawCards(side, count) {
+  return tryDraw(side, count);
 }
 
 function createInitialGameState(playerDeck, opponentDeck, options = {}) {
@@ -58,4 +66,4 @@ function createInitialGameState(playerDeck, opponentDeck, options = {}) {
   };
 }
 
-module.exports = { createInitialGameState, drawCards, OPENING_HAND };
+module.exports = { createInitialGameState, drawCards, tryDraw, OPENING_HAND };

@@ -10,7 +10,7 @@ const STEPS = [
   },
   {
     title: "The board",
-    body: "Deck — you draw from here. Both players start with 5 cards. The first player does not draw on turn 1; the second player draws at the start of their first turn.\n\nHand — cards you can play. Only you see your hand. Max 5 at the end of your turn; extra cards (oldest first) go to discard.\n\nActive — up to 3 units that fight. Center of the table.\n\nBench — up to 3 backups. They cannot attack until you move them to Active."
+    body: "Deck — you draw from here. Both players start with 5 cards. The first player does not draw on turn 1; the second player draws at the start of their first turn.\n\nHand — cards you can play. Only you see your hand. Max 5. If your hand is already full, you skip the draw instead of discarding to make room.\n\nActive — up to 3 units that fight. Center of the table.\n\nBench — up to 3 backups. They cannot attack until you move them to Active."
   },
   {
     title: "How to play a card",
@@ -26,7 +26,7 @@ const STEPS = [
   },
   {
     title: "Bench, swaps, and ending your turn",
-    body: "Still in Main Phase: click a Bench unit, then an empty Active slot to promote, or an Active unit to swap. Drag works too. Filling an empty Active slot from the Bench is free. Swapping with a unit that is already Active uses your one Bench swap for the turn.\n\nWhen an Active unit is KO’d, it is discarded. A Bench unit is promoted automatically only if you have no Active units left.\n\nEnd turn when you are done. If your hand is over 5, extras discard automatically.\n\nYou lose if you have no Active and no Bench."
+    body: "Still in Main Phase: click a Bench unit, then an empty Active slot to promote, or an Active unit to swap. Drag works too. Filling an empty Active slot from the Bench is free. Swapping with a unit that is already Active uses your one Bench swap for the turn.\n\nWhen an Active unit is KO’d, it is discarded. A Bench unit is promoted automatically only if you have no Active units left.\n\nEnd turn when you are done. A full hand of 5 skips the next draw instead of discarding a card.\n\nYou lose if you have no Active and no Bench."
   }
 ];
 

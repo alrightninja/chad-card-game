@@ -1,4 +1,5 @@
 const { shuffle } = require("./cardRegistry");
+const { HAND_LIMIT } = require("./rules");
 
 function applyAbility(state, source, target, ability) {
   if (!ability || !ability.keyword) return state;
@@ -48,6 +49,7 @@ function drawCard(state, owner, count = 1) {
   const playerState = sideOf(state, owner);
   let drawn = 0;
   for (let i = 0; i < count; i++) {
+    if ((playerState.hand || []).length >= HAND_LIMIT) break;
     const card = playerState.deck.shift();
     if (!card) break;
     playerState.hand.push(card);
@@ -555,6 +557,10 @@ const AbilityHandlers = {
     let best = 0;
     for (let i = 1; i < mine.deck.length; i++) {
       if ((mine.deck[i].power || 0) > (mine.deck[best].power || 0)) best = i;
+    }
+    if ((mine.hand || []).length >= HAND_LIMIT) {
+      state.log.push(`${source.name} cannot tutor — hand is full.`);
+      return state;
     }
     const [card] = mine.deck.splice(best, 1);
     mine.hand.push(card);

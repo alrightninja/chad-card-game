@@ -77,7 +77,7 @@ Each turn has four phases, in order.
 
 ### Start
 
-- Draw 1 if your deck has cards.
+- Draw 1 if your deck has cards and your hand has fewer than **5**. A full hand skips the draw; cards are not discarded to make room.
 - Clear last turn’s temporary Power on your units.
 - Tick down Silence on you.
 
@@ -107,7 +107,7 @@ If you skip Battle, nothing fights.
 ### End
 
 - End-of-turn passives
-- If you have more than **7** cards, discard oldest extras until you have 7
+- Pass without discarding for a full hand; extra cards only leave hand if a later effect still overflowed the 5-card cap
 - Pass the turn
 
 ---

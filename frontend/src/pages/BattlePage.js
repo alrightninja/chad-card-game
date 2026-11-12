@@ -603,7 +603,7 @@ export default function BattlePage() {
       return match.winner === match.yourSeat ? "You won." : match.winner === "draw" ? "Draw." : "Defeat.";
     }
     if (!yourTurn) return "Opponent’s turn.";
-    if (phase === "end") return "You already attacked. End turn (hand limit 5).";
+    if (phase === "end") return "You already attacked. End turn (a full hand skips the next draw).";
     if (phase === "battle" && attackers.length) return "You may attack again, or End turn.";
     if (guardMode) return "Click YOUR Active unit to make it Guard. The opponent must attack that unit.";
     if (ghost) return "Drop on Active or Bench.";
